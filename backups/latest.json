@@ -1,0 +1,57 @@
+{
+  "version": "1",
+  "exportedAt": "2026-06-29T05:54:36.388Z",
+  "tables": {
+    "settings": [
+      {
+        "key": "shortlistMinScore",
+        "value": "70"
+      },
+      {
+        "key": "shortlistTopN",
+        "value": "5"
+      },
+      {
+        "key": "finnhubApiKey",
+        "value": ""
+      },
+      {
+        "key": "hotImmediateThreshold",
+        "value": "85"
+      },
+      {
+        "key": "hotSustainedThreshold",
+        "value": "65"
+      },
+      {
+        "key": "hotSustainedSessions",
+        "value": "2"
+      },
+      {
+        "key": "hotFloorThreshold",
+        "value": "50"
+      },
+      {
+        "key": "coolOffDays",
+        "value": "3"
+      },
+      {
+        "key": "sectorBullishThreshold",
+        "value": "25"
+      },
+      {
+        "key": "sectorBearishThreshold",
+        "value": "-20"
+      },
+      {
+        "key": "githubBackupToken",
+        "value": "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"
+      }
+    ],
+    "shortlist": [],
+    "r1_frozen": [],
+    "r2_market_snapshots": [],
+    "r3a": [],
+    "r3b": []
+  }
+}
