@@ -1,0 +1,373 @@
+{
+  "version": "1",
+  "exportedAt": "2026-07-01T21:30:00.031Z",
+  "tables": {
+    "settings": [
+      {
+        "key": "analysisEntryType",
+        "value": "A"
+      },
+      {
+        "key": "analysisDirectionalBias",
+        "value": "Up"
+      },
+      {
+        "key": "analysisSuccessThreshold",
+        "value": "1.5"
+      },
+      {
+        "key": "analysisTrainingWindow",
+        "value": "90"
+      },
+      {
+        "key": "alpacaApiKey",
+        "value": "PKNMCKAAHBWIXDZNR2SESLFOS7"
+      },
+      {
+        "key": "alpacaApiSecret",
+        "value": "5nSxNjedG7yHa4zv2QbmgudaJoMUJpbmihdcAk9PT8rT"
+      },
+      {
+        "key": "aiApiKey",
+        "value": "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"
+      },
+      {
+        "key": "aiModel",
+        "value": "anthropic/claude-haiku-4-5"
+      },
+      {
+        "key": "trading_score_multiplier_high",
+        "value": "1.2"
+      },
+      {
+        "key": "trading_score_multiplier_low",
+        "value": "0.8"
+      },
+      {
+        "key": "trading_score_threshold_high",
+        "value": "85"
+      },
+      {
+        "key": "trading_score_threshold_low",
+        "value": "70"
+      },
+      {
+        "key": "alpacaAccountUrl",
+        "value": "https://paper-api.alpaca.markets"
+      },
+      {
+        "key": "trading_gate_enabled",
+        "value": "1"
+      },
+      {
+        "key": "trading_gate_neutral_multiplier",
+        "value": "0.75"
+      },
+      {
+        "key": "trading_gate_weak_sec_score",
+        "value": "10"
+      },
+      {
+        "key": "trading_gate_weak_sec_multiplier",
+        "value": "0.8"
+      },
+      {
+        "key": "grading_min_setup_trades",
+        "value": "20"
+      },
+      {
+        "key": "grading_min_check_side_trades",
+        "value": "5"
+      },
+      {
+        "key": "grading_kill_expectancy_r",
+        "value": "-0.5"
+      },
+      {
+        "key": "grading_kill_min_trades",
+        "value": "30"
+      },
+      {
+        "key": "grading_live_aplus_r",
+        "value": "1.5"
+      },
+      {
+        "key": "grading_live_a_r",
+        "value": "1.0"
+      },
+      {
+        "key": "grading_live_b_r",
+        "value": "0.5"
+      },
+      {
+        "key": "scorerEntryTime",
+        "value": "9:40"
+      },
+      {
+        "key": "regimeSampleThreshold",
+        "value": "10"
+      },
+      {
+        "key": "shortlistMinScore",
+        "value": "70"
+      },
+      {
+        "key": "shortlistTopN",
+        "value": "5"
+      },
+      {
+        "key": "finnhubApiKey",
+        "value": ""
+      },
+      {
+        "key": "hotImmediateThreshold",
+        "value": "85"
+      },
+      {
+        "key": "hotSustainedThreshold",
+        "value": "65"
+      },
+      {
+        "key": "hotSustainedSessions",
+        "value": "2"
+      },
+      {
+        "key": "hotFloorThreshold",
+        "value": "50"
+      },
+      {
+        "key": "coolOffDays",
+        "value": "3"
+      },
+      {
+        "key": "sectorBullishThreshold",
+        "value": "25"
+      },
+      {
+        "key": "sectorBearishThreshold",
+        "value": "-20"
+      },
+      {
+        "key": "githubBackupToken",
+        "value": "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"
+      },
+      {
+        "key": "alpacaMarketFeed",
+        "value": "iex"
+      },
+      {
+        "key": "trading_execution_mode",
+        "value": "live"
+      },
+      {
+        "key": "trading_data_source",
+        "value": "websocket"
+      },
+      {
+        "key": "trading_equity",
+        "value": "50000"
+      },
+      {
+        "key": "trading_risk_pct",
+        "value": "50"
+      },
+      {
+        "key": "trading_max_shares",
+        "value": "5000"
+      },
+      {
+        "key": "trading_max_dollar_risk",
+        "value": "500"
+      },
+      {
+        "key": "trading_max_total_exposure",
+        "value": "10000"
+      },
+      {
+        "key": "trading_max_open_positions",
+        "value": "3"
+      },
+      {
+        "key": "trading_daily_loss_limit",
+        "value": "500"
+      },
+      {
+        "key": "trading_live_confirmed",
+        "value": "true"
+      }
+    ],
+    "shortlist": [
+      {
+        "date": "2026-07-01",
+        "items": "[{\"ticker\":\"JEM\",\"tvSymbol\":\"NASDAQ:JEM\",\"addedAt\":1782908932316,\"method\":\"manual\",\"score\":18,\"price\":3.97,\"change\":267.5925925925926,\"sector\":\"Distribution Services\"},{\"ticker\":\"SOC\",\"tvSymbol\":\"NYSE:SOC\",\"addedAt\":1782913066166,\"method\":\"manual\",\"score\":10,\"price\":3.08,\"change\":-55.81061692969871,\"sector\":\"Energy Minerals\"},{\"ticker\":\"BTOG\",\"tvSymbol\":\"NASDAQ:BTOG\",\"addedAt\":1782913068426,\"method\":\"manual\",\"score\":9,\"price\":1.25,\"change\":1.6260162601626031,\"sector\":\"Consumer Non-Durables\"}]",
+        "exported": 0,
+        "exported_at": null
+      }
+    ],
+    "r1_frozen": [
+      {
+        "date": "2026-07-01",
+        "ticker": "BTOG",
+        "data": "{\"id\":\"8efdeb0d-735f-4002-a0c7-e98ee95470d1\",\"firstSeen\":1782894616244,\"lastUpdated\":1782912956733,\"liveNow\":true,\"date\":\"2026-07-01\",\"inShortlist\":false,\"bias\":\"auto\",\"news\":{\"finnhub\":[],\"yahoo\":[{\"headline\":\"This Little-Known Company Sinks After Securing $11 Million in Nvidia Blackwell AI Servers\",\"url\":\"https://finance.yahoo.com/technology/ai/articles/little-known-company-sinks-securing-175239266.html\",\"datetime\":1782755559,\"source\":\"yahoo\"},{\"headline\":\"Bit Origin Purchases Nvidia Blackwell B300 AI Infrastructure Worth $11 Million\",\"url\":\"https://finance.yahoo.com/technology/ai/articles/bit-origin-purchases-nvidia-blackwell-135327168.html\",\"datetime\":1782741207,\"source\":\"yahoo\"},{\"headline\":\"Bit Origin Secures Financing to Explore AI Computing, Data Center Services Expansion\",\"url\":\"https://finance.yahoo.com/sectors/technology/articles/bit-origin-secures-financing-explore-160732576.html\",\"datetime\":1776355652,\"source\":\"yahoo\"}],\"edgar\":[],\"fetchedAt\":\"2026-07-01T13:35:56.733Z\"},\"catalyst\":null,\"score_at_entry\":null,\"score_model_ts\":null,\"_score\":9,\"context\":{\"themes\":[],\"broadResolved\":\"Consumer Staples\",\"regime\":\"STRONG_UP\",\"regimeLabel\":\"Strong Uptrend\",\"longTerm\":\"BULLISH\",\"midTerm\":\"UPTREND\",\"shortTerm\":\"BULLISH\",\"secBias\":\"NEUTRAL\",\"secScore\":-9,\"secHot\":false},\"ticker\":\"BTOG\",\"stock\":{\"tvSymbol\":\"NASDAQ:BTOG\",\"price\":1.25,\"open\":1.17,\"change\":1.6260162601626031,\"vwap\":1.2449999999999999,\"ema9\":1.6001975609700507,\"ema13\":1.6649619519284287,\"ema20\":1.724428233333403,\"ema50\":2.031435545344322,\"sma5\":1.512,\"monthHigh\":2.1999,\"monthLow\":1.13,\"dayHigh\":1.355,\"dayLow\":1.13,\"atr\":0.2086010643427072,\"mcap\":2012926,\"floatShares\":1583694.1208199998,\"shortFloat\":null,\"sector\":\"Consumer Non-Durables\",\"industry\":\"Food: Meat/Fish/Dairy\",\"pmHigh\":1.88,\"pmLow\":1.23,\"rvol\":1.3497426131792076,\"_changeFromOpen\":6.8376068376068435,\"prevClose\":1.23,\"gapPct\":-4.878048780487809,\"pmRange\":0.6499999999999999,\"adrPct\":16.688085147416576,\"monthRangePos\":11.216001495466875,\"pmAdrRatio\":3.1159956064851415},\"screenerKeys\":[\"Pre-Mkt\"],\"_scoreDetails\":{\"table\":\"B4_main\",\"base\":\"B4\",\"tableType\":\"main\",\"cardRegime\":\"STRONG_UP\",\"subRegimeUsed\":null,\"fallbackReason\":\"no_sub_table\",\"confidence\":43,\"samples\":43,\"factorScores\":[-2.221818004925026,-1.059803434838699,-0.35036805089103173,0.5896293866092127,0.44308146762086126,1.28469769045669,0.03466904748385717],\"bucketScores\":[2.99,0,1.5331,5.7645,0.802,45,3.8208],\"entryTime\":\"9:40\",\"bias\":\"Long\",\"normalizedBias\":\"long\"}}",
+        "captured_at": 1782912960006
+      },
+      {
+        "date": "2026-07-01",
+        "ticker": "JEM",
+        "data": "{\"id\":\"303ead87-37f9-4828-a51a-8eb600d9a912\",\"firstSeen\":1782894132873,\"lastUpdated\":1782912956655,\"liveNow\":true,\"date\":\"2026-07-01\",\"inShortlist\":true,\"bias\":\"auto\",\"news\":{\"finnhub\":[],\"yahoo\":[{\"headline\":\"707 Cayman Explores AI, Blockchain and Crypto Platform for Apparel Supply Chain\",\"url\":\"https://finance.yahoo.com/technology/ai/articles/707-cayman-explores-ai-blockchain-115309395.html\",\"datetime\":1782906789,\"source\":\"yahoo\"},{\"headline\":\"Top Premarket Gainers\",\"url\":\"https://finance.yahoo.com/markets/stocks/articles/top-premarket-gainers-110114893.html\",\"datetime\":1782903674,\"source\":\"yahoo\"},{\"headline\":\"707 Cayman Holdings to Effect Share Consolidation on April 13, 2026\",\"url\":\"https://finance.yahoo.com/markets/stocks/articles/707-cayman-holdings-effect-share-154500580.html\",\"datetime\":1775749500,\"source\":\"yahoo\"}],\"edgar\":[],\"fetchedAt\":\"2026-07-01T13:35:56.655Z\"},\"catalyst\":null,\"score_at_entry\":null,\"score_model_ts\":null,\"_score\":18,\"context\":{\"themes\":[],\"broadResolved\":\"Distribution Services\",\"regime\":\"STRONG_UP\",\"regimeLabel\":\"Strong Uptrend\",\"longTerm\":\"BULLISH\",\"midTerm\":\"UPTREND\",\"shortTerm\":\"BULLISH\",\"secBias\":\"NEUTRAL\",\"secScore\":0,\"secHot\":false},\"ticker\":\"JEM\",\"stock\":{\"tvSymbol\":\"NASDAQ:JEM\",\"price\":3.97,\"open\":4.9399,\"change\":267.5925925925926,\"vwap\":3.976666666666667,\"ema9\":2.455945664351929,\"ema13\":2.356071041181756,\"ema20\":2.2126742495176246,\"ema50\":2.0057498113132133,\"sma5\":2.4342,\"monthHigh\":4.94,\"monthLow\":1.03,\"dayHigh\":4.94,\"dayLow\":3.02,\"atr\":0.7291971927929174,\"mcap\":5601543.000000001,\"floatShares\":null,\"shortFloat\":null,\"sector\":\"Distribution Services\",\"industry\":\"Wholesale Distributors\",\"pmHigh\":10.87,\"pmLow\":7.11,\"rvol\":66.35647414866234,\"_changeFromOpen\":-19.634000688273034,\"prevClose\":1.08,\"gapPct\":357.3981481481481,\"pmRange\":3.759999999999999,\"adrPct\":18.367687475892126,\"monthRangePos\":75.1918158567775,\"pmAdrRatio\":5.156355560830842},\"screenerKeys\":[\"Big Move\",\"Pre-Mkt\"],\"_scoreDetails\":{\"table\":\"B4_main\",\"base\":\"B4\",\"tableType\":\"main\",\"cardRegime\":\"STRONG_UP\",\"subRegimeUsed\":null,\"fallbackReason\":\"no_sub_table\",\"confidence\":43,\"samples\":43,\"factorScores\":[-1.918306855848798,3.6093692953760472,-1.3057826299608903,3.6348225032163137,0.2994356864703357,-2.1958994030493013,0.17887868212002297],\"bucketScores\":[4.6741,9.4885,37.5,25.8132,1.1702,20.3465,25.3124],\"entryTime\":\"9:40\",\"bias\":\"Long\",\"normalizedBias\":\"long\"}}",
+        "captured_at": 1782912960006
+      },
+      {
+        "date": "2026-07-01",
+        "ticker": "SOC",
+        "data": "{\"id\":\"adb59a63-deb4-4d73-b5d7-263a7f9755ef\",\"firstSeen\":1782894132873,\"lastUpdated\":1782912956789,\"liveNow\":true,\"date\":\"2026-07-01\",\"inShortlist\":false,\"bias\":\"auto\",\"news\":{\"finnhub\":[],\"yahoo\":[{\"headline\":\"Sector Update: Energy\",\"url\":\"https://finance.yahoo.com/energy/articles/sector-energy-131004447.html\",\"datetime\":1782911404,\"source\":\"yahoo\"},{\"headline\":\"Sable Offshore Raises Capital via $300 Million Notes and Share Offering to Repay Exxon Loan\",\"url\":\"https://finance.yahoo.com/energy/articles/sable-offshore-raises-capital-via-111234136.html\",\"datetime\":1782904354,\"source\":\"yahoo\"},{\"headline\":\"Sable Offshore Corp. Prices Offerings of Common Stock and Convertible Senior Notes\",\"url\":\"https://finance.yahoo.com/markets/stocks/articles/sable-offshore-corp-prices-offerings-103400731.html\",\"datetime\":1782902040,\"source\":\"yahoo\"},{\"headline\":\"Why Did SOC, HTZ, COSM Stocks Tumble To 52-Week Lows?\",\"url\":\"https://finance.yahoo.com/m/acab708f-9056-3286-8e5a-b4912e2d7f92/why-did-soc%2C-htz%2C-cosm-stocks.html\",\"datetime\":1782882392,\"source\":\"yahoo\"},{\"headline\":\"Sector Update: Energy Stocks Decline Late Afternoon\",\"url\":\"https://finance.yahoo.com/energy/articles/sector-energy-stocks-decline-afternoon-200058183.html\",\"datetime\":1782849658,\"source\":\"yahoo\"},{\"headline\":\"Top Midday Decliners\",\"url\":\"https://finance.yahoo.com/markets/stocks/articles/top-midday-decliners-184155063.html\",\"datetime\":1782844915,\"source\":\"yahoo\"},{\"headline\":\"Market Chatter: JPMorgan Sees Limited Investor Demand for Sable Loan Offering\",\"url\":\"https://finance.yahoo.com/markets/stocks/articles/market-chatter-jpmorgan-sees-limited-180219693.html\",\"datetime\":1782842539,\"source\":\"yahoo\"},{\"headline\":\"Why Did SOC Stock Plunge 50% Today?\",\"url\":\"https://finance.yahoo.com/m/0cff96e7-8851-359f-b136-26079a03f7ee/why-did-soc-stock-plunge-50%25.html\",\"datetime\":1782836914,\"source\":\"yahoo\"}],\"edgar\":[],\"fetchedAt\":\"2026-07-01T13:35:56.789Z\"},\"catalyst\":{\"label\":\"Dilution\",\"sentiment\":\"bear\",\"color\":\"#f87171\"},\"score_at_entry\":null,\"score_model_ts\":null,\"_score\":10,\"context\":{\"themes\":[],\"broadResolved\":\"Energy\",\"regime\":\"STRONG_UP\",\"regimeLabel\":\"Strong Uptrend\",\"longTerm\":\"BULLISH\",\"midTerm\":\"UPTREND\",\"shortTerm\":\"BULLISH\",\"secBias\":\"NEUTRAL\",\"secScore\":-9,\"secHot\":false},\"ticker\":\"SOC\",\"stock\":{\"tvSymbol\":\"NYSE:SOC\",\"price\":3.08,\"open\":4,\"change\":-55.81061692969871,\"vwap\":3.416666666666666,\"ema9\":7.495427371521498,\"ema13\":8.395920017199579,\"ema20\":9.511307672162314,\"ema50\":11.523991323474604,\"sma5\":6.585999999999993,\"monthHigh\":16.08,\"monthLow\":2.88,\"dayHigh\":4.29,\"dayLow\":2.88,\"atr\":1.2162769887375748,\"mcap\":475437720.00000006,\"floatShares\":132316721.97699998,\"shortFloat\":null,\"sector\":\"Energy Minerals\",\"industry\":\"Integrated Oil\",\"pmHigh\":4.14,\"pmLow\":3.16,\"rvol\":31.778718028002,\"_changeFromOpen\":-23,\"prevClose\":6.97,\"gapPct\":-42.61119081779053,\"pmRange\":0.9799999999999995,\"adrPct\":39.48951262134983,\"monthRangePos\":1.5151515151515165,\"pmAdrRatio\":0.8057375162685457},\"screenerKeys\":[\"Big Move\",\"Pre-Mkt\"],\"_scoreDetails\":{\"table\":\"B4_main\",\"base\":\"B4\",\"tableType\":\"main\",\"cardRegime\":\"STRONG_UP\",\"subRegimeUsed\":null,\"fallbackReason\":\"no_sub_table\",\"confidence\":43,\"samples\":43,\"factorScores\":[-1.541769007510372,-1.6113381051251934,-0.3624801048614933,0.6441384798305525,0.6806171008911137,2.176564266534977,-0.30411152066494596],\"bucketScores\":[3.554,0,1.5331,5.7645,0.802,45,10.5337],\"entryTime\":\"9:40\",\"bias\":\"Long\",\"normalizedBias\":\"long\"}}",
+        "captured_at": 1782912960006
+      },
+      {
+        "date": "2026-07-01",
+        "ticker": "SVRE",
+        "data": "{\"id\":\"2d5b91a2-c870-49f1-ae7e-d28696950f51\",\"firstSeen\":1782894132873,\"lastUpdated\":1782912956772,\"liveNow\":true,\"date\":\"2026-07-01\",\"inShortlist\":true,\"bias\":\"auto\",\"news\":{\"finnhub\":[],\"yahoo\":[{\"headline\":\"SaverOne Enters the Military UAV Market:  Signs Term Sheet to Acquire 33.3% of Gryphen Aircraft Industries, with an Option to Increase to 53% at a €30 Million Valuation\",\"url\":\"https://finance.yahoo.com/technology/articles/saverone-enters-military-uav-market-123000587.html\",\"datetime\":1782822600,\"source\":\"yahoo\"},{\"headline\":\"SaverOne and VisionWave Complete Their Strategic Transaction to Advance an RF Defense Platform\",\"url\":\"https://finance.yahoo.com/technology/articles/saverone-visionwave-complete-strategic-transaction-130800293.html\",\"datetime\":1782479280,\"source\":\"yahoo\"},{\"headline\":\"SaverOne Signs Pilot Agreement with RBtec to Expand its RF Sensing Technology into the Security Market\",\"url\":\"https://finance.yahoo.com/technology/articles/saverone-signs-pilot-agreement-rbtec-125000796.html\",\"datetime\":1781614200,\"source\":\"yahoo\"},{\"headline\":\"SaverOne Awarded New European Patent for Mobile Device Classification Using Sensor Fusion\",\"url\":\"https://finance.yahoo.com/sectors/technology/articles/saverone-awarded-european-patent-mobile-123000418.html\",\"datetime\":1777379400,\"source\":\"yahoo\"},{\"headline\":\"SaverOne 2014 Plans Collaboration for Development of In-Cabin Dashcam System\",\"url\":\"https://finance.yahoo.com/markets/stocks/articles/saverone-2014-plans-collaboration-development-145749848.html\",\"datetime\":1776783469,\"source\":\"yahoo\"},{\"headline\":\"SaverOne Announces Collaboration With a Global Leader in Driver Monitoring Systems (DMS)\",\"url\":\"https://finance.yahoo.com/sectors/technology/articles/saverone-announces-collaboration-global-leader-123000054.html\",\"datetime\":1776774600,\"source\":\"yahoo\"}],\"edgar\":[],\"fetchedAt\":\"2026-07-01T13:35:56.772Z\"},\"catalyst\":{\"label\":\"Partnership\",\"sentiment\":\"bull\",\"color\":\"#67e8f9\"},\"score_at_entry\":null,\"score_model_ts\":null,\"_score\":12,\"context\":{\"themes\":[],\"broadResolved\":\"Technology\",\"regime\":\"STRONG_UP\",\"regimeLabel\":\"Strong Uptrend\",\"longTerm\":\"BULLISH\",\"midTerm\":\"UPTREND\",\"shortTerm\":\"BULLISH\",\"secBias\":\"BULLISH\",\"secScore\":88,\"secHot\":true},\"ticker\":\"SVRE\",\"stock\":{\"tvSymbol\":\"NASDAQ:SVRE\",\"price\":2.64,\"open\":5.8098,\"change\":-2.9411764705882377,\"vwap\":3.5200333333333336,\"ema9\":3.2132925862596657,\"ema13\":3.39715049386858,\"ema20\":3.616362383465054,\"ema50\":3.9705216245883044,\"sma5\":2.9780000000000024,\"monthHigh\":5.9,\"monthLow\":2.0201,\"dayHigh\":5.9,\"dayLow\":2.0201,\"atr\":0.6934598230999465,\"mcap\":135586503.61805,\"floatShares\":null,\"shortFloat\":null,\"sector\":\"Technology Services\",\"industry\":\"Packaged Software\",\"pmHigh\":2.73,\"pmLow\":2.3135,\"rvol\":363.2304851094761,\"_changeFromOpen\":-54.55953733347103,\"prevClose\":2.72,\"gapPct\":113.5955882352941,\"pmRange\":0.4165000000000001,\"adrPct\":26.26741754166464,\"monthRangePos\":15.97721590762649,\"pmAdrRatio\":0.6006115799732079},\"screenerKeys\":[\"Big Move\"],\"_scoreDetails\":{\"table\":\"B4_main\",\"base\":\"B4\",\"tableType\":\"main\",\"cardRegime\":\"STRONG_UP\",\"subRegimeUsed\":null,\"fallbackReason\":\"no_sub_table\",\"confidence\":43,\"samples\":43,\"factorScores\":[-1.9456207318049552,0.2509514333151939,-0.22798988711978715,0.4618331196812968,-0.39109303545735696,0.18029671613062823,-0.009109377017548763],\"bucketScores\":[4.6741,25.5246,1.5331,0,10.8075,20.3156,18.4125],\"entryTime\":\"9:40\",\"bias\":\"Long\",\"normalizedBias\":\"long\"}}",
+        "captured_at": 1782912960006
+      }
+    ],
+    "r2_market_snapshots": [
+      {
+        "id": 17,
+        "date": "2026-07-01",
+        "slot": "09:26",
+        "captured_at": 1782912360013,
+        "data": "{\"capturedAt\":\"2026-07-01T13:25:00.423Z\",\"date\":\"2026-07-01\",\"indices\":{\"SPY\":{\"close\":746.77,\"change\":0.7786774628879867,\"weekChg\":2.438990932660252,\"sma5\":736.8599999999997,\"sma20\":742.2394999999995,\"sma50\":735.870799999999,\"sma200\":691.4253500000003,\"bbUpper\":760.6401407225798,\"bbLower\":723.8388592774191},\"QQQ\":{\"close\":736.4,\"change\":1.7014694508893955,\"weekChg\":4.229179641057577,\"sma5\":718.7999999999998,\"sma20\":723.734,\"sma50\":706.2165999999994,\"sma200\":633.6324,\"bbUpper\":753.8706384323174,\"bbLower\":693.5973615676827},\"IWM\":{\"close\":300.45,\"change\":0.49503294644946355,\"weekChg\":0.20678384417836929},\"DIA\":{\"close\":522.39,\"change\":0.13609875785923103},\"VIX\":{\"close\":16.79,\"change\":2.004860267314692,\"weekChg\":-8.749999999999998}},\"shortTerm\":{\"result\":\"BULLISH\",\"score\":4,\"signals\":[{\"name\":\"SPY Day\",\"value\":1},{\"name\":\"QQQ Day\",\"value\":1},{\"name\":\"IWM Day\",\"value\":1},{\"name\":\"VIX\",\"value\":-1},{\"name\":\"SPY Week\",\"value\":1},{\"name\":\"QQQ Week\",\"value\":1}]},\"midTerm\":{\"result\":\"UPTREND\",\"stageLabel\":\"UPTREND\",\"src\":\"SPY\",\"bull\":4,\"unk\":2,\"bb\":\"MID\",\"bbPct\":0.6231071262219945,\"signals\":[{\"name\":\"Close > SMA5\",\"value\":true},{\"name\":\"Close > SMA20\",\"value\":true},{\"name\":\"SMA5 > SMA20\",\"value\":false},{\"name\":\"SMA20 > SMA50\",\"value\":true},{\"name\":\"1H Close > 20H MA (proxy)\",\"value\":true},{\"name\":\"1H 5MA > 20H MA (proxy)\",\"value\":false}],\"_meta\":{\"sma5\":736.8599999999997,\"sma20\":742.2394999999995,\"sma50\":735.870799999999,\"sma200\":691.4253500000003,\"bbUpper\":760.6401407225798,\"bbLower\":723.8388592774191,\"bbPct\":0.6231071262219945,\"bb\":\"MID\",\"close\":746.77}},\"longTerm\":{\"result\":\"BULLISH\",\"label\":\"BULLISH\",\"src\":\"SPY\",\"dist\":8.004428822287126,\"above200\":true,\"goldenCross\":true},\"regime\":{\"slug\":\"STRONG_UP\",\"label\":\"Strong Uptrend\",\"icon\":\"🟢⬆️\",\"color\":\"#16a34a\",\"stance\":\"LONG\",\"guidance\":\"Strong bullish conditions. Favor long setups with momentum.\",\"confidence\":\"high\",\"aligned\":true},\"sectors\":{\"Technology\":{\"etf\":\"XLK\",\"close\":190.52,\"change\":2.7560541502615896,\"weekChg\":5.195737397161944,\"adx\":17.929071838836528,\"bias\":\"BULLISH\",\"score\":88,\"hot\":true,\"dRS\":1.977376687373603,\"wRS\":2.7567464645016915},\"Financial\":{\"etf\":\"XLF\",\"close\":53.61,\"change\":-0.20476545048399003,\"weekChg\":0.0746686578308739,\"adx\":25.734623381496913,\"bias\":\"BULLISH\",\"score\":72,\"hot\":true,\"dRS\":-0.9834429133719766,\"wRS\":-2.3643222748293784},\"Industrial\":{\"etf\":\"XLI\",\"close\":185.23,\"change\":1.351499233968045,\"weekChg\":2.2240618101545264,\"adx\":16.810522888318218,\"bias\":\"BULLISH\",\"score\":82,\"hot\":true,\"dRS\":0.5728217710800583,\"wRS\":-0.2149291225057257},\"Consumer Discretionary\":{\"etf\":\"XLY\",\"close\":117.28,\"change\":0.13661202185792057,\"weekChg\":2.544373524525659,\"adx\":11.483199703966362,\"bias\":\"BULLISH\",\"score\":45,\"hot\":false,\"dRS\":-0.6420654410300661,\"wRS\":0.105382591865407},\"Energy\":{\"etf\":\"XLE\",\"close\":53.11,\"change\":-0.8771929824561382,\"weekChg\":-1.3558692421991159,\"adx\":21.803660789259435,\"bias\":\"NEUTRAL\",\"score\":-9,\"hot\":false,\"dRS\":-1.6558704453441249,\"wRS\":-3.7948601748593678},\"Health Care\":{\"etf\":\"XLV\",\"close\":158.66,\"change\":-1.294015179793463,\"weekChg\":-1.047773481352131,\"adx\":20.380701209843295,\"bias\":\"BULLISH\",\"score\":33,\"hot\":false,\"dRS\":-2.0726926426814494,\"wRS\":-3.4867644140123835},\"Communication Services\":{\"etf\":\"XLC\",\"close\":107.13,\"change\":-0.6952169076751947,\"weekChg\":0.8947071011489816,\"adx\":30.292357622517795,\"bias\":\"BULLISH\",\"score\":42,\"hot\":false,\"dRS\":-1.4738943705631815,\"wRS\":-1.5442838315112706},\"Utilities\":{\"etf\":\"XLU\",\"close\":45.34,\"change\":-1.4776184267709684,\"weekChg\":-1.8614718614718602,\"adx\":16.00270729334001,\"bias\":\"NEUTRAL\",\"score\":7,\"hot\":false,\"dRS\":-2.256295889658955,\"wRS\":-4.3004627941321125},\"Materials\":{\"etf\":\"XLB\",\"close\":50.83,\"change\":0.3355704697986611,\"weekChg\":-1.4922480620155099,\"adx\":13.231954275306249,\"bias\":\"NEUTRAL\",\"score\":14,\"hot\":false,\"dRS\":-0.44310699308932555,\"wRS\":-3.9312389946757618},\"Real Estate\":{\"etf\":\"XLRE\",\"close\":44.03,\"change\":-1.9813000890471961,\"weekChg\":-2.6746242263483664,\"adx\":12.151087726625418,\"bias\":\"NEUTRAL\",\"score\":5,\"hot\":false,\"dRS\":-2.759977551935183,\"wRS\":-5.113615159008619},\"Consumer Staples\":{\"etf\":\"XLP\",\"close\":83.07,\"change\":-1.540832049306639,\"weekChg\":-1.936016999173652,\"adx\":12.40683725209539,\"bias\":\"NEUTRAL\",\"score\":-9,\"hot\":false,\"dRS\":-2.3195095121946254,\"wRS\":-4.375007931833904},\"Semiconductors\":{\"etf\":\"SMH\",\"close\":655.89,\"change\":3.78334757429032,\"weekChg\":7.23990778437239,\"adx\":15.59861329975862,\"bias\":\"BULLISH\",\"score\":92,\"hot\":true,\"dRS\":3.0046701114023335,\"wRS\":4.800916851712138},\"Biotechnology\":{\"etf\":\"IBB\",\"close\":190.19,\"change\":0.2107592602349996,\"weekChg\":1.5104611443210845,\"adx\":25.00787237048771,\"bias\":\"BULLISH\",\"score\":74,\"hot\":true,\"dRS\":-0.5679182026529871,\"wRS\":-0.9285297883391677},\"Retail\":{\"etf\":\"XRT\",\"close\":87.74,\"change\":-0.22742779167614605,\"weekChg\":-1.1045987376014472,\"adx\":15.37003014970356,\"bias\":\"BULLISH\",\"score\":44,\"hot\":false,\"dRS\":-1.0061052545641327,\"wRS\":-3.5435896702616994},\"Transportation\":{\"etf\":\"XTN\",\"close\":115.64,\"change\":-0.1726519337016599,\"weekChg\":-0.2501509531613959,\"adx\":24.853156052860367,\"bias\":\"BULLISH\",\"score\":61,\"hot\":false,\"dRS\":-0.9513293965896465,\"wRS\":-2.6891418858216483}},\"breakoutNames\":[]}"
+      },
+      {
+        "id": 18,
+        "date": "2026-07-01",
+        "slot": "09:31",
+        "captured_at": 1782912660000,
+        "data": "{\"capturedAt\":\"2026-07-01T13:30:00.617Z\",\"date\":\"2026-07-01\",\"indices\":{\"SPY\":{\"close\":746.77,\"change\":0.7786774628879867,\"weekChg\":2.438990932660252,\"sma5\":736.8599999999997,\"sma20\":742.2394999999995,\"sma50\":735.870799999999,\"sma200\":691.4253500000003,\"bbUpper\":760.6401407225798,\"bbLower\":723.8388592774191},\"QQQ\":{\"close\":736.4,\"change\":1.7014694508893955,\"weekChg\":4.229179641057577,\"sma5\":718.7999999999998,\"sma20\":723.734,\"sma50\":706.2165999999994,\"sma200\":633.6324,\"bbUpper\":753.8706384323174,\"bbLower\":693.5973615676827},\"IWM\":{\"close\":300.45,\"change\":0.49503294644946355,\"weekChg\":0.20678384417836929},\"DIA\":{\"close\":522.39,\"change\":0.13609875785923103},\"VIX\":{\"close\":16.78,\"change\":1.944106925880925,\"weekChg\":-8.804347826086943}},\"shortTerm\":{\"result\":\"BULLISH\",\"score\":4,\"signals\":[{\"name\":\"SPY Day\",\"value\":1},{\"name\":\"QQQ Day\",\"value\":1},{\"name\":\"IWM Day\",\"value\":1},{\"name\":\"VIX\",\"value\":-1},{\"name\":\"SPY Week\",\"value\":1},{\"name\":\"QQQ Week\",\"value\":1}]},\"midTerm\":{\"result\":\"UPTREND\",\"stageLabel\":\"UPTREND\",\"src\":\"SPY\",\"bull\":4,\"unk\":2,\"bb\":\"MID\",\"bbPct\":0.6231071262219945,\"signals\":[{\"name\":\"Close > SMA5\",\"value\":true},{\"name\":\"Close > SMA20\",\"value\":true},{\"name\":\"SMA5 > SMA20\",\"value\":false},{\"name\":\"SMA20 > SMA50\",\"value\":true},{\"name\":\"1H Close > 20H MA (proxy)\",\"value\":true},{\"name\":\"1H 5MA > 20H MA (proxy)\",\"value\":false}],\"_meta\":{\"sma5\":736.8599999999997,\"sma20\":742.2394999999995,\"sma50\":735.870799999999,\"sma200\":691.4253500000003,\"bbUpper\":760.6401407225798,\"bbLower\":723.8388592774191,\"bbPct\":0.6231071262219945,\"bb\":\"MID\",\"close\":746.77}},\"longTerm\":{\"result\":\"BULLISH\",\"label\":\"BULLISH\",\"src\":\"SPY\",\"dist\":8.004428822287126,\"above200\":true,\"goldenCross\":true},\"regime\":{\"slug\":\"STRONG_UP\",\"label\":\"Strong Uptrend\",\"icon\":\"🟢⬆️\",\"color\":\"#16a34a\",\"stance\":\"LONG\",\"guidance\":\"Strong bullish conditions. Favor long setups with momentum.\",\"confidence\":\"high\",\"aligned\":true},\"sectors\":{\"Technology\":{\"etf\":\"XLK\",\"close\":190.52,\"change\":2.7560541502615896,\"weekChg\":5.195737397161944,\"adx\":17.929071838836528,\"bias\":\"BULLISH\",\"score\":88,\"hot\":true,\"dRS\":1.977376687373603,\"wRS\":2.7567464645016915},\"Financial\":{\"etf\":\"XLF\",\"close\":53.61,\"change\":-0.20476545048399003,\"weekChg\":0.0746686578308739,\"adx\":25.734623381496913,\"bias\":\"BULLISH\",\"score\":72,\"hot\":true,\"dRS\":-0.9834429133719766,\"wRS\":-2.3643222748293784},\"Industrial\":{\"etf\":\"XLI\",\"close\":185.23,\"change\":1.351499233968045,\"weekChg\":2.2240618101545264,\"adx\":16.810522888318218,\"bias\":\"BULLISH\",\"score\":82,\"hot\":true,\"dRS\":0.5728217710800583,\"wRS\":-0.2149291225057257},\"Consumer Discretionary\":{\"etf\":\"XLY\",\"close\":117.28,\"change\":0.13661202185792057,\"weekChg\":2.544373524525659,\"adx\":11.483199703966362,\"bias\":\"BULLISH\",\"score\":45,\"hot\":false,\"dRS\":-0.6420654410300661,\"wRS\":0.105382591865407},\"Energy\":{\"etf\":\"XLE\",\"close\":53.11,\"change\":-0.8771929824561382,\"weekChg\":-1.3558692421991159,\"adx\":21.803660789259435,\"bias\":\"NEUTRAL\",\"score\":-9,\"hot\":false,\"dRS\":-1.6558704453441249,\"wRS\":-3.7948601748593678},\"Health Care\":{\"etf\":\"XLV\",\"close\":158.66,\"change\":-1.294015179793463,\"weekChg\":-1.047773481352131,\"adx\":20.380701209843295,\"bias\":\"BULLISH\",\"score\":33,\"hot\":false,\"dRS\":-2.0726926426814494,\"wRS\":-3.4867644140123835},\"Communication Services\":{\"etf\":\"XLC\",\"close\":107.13,\"change\":-0.6952169076751947,\"weekChg\":0.8947071011489816,\"adx\":30.292357622517795,\"bias\":\"BULLISH\",\"score\":42,\"hot\":false,\"dRS\":-1.4738943705631815,\"wRS\":-1.5442838315112706},\"Utilities\":{\"etf\":\"XLU\",\"close\":45.34,\"change\":-1.4776184267709684,\"weekChg\":-1.8614718614718602,\"adx\":16.00270729334001,\"bias\":\"NEUTRAL\",\"score\":7,\"hot\":false,\"dRS\":-2.256295889658955,\"wRS\":-4.3004627941321125},\"Materials\":{\"etf\":\"XLB\",\"close\":50.83,\"change\":0.3355704697986611,\"weekChg\":-1.4922480620155099,\"adx\":13.231954275306249,\"bias\":\"NEUTRAL\",\"score\":14,\"hot\":false,\"dRS\":-0.44310699308932555,\"wRS\":-3.9312389946757618},\"Real Estate\":{\"etf\":\"XLRE\",\"close\":44.03,\"change\":-1.9813000890471961,\"weekChg\":-2.6746242263483664,\"adx\":12.151087726625418,\"bias\":\"NEUTRAL\",\"score\":5,\"hot\":false,\"dRS\":-2.759977551935183,\"wRS\":-5.113615159008619},\"Consumer Staples\":{\"etf\":\"XLP\",\"close\":83.07,\"change\":-1.540832049306639,\"weekChg\":-1.936016999173652,\"adx\":12.40683725209539,\"bias\":\"NEUTRAL\",\"score\":-9,\"hot\":false,\"dRS\":-2.3195095121946254,\"wRS\":-4.375007931833904},\"Semiconductors\":{\"etf\":\"SMH\",\"close\":655.89,\"change\":3.78334757429032,\"weekChg\":7.23990778437239,\"adx\":15.59861329975862,\"bias\":\"BULLISH\",\"score\":92,\"hot\":true,\"dRS\":3.0046701114023335,\"wRS\":4.800916851712138},\"Biotechnology\":{\"etf\":\"IBB\",\"close\":190.19,\"change\":0.2107592602349996,\"weekChg\":1.5104611443210845,\"adx\":25.00787237048771,\"bias\":\"BULLISH\",\"score\":74,\"hot\":true,\"dRS\":-0.5679182026529871,\"wRS\":-0.9285297883391677},\"Retail\":{\"etf\":\"XRT\",\"close\":87.74,\"change\":-0.22742779167614605,\"weekChg\":-1.1045987376014472,\"adx\":15.37003014970356,\"bias\":\"BULLISH\",\"score\":44,\"hot\":false,\"dRS\":-1.0061052545641327,\"wRS\":-3.5435896702616994},\"Transportation\":{\"etf\":\"XTN\",\"close\":115.64,\"change\":-0.1726519337016599,\"weekChg\":-0.2501509531613959,\"adx\":24.853156052860367,\"bias\":\"BULLISH\",\"score\":61,\"hot\":false,\"dRS\":-0.9513293965896465,\"wRS\":-2.6891418858216483}},\"breakoutNames\":[]}"
+      },
+      {
+        "id": 19,
+        "date": "2026-07-01",
+        "slot": "09:36",
+        "captured_at": 1782912960010,
+        "data": "{\"capturedAt\":\"2026-07-01T13:35:56.524Z\",\"date\":\"2026-07-01\",\"indices\":{\"SPY\":{\"close\":746.77,\"change\":0.7786774628879867,\"weekChg\":2.438990932660252,\"sma5\":736.8599999999997,\"sma20\":742.2394999999995,\"sma50\":735.870799999999,\"sma200\":691.4253500000003,\"bbUpper\":760.6401407225798,\"bbLower\":723.8388592774191},\"QQQ\":{\"close\":736.4,\"change\":1.7014694508893955,\"weekChg\":4.229179641057577,\"sma5\":718.7999999999998,\"sma20\":723.734,\"sma50\":706.2165999999994,\"sma200\":633.6324,\"bbUpper\":753.8706384323174,\"bbLower\":693.5973615676827},\"IWM\":{\"close\":300.45,\"change\":0.49503294644946355,\"weekChg\":0.20678384417836929},\"DIA\":{\"close\":522.39,\"change\":0.13609875785923103},\"VIX\":{\"close\":17.3,\"change\":5.103280680437423,\"weekChg\":-5.978260869565206}},\"shortTerm\":{\"result\":\"BULLISH\",\"score\":3,\"signals\":[{\"name\":\"SPY Day\",\"value\":1},{\"name\":\"QQQ Day\",\"value\":1},{\"name\":\"IWM Day\",\"value\":1},{\"name\":\"VIX\",\"value\":-2},{\"name\":\"SPY Week\",\"value\":1},{\"name\":\"QQQ Week\",\"value\":1}]},\"midTerm\":{\"result\":\"UPTREND\",\"stageLabel\":\"UPTREND\",\"src\":\"SPY\",\"bull\":4,\"unk\":2,\"bb\":\"MID\",\"bbPct\":0.6231071262219945,\"signals\":[{\"name\":\"Close > SMA5\",\"value\":true},{\"name\":\"Close > SMA20\",\"value\":true},{\"name\":\"SMA5 > SMA20\",\"value\":false},{\"name\":\"SMA20 > SMA50\",\"value\":true},{\"name\":\"1H Close > 20H MA (proxy)\",\"value\":true},{\"name\":\"1H 5MA > 20H MA (proxy)\",\"value\":false}],\"_meta\":{\"sma5\":736.8599999999997,\"sma20\":742.2394999999995,\"sma50\":735.870799999999,\"sma200\":691.4253500000003,\"bbUpper\":760.6401407225798,\"bbLower\":723.8388592774191,\"bbPct\":0.6231071262219945,\"bb\":\"MID\",\"close\":746.77}},\"longTerm\":{\"result\":\"BULLISH\",\"label\":\"BULLISH\",\"src\":\"SPY\",\"dist\":8.004428822287126,\"above200\":true,\"goldenCross\":true},\"regime\":{\"slug\":\"STRONG_UP\",\"label\":\"Strong Uptrend\",\"icon\":\"🟢⬆️\",\"color\":\"#16a34a\",\"stance\":\"LONG\",\"guidance\":\"Strong bullish conditions. Favor long setups with momentum.\",\"confidence\":\"high\",\"aligned\":true},\"sectors\":{\"Technology\":{\"etf\":\"XLK\",\"close\":190.52,\"change\":2.7560541502615896,\"weekChg\":5.195737397161944,\"adx\":17.929071838836528,\"bias\":\"BULLISH\",\"score\":88,\"hot\":true,\"dRS\":1.977376687373603,\"wRS\":2.7567464645016915},\"Financial\":{\"etf\":\"XLF\",\"close\":53.61,\"change\":-0.20476545048399003,\"weekChg\":0.0746686578308739,\"adx\":25.734623381496913,\"bias\":\"BULLISH\",\"score\":72,\"hot\":true,\"dRS\":-0.9834429133719766,\"wRS\":-2.3643222748293784},\"Industrial\":{\"etf\":\"XLI\",\"close\":185.23,\"change\":1.351499233968045,\"weekChg\":2.2240618101545264,\"adx\":16.810522888318218,\"bias\":\"BULLISH\",\"score\":82,\"hot\":true,\"dRS\":0.5728217710800583,\"wRS\":-0.2149291225057257},\"Consumer Discretionary\":{\"etf\":\"XLY\",\"close\":117.28,\"change\":0.13661202185792057,\"weekChg\":2.544373524525659,\"adx\":11.483199703966362,\"bias\":\"BULLISH\",\"score\":45,\"hot\":false,\"dRS\":-0.6420654410300661,\"wRS\":0.105382591865407},\"Energy\":{\"etf\":\"XLE\",\"close\":53.11,\"change\":-0.8771929824561382,\"weekChg\":-1.3558692421991159,\"adx\":21.803660789259435,\"bias\":\"NEUTRAL\",\"score\":-9,\"hot\":false,\"dRS\":-1.6558704453441249,\"wRS\":-3.7948601748593678},\"Health Care\":{\"etf\":\"XLV\",\"close\":158.66,\"change\":-1.294015179793463,\"weekChg\":-1.047773481352131,\"adx\":20.380701209843295,\"bias\":\"BULLISH\",\"score\":33,\"hot\":false,\"dRS\":-2.0726926426814494,\"wRS\":-3.4867644140123835},\"Communication Services\":{\"etf\":\"XLC\",\"close\":107.13,\"change\":-0.6952169076751947,\"weekChg\":0.8947071011489816,\"adx\":30.292357622517795,\"bias\":\"BULLISH\",\"score\":42,\"hot\":false,\"dRS\":-1.4738943705631815,\"wRS\":-1.5442838315112706},\"Utilities\":{\"etf\":\"XLU\",\"close\":45.34,\"change\":-1.4776184267709684,\"weekChg\":-1.8614718614718602,\"adx\":16.00270729334001,\"bias\":\"NEUTRAL\",\"score\":7,\"hot\":false,\"dRS\":-2.256295889658955,\"wRS\":-4.3004627941321125},\"Materials\":{\"etf\":\"XLB\",\"close\":50.83,\"change\":0.3355704697986611,\"weekChg\":-1.4922480620155099,\"adx\":13.231954275306249,\"bias\":\"NEUTRAL\",\"score\":14,\"hot\":false,\"dRS\":-0.44310699308932555,\"wRS\":-3.9312389946757618},\"Real Estate\":{\"etf\":\"XLRE\",\"close\":44.03,\"change\":-1.9813000890471961,\"weekChg\":-2.6746242263483664,\"adx\":12.151087726625418,\"bias\":\"NEUTRAL\",\"score\":5,\"hot\":false,\"dRS\":-2.759977551935183,\"wRS\":-5.113615159008619},\"Consumer Staples\":{\"etf\":\"XLP\",\"close\":83.07,\"change\":-1.540832049306639,\"weekChg\":-1.936016999173652,\"adx\":12.40683725209539,\"bias\":\"NEUTRAL\",\"score\":-9,\"hot\":false,\"dRS\":-2.3195095121946254,\"wRS\":-4.375007931833904},\"Semiconductors\":{\"etf\":\"SMH\",\"close\":655.89,\"change\":3.78334757429032,\"weekChg\":7.23990778437239,\"adx\":15.59861329975862,\"bias\":\"BULLISH\",\"score\":92,\"hot\":true,\"dRS\":3.0046701114023335,\"wRS\":4.800916851712138},\"Biotechnology\":{\"etf\":\"IBB\",\"close\":190.19,\"change\":0.2107592602349996,\"weekChg\":1.5104611443210845,\"adx\":25.00787237048771,\"bias\":\"BULLISH\",\"score\":74,\"hot\":true,\"dRS\":-0.5679182026529871,\"wRS\":-0.9285297883391677},\"Retail\":{\"etf\":\"XRT\",\"close\":87.74,\"change\":-0.22742779167614605,\"weekChg\":-1.1045987376014472,\"adx\":15.37003014970356,\"bias\":\"BULLISH\",\"score\":44,\"hot\":false,\"dRS\":-1.0061052545641327,\"wRS\":-3.5435896702616994},\"Transportation\":{\"etf\":\"XTN\",\"close\":115.64,\"change\":-0.1726519337016599,\"weekChg\":-0.2501509531613959,\"adx\":24.853156052860367,\"bias\":\"BULLISH\",\"score\":61,\"hot\":false,\"dRS\":-0.9513293965896465,\"wRS\":-2.6891418858216483}},\"breakoutNames\":[]}"
+      },
+      {
+        "id": 20,
+        "date": "2026-07-01",
+        "slot": "09:41",
+        "captured_at": 1782913260005,
+        "data": "{\"capturedAt\":\"2026-07-01T13:40:01.659Z\",\"date\":\"2026-07-01\",\"indices\":{\"SPY\":{\"close\":746.77,\"change\":0.7786774628879867,\"weekChg\":2.438990932660252,\"sma5\":736.8599999999997,\"sma20\":742.2394999999995,\"sma50\":735.870799999999,\"sma200\":691.4253500000003,\"bbUpper\":760.6401407225798,\"bbLower\":723.8388592774191},\"QQQ\":{\"close\":736.4,\"change\":1.7014694508893955,\"weekChg\":4.229179641057577,\"sma5\":718.7999999999998,\"sma20\":723.734,\"sma50\":706.2165999999994,\"sma200\":633.6324,\"bbUpper\":753.8706384323174,\"bbLower\":693.5973615676827},\"IWM\":{\"close\":300.45,\"change\":0.49503294644946355,\"weekChg\":0.20678384417836929},\"DIA\":{\"close\":522.39,\"change\":0.13609875785923103},\"VIX\":{\"close\":17.11,\"change\":3.948967193195617,\"weekChg\":-7.010869565217387}},\"shortTerm\":{\"result\":\"BULLISH\",\"score\":3,\"signals\":[{\"name\":\"SPY Day\",\"value\":1},{\"name\":\"QQQ Day\",\"value\":1},{\"name\":\"IWM Day\",\"value\":1},{\"name\":\"VIX\",\"value\":-2},{\"name\":\"SPY Week\",\"value\":1},{\"name\":\"QQQ Week\",\"value\":1}]},\"midTerm\":{\"result\":\"UPTREND\",\"stageLabel\":\"UPTREND\",\"src\":\"SPY\",\"bull\":4,\"unk\":2,\"bb\":\"MID\",\"bbPct\":0.6231071262219945,\"signals\":[{\"name\":\"Close > SMA5\",\"value\":true},{\"name\":\"Close > SMA20\",\"value\":true},{\"name\":\"SMA5 > SMA20\",\"value\":false},{\"name\":\"SMA20 > SMA50\",\"value\":true},{\"name\":\"1H Close > 20H MA (proxy)\",\"value\":true},{\"name\":\"1H 5MA > 20H MA (proxy)\",\"value\":false}],\"_meta\":{\"sma5\":736.8599999999997,\"sma20\":742.2394999999995,\"sma50\":735.870799999999,\"sma200\":691.4253500000003,\"bbUpper\":760.6401407225798,\"bbLower\":723.8388592774191,\"bbPct\":0.6231071262219945,\"bb\":\"MID\",\"close\":746.77}},\"longTerm\":{\"result\":\"BULLISH\",\"label\":\"BULLISH\",\"src\":\"SPY\",\"dist\":8.004428822287126,\"above200\":true,\"goldenCross\":true},\"regime\":{\"slug\":\"STRONG_UP\",\"label\":\"Strong Uptrend\",\"icon\":\"🟢⬆️\",\"color\":\"#16a34a\",\"stance\":\"LONG\",\"guidance\":\"Strong bullish conditions. Favor long setups with momentum.\",\"confidence\":\"high\",\"aligned\":true},\"sectors\":{\"Technology\":{\"etf\":\"XLK\",\"close\":190.52,\"change\":2.7560541502615896,\"weekChg\":5.195737397161944,\"adx\":17.929071838836528,\"bias\":\"BULLISH\",\"score\":88,\"hot\":true,\"dRS\":1.977376687373603,\"wRS\":2.7567464645016915},\"Financial\":{\"etf\":\"XLF\",\"close\":53.61,\"change\":-0.20476545048399003,\"weekChg\":0.0746686578308739,\"adx\":25.734623381496913,\"bias\":\"BULLISH\",\"score\":72,\"hot\":true,\"dRS\":-0.9834429133719766,\"wRS\":-2.3643222748293784},\"Industrial\":{\"etf\":\"XLI\",\"close\":185.23,\"change\":1.351499233968045,\"weekChg\":2.2240618101545264,\"adx\":16.810522888318218,\"bias\":\"BULLISH\",\"score\":82,\"hot\":true,\"dRS\":0.5728217710800583,\"wRS\":-0.2149291225057257},\"Consumer Discretionary\":{\"etf\":\"XLY\",\"close\":117.28,\"change\":0.13661202185792057,\"weekChg\":2.544373524525659,\"adx\":11.483199703966362,\"bias\":\"BULLISH\",\"score\":45,\"hot\":false,\"dRS\":-0.6420654410300661,\"wRS\":0.105382591865407},\"Energy\":{\"etf\":\"XLE\",\"close\":53.11,\"change\":-0.8771929824561382,\"weekChg\":-1.3558692421991159,\"adx\":21.803660789259435,\"bias\":\"NEUTRAL\",\"score\":-9,\"hot\":false,\"dRS\":-1.6558704453441249,\"wRS\":-3.7948601748593678},\"Health Care\":{\"etf\":\"XLV\",\"close\":158.66,\"change\":-1.294015179793463,\"weekChg\":-1.047773481352131,\"adx\":20.380701209843295,\"bias\":\"BULLISH\",\"score\":33,\"hot\":false,\"dRS\":-2.0726926426814494,\"wRS\":-3.4867644140123835},\"Communication Services\":{\"etf\":\"XLC\",\"close\":107.13,\"change\":-0.6952169076751947,\"weekChg\":0.8947071011489816,\"adx\":30.292357622517795,\"bias\":\"BULLISH\",\"score\":42,\"hot\":false,\"dRS\":-1.4738943705631815,\"wRS\":-1.5442838315112706},\"Utilities\":{\"etf\":\"XLU\",\"close\":45.34,\"change\":-1.4776184267709684,\"weekChg\":-1.8614718614718602,\"adx\":16.00270729334001,\"bias\":\"NEUTRAL\",\"score\":7,\"hot\":false,\"dRS\":-2.256295889658955,\"wRS\":-4.3004627941321125},\"Materials\":{\"etf\":\"XLB\",\"close\":50.83,\"change\":0.3355704697986611,\"weekChg\":-1.4922480620155099,\"adx\":13.231954275306249,\"bias\":\"NEUTRAL\",\"score\":14,\"hot\":false,\"dRS\":-0.44310699308932555,\"wRS\":-3.9312389946757618},\"Real Estate\":{\"etf\":\"XLRE\",\"close\":44.03,\"change\":-1.9813000890471961,\"weekChg\":-2.6746242263483664,\"adx\":12.151087726625418,\"bias\":\"NEUTRAL\",\"score\":5,\"hot\":false,\"dRS\":-2.759977551935183,\"wRS\":-5.113615159008619},\"Consumer Staples\":{\"etf\":\"XLP\",\"close\":83.07,\"change\":-1.540832049306639,\"weekChg\":-1.936016999173652,\"adx\":12.40683725209539,\"bias\":\"NEUTRAL\",\"score\":-9,\"hot\":false,\"dRS\":-2.3195095121946254,\"wRS\":-4.375007931833904},\"Semiconductors\":{\"etf\":\"SMH\",\"close\":655.89,\"change\":3.78334757429032,\"weekChg\":7.23990778437239,\"adx\":15.59861329975862,\"bias\":\"BULLISH\",\"score\":92,\"hot\":true,\"dRS\":3.0046701114023335,\"wRS\":4.800916851712138},\"Biotechnology\":{\"etf\":\"IBB\",\"close\":190.19,\"change\":0.2107592602349996,\"weekChg\":1.5104611443210845,\"adx\":25.00787237048771,\"bias\":\"BULLISH\",\"score\":74,\"hot\":true,\"dRS\":-0.5679182026529871,\"wRS\":-0.9285297883391677},\"Retail\":{\"etf\":\"XRT\",\"close\":87.74,\"change\":-0.22742779167614605,\"weekChg\":-1.1045987376014472,\"adx\":15.37003014970356,\"bias\":\"BULLISH\",\"score\":44,\"hot\":false,\"dRS\":-1.0061052545641327,\"wRS\":-3.5435896702616994},\"Transportation\":{\"etf\":\"XTN\",\"close\":115.64,\"change\":-0.1726519337016599,\"weekChg\":-0.2501509531613959,\"adx\":24.853156052860367,\"bias\":\"BULLISH\",\"score\":61,\"hot\":false,\"dRS\":-0.9513293965896465,\"wRS\":-2.6891418858216483}},\"breakoutNames\":[]}"
+      },
+      {
+        "id": 21,
+        "date": "2026-07-01",
+        "slot": "09:46",
+        "captured_at": 1782913560004,
+        "data": "{\"capturedAt\":\"2026-07-01T13:45:00.567Z\",\"date\":\"2026-07-01\",\"indices\":{\"SPY\":{\"close\":746.77,\"change\":0.7786774628879867,\"weekChg\":2.438990932660252,\"sma5\":736.8599999999997,\"sma20\":742.2394999999995,\"sma50\":735.870799999999,\"sma200\":691.4253500000003,\"bbUpper\":760.6401407225798,\"bbLower\":723.8388592774191},\"QQQ\":{\"close\":736.4,\"change\":1.7014694508893955,\"weekChg\":4.229179641057577,\"sma5\":718.7999999999998,\"sma20\":723.734,\"sma50\":706.2165999999994,\"sma200\":633.6324,\"bbUpper\":753.8706384323174,\"bbLower\":693.5973615676827},\"IWM\":{\"close\":300.45,\"change\":0.49503294644946355,\"weekChg\":0.20678384417836929},\"DIA\":{\"close\":522.39,\"change\":0.13609875785923103},\"VIX\":{\"close\":17.05,\"change\":3.5844471445929518,\"weekChg\":-7.33695652173912}},\"shortTerm\":{\"result\":\"BULLISH\",\"score\":3,\"signals\":[{\"name\":\"SPY Day\",\"value\":1},{\"name\":\"QQQ Day\",\"value\":1},{\"name\":\"IWM Day\",\"value\":1},{\"name\":\"VIX\",\"value\":-2},{\"name\":\"SPY Week\",\"value\":1},{\"name\":\"QQQ Week\",\"value\":1}]},\"midTerm\":{\"result\":\"UPTREND\",\"stageLabel\":\"UPTREND\",\"src\":\"SPY\",\"bull\":4,\"unk\":2,\"bb\":\"MID\",\"bbPct\":0.6231071262219945,\"signals\":[{\"name\":\"Close > SMA5\",\"value\":true},{\"name\":\"Close > SMA20\",\"value\":true},{\"name\":\"SMA5 > SMA20\",\"value\":false},{\"name\":\"SMA20 > SMA50\",\"value\":true},{\"name\":\"1H Close > 20H MA (proxy)\",\"value\":true},{\"name\":\"1H 5MA > 20H MA (proxy)\",\"value\":false}],\"_meta\":{\"sma5\":736.8599999999997,\"sma20\":742.2394999999995,\"sma50\":735.870799999999,\"sma200\":691.4253500000003,\"bbUpper\":760.6401407225798,\"bbLower\":723.8388592774191,\"bbPct\":0.6231071262219945,\"bb\":\"MID\",\"close\":746.77}},\"longTerm\":{\"result\":\"BULLISH\",\"label\":\"BULLISH\",\"src\":\"SPY\",\"dist\":8.004428822287126,\"above200\":true,\"goldenCross\":true},\"regime\":{\"slug\":\"STRONG_UP\",\"label\":\"Strong Uptrend\",\"icon\":\"🟢⬆️\",\"color\":\"#16a34a\",\"stance\":\"LONG\",\"guidance\":\"Strong bullish conditions. Favor long setups with momentum.\",\"confidence\":\"high\",\"aligned\":true},\"sectors\":{\"Technology\":{\"etf\":\"XLK\",\"close\":190.52,\"change\":2.7560541502615896,\"weekChg\":5.195737397161944,\"adx\":17.929071838836528,\"bias\":\"BULLISH\",\"score\":88,\"hot\":true,\"dRS\":1.977376687373603,\"wRS\":2.7567464645016915},\"Financial\":{\"etf\":\"XLF\",\"close\":53.61,\"change\":-0.20476545048399003,\"weekChg\":0.0746686578308739,\"adx\":25.734623381496913,\"bias\":\"BULLISH\",\"score\":72,\"hot\":true,\"dRS\":-0.9834429133719766,\"wRS\":-2.3643222748293784},\"Industrial\":{\"etf\":\"XLI\",\"close\":185.23,\"change\":1.351499233968045,\"weekChg\":2.2240618101545264,\"adx\":16.810522888318218,\"bias\":\"BULLISH\",\"score\":82,\"hot\":true,\"dRS\":0.5728217710800583,\"wRS\":-0.2149291225057257},\"Consumer Discretionary\":{\"etf\":\"XLY\",\"close\":117.28,\"change\":0.13661202185792057,\"weekChg\":2.544373524525659,\"adx\":11.483199703966362,\"bias\":\"BULLISH\",\"score\":45,\"hot\":false,\"dRS\":-0.6420654410300661,\"wRS\":0.105382591865407},\"Energy\":{\"etf\":\"XLE\",\"close\":53.11,\"change\":-0.8771929824561382,\"weekChg\":-1.3558692421991159,\"adx\":21.803660789259435,\"bias\":\"NEUTRAL\",\"score\":-9,\"hot\":false,\"dRS\":-1.6558704453441249,\"wRS\":-3.7948601748593678},\"Health Care\":{\"etf\":\"XLV\",\"close\":158.66,\"change\":-1.294015179793463,\"weekChg\":-1.047773481352131,\"adx\":20.380701209843295,\"bias\":\"BULLISH\",\"score\":33,\"hot\":false,\"dRS\":-2.0726926426814494,\"wRS\":-3.4867644140123835},\"Communication Services\":{\"etf\":\"XLC\",\"close\":107.13,\"change\":-0.6952169076751947,\"weekChg\":0.8947071011489816,\"adx\":30.292357622517795,\"bias\":\"BULLISH\",\"score\":42,\"hot\":false,\"dRS\":-1.4738943705631815,\"wRS\":-1.5442838315112706},\"Utilities\":{\"etf\":\"XLU\",\"close\":45.34,\"change\":-1.4776184267709684,\"weekChg\":-1.8614718614718602,\"adx\":16.00270729334001,\"bias\":\"NEUTRAL\",\"score\":7,\"hot\":false,\"dRS\":-2.256295889658955,\"wRS\":-4.3004627941321125},\"Materials\":{\"etf\":\"XLB\",\"close\":50.83,\"change\":0.3355704697986611,\"weekChg\":-1.4922480620155099,\"adx\":13.231954275306249,\"bias\":\"NEUTRAL\",\"score\":14,\"hot\":false,\"dRS\":-0.44310699308932555,\"wRS\":-3.9312389946757618},\"Real Estate\":{\"etf\":\"XLRE\",\"close\":44.03,\"change\":-1.9813000890471961,\"weekChg\":-2.6746242263483664,\"adx\":12.151087726625418,\"bias\":\"NEUTRAL\",\"score\":5,\"hot\":false,\"dRS\":-2.759977551935183,\"wRS\":-5.113615159008619},\"Consumer Staples\":{\"etf\":\"XLP\",\"close\":83.07,\"change\":-1.540832049306639,\"weekChg\":-1.936016999173652,\"adx\":12.40683725209539,\"bias\":\"NEUTRAL\",\"score\":-9,\"hot\":false,\"dRS\":-2.3195095121946254,\"wRS\":-4.375007931833904},\"Semiconductors\":{\"etf\":\"SMH\",\"close\":655.89,\"change\":3.78334757429032,\"weekChg\":7.23990778437239,\"adx\":15.59861329975862,\"bias\":\"BULLISH\",\"score\":92,\"hot\":true,\"dRS\":3.0046701114023335,\"wRS\":4.800916851712138},\"Biotechnology\":{\"etf\":\"IBB\",\"close\":190.19,\"change\":0.2107592602349996,\"weekChg\":1.5104611443210845,\"adx\":25.00787237048771,\"bias\":\"BULLISH\",\"score\":74,\"hot\":true,\"dRS\":-0.5679182026529871,\"wRS\":-0.9285297883391677},\"Retail\":{\"etf\":\"XRT\",\"close\":87.74,\"change\":-0.22742779167614605,\"weekChg\":-1.1045987376014472,\"adx\":15.37003014970356,\"bias\":\"BULLISH\",\"score\":44,\"hot\":false,\"dRS\":-1.0061052545641327,\"wRS\":-3.5435896702616994},\"Transportation\":{\"etf\":\"XTN\",\"close\":115.64,\"change\":-0.1726519337016599,\"weekChg\":-0.2501509531613959,\"adx\":24.853156052860367,\"bias\":\"BULLISH\",\"score\":61,\"hot\":false,\"dRS\":-0.9513293965896465,\"wRS\":-2.6891418858216483}},\"breakoutNames\":[]}"
+      },
+      {
+        "id": 22,
+        "date": "2026-07-01",
+        "slot": "09:51",
+        "captured_at": 1782913860007,
+        "data": "{\"capturedAt\":\"2026-07-01T13:50:00.976Z\",\"date\":\"2026-07-01\",\"indices\":{\"SPY\":{\"close\":743.02,\"change\":-0.5021626471336557,\"weekChg\":1.9245805840958,\"sma5\":738.8159999999996,\"sma20\":741.4119999999996,\"sma50\":736.556799999999,\"sma200\":691.8534000000004,\"bbUpper\":758.0221518355783,\"bbLower\":724.8018481644209},\"QQQ\":{\"close\":726.44,\"change\":-1.352525801194992,\"weekChg\":2.8194530940383955,\"sma5\":721.9639999999998,\"sma20\":722.748,\"sma50\":707.8095999999995,\"sma200\":634.3313,\"bbUpper\":751.1241798697463,\"bbLower\":694.3718201302538},\"IWM\":{\"close\":299.7,\"change\":-0.24962556165751376,\"weekChg\":-0.04335790281159172},\"DIA\":{\"close\":520.225,\"change\":-0.4144413177893841},\"VIX\":{\"close\":16.85,\"change\":2.369380315917379,\"weekChg\":-8.423913043478246}},\"shortTerm\":{\"result\":\"NEUTRAL\",\"score\":-1,\"signals\":[{\"name\":\"SPY Day\",\"value\":-1},{\"name\":\"QQQ Day\",\"value\":-1},{\"name\":\"IWM Day\",\"value\":0},{\"name\":\"VIX\",\"value\":-1},{\"name\":\"SPY Week\",\"value\":1},{\"name\":\"QQQ Week\",\"value\":1}]},\"midTerm\":{\"result\":\"UPTREND\",\"stageLabel\":\"UPTREND\",\"src\":\"SPY\",\"bull\":4,\"unk\":2,\"bb\":\"MID\",\"bbPct\":0.5484041330843253,\"signals\":[{\"name\":\"Close > SMA5\",\"value\":true},{\"name\":\"Close > SMA20\",\"value\":true},{\"name\":\"SMA5 > SMA20\",\"value\":false},{\"name\":\"SMA20 > SMA50\",\"value\":true},{\"name\":\"1H Close > 20H MA (proxy)\",\"value\":true},{\"name\":\"1H 5MA > 20H MA (proxy)\",\"value\":false}],\"_meta\":{\"sma5\":738.8159999999996,\"sma20\":741.4119999999996,\"sma50\":736.556799999999,\"sma200\":691.8534000000004,\"bbUpper\":758.0221518355783,\"bbLower\":724.8018481644209,\"bbPct\":0.5484041330843253,\"bb\":\"MID\",\"close\":743.02}},\"longTerm\":{\"result\":\"BULLISH\",\"label\":\"BULLISH\",\"src\":\"SPY\",\"dist\":7.395584093393127,\"above200\":true,\"goldenCross\":true},\"regime\":{\"slug\":\"STRONG_UP\",\"label\":\"Strong Uptrend\",\"icon\":\"🟢⬆️\",\"color\":\"#16a34a\",\"stance\":\"LONG\",\"guidance\":\"Strong bullish conditions. Favor long setups with momentum.\",\"confidence\":\"high\",\"aligned\":true},\"sectors\":{\"Technology\":{\"etf\":\"XLK\",\"close\":186.13,\"change\":-2.304220029393247,\"weekChg\":2.771796145988615,\"adx\":17.264703865233493,\"bias\":\"BULLISH\",\"score\":41,\"hot\":true,\"dRS\":-1.8020573822595911,\"wRS\":0.8472155618928152},\"Financial\":{\"etf\":\"XLF\",\"close\":53.85,\"change\":0.44767767207610887,\"weekChg\":0.5226806048161305,\"adx\":25.9585880194056,\"bias\":\"BULLISH\",\"score\":100,\"hot\":true,\"dRS\":0.9498403192097645,\"wRS\":-1.4018999792796694},\"Industrial\":{\"etf\":\"XLI\",\"close\":183.645,\"change\":-0.8556929223127893,\"weekChg\":1.349337748344383,\"adx\":17.884095051793228,\"bias\":\"BULLISH\",\"score\":47,\"hot\":true,\"dRS\":-0.3535302751791336,\"wRS\":-0.575242835751417},\"Consumer Discretionary\":{\"etf\":\"XLY\",\"close\":117.56,\"change\":0.23874488403820013,\"weekChg\":2.789192970184487,\"adx\":11.363804906124466,\"bias\":\"BULLISH\",\"score\":51,\"hot\":false,\"dRS\":0.7409075311718558,\"wRS\":0.864612386088687},\"Energy\":{\"etf\":\"XLE\",\"close\":53.25,\"change\":0.2636038410845426,\"weekChg\":-1.095839524517094,\"adx\":22.745137649342997,\"bias\":\"BULLISH\",\"score\":48,\"hot\":false,\"dRS\":0.7657664882181983,\"wRS\":-3.020420108612894},\"Health Care\":{\"etf\":\"XLV\",\"close\":158.98,\"change\":0.20168914660279413,\"weekChg\":-0.8481975801422064,\"adx\":21.040125021184082,\"bias\":\"BULLISH\",\"score\":70,\"hot\":false,\"dRS\":0.7038517937364498,\"wRS\":-2.772778164238006},\"Communication Services\":{\"etf\":\"XLC\",\"close\":109.15,\"change\":1.8855596004854012,\"weekChg\":2.797136937276322,\"adx\":29.610138160700235,\"bias\":\"BULLISH\",\"score\":94,\"hot\":true,\"dRS\":2.387722247619057,\"wRS\":0.872556353180522},\"Utilities\":{\"etf\":\"XLU\",\"close\":45.22,\"change\":-0.2646669607410775,\"weekChg\":-2.1212121212121295,\"adx\":15.191742832045293,\"bias\":\"BULLISH\",\"score\":33,\"hot\":false,\"dRS\":0.23749568639257818,\"wRS\":-4.04579270530793},\"Materials\":{\"etf\":\"XLB\",\"close\":50.66,\"change\":-0.33444816053512044,\"weekChg\":-1.8217054263565986,\"adx\":13.72785939338106,\"bias\":\"BULLISH\",\"score\":33,\"hot\":false,\"dRS\":0.16771448659853522,\"wRS\":-3.7462860104523985},\"Real Estate\":{\"etf\":\"XLRE\",\"close\":44.2,\"change\":0.38610038610039,\"weekChg\":-2.2988505747126418,\"adx\":12.265626908729441,\"bias\":\"BULLISH\",\"score\":52,\"hot\":false,\"dRS\":0.8882630332340457,\"wRS\":-4.223431158808442},\"Consumer Staples\":{\"etf\":\"XLP\",\"close\":83,\"change\":-0.08426628144937183,\"weekChg\":-2.0186518710895927,\"adx\":11.984481351698287,\"bias\":\"BULLISH\",\"score\":34,\"hot\":false,\"dRS\":0.41789636568428384,\"wRS\":-3.9432324551853926},\"Semiconductors\":{\"etf\":\"SMH\",\"close\":632.04,\"change\":-3.6362804738599492,\"weekChg\":3.3403639574238406,\"adx\":14.703340730675112,\"bias\":\"BULLISH\",\"score\":35,\"hot\":true,\"dRS\":-3.1341178267262935,\"wRS\":1.4157833733280407},\"Biotechnology\":{\"etf\":\"IBB\",\"close\":190.36,\"change\":0.08938429991062408,\"weekChg\":1.601195559350982,\"adx\":27.48234926641755,\"bias\":\"BULLISH\",\"score\":100,\"hot\":true,\"dRS\":0.5915469470442798,\"wRS\":-0.323385024744818},\"Retail\":{\"etf\":\"XRT\",\"close\":87.38,\"change\":-0.4103031684522447,\"weekChg\":-1.5667267808836798,\"adx\":14.997956377894422,\"bias\":\"BULLISH\",\"score\":48,\"hot\":false,\"dRS\":0.09185947868141098,\"wRS\":-3.4913073649794795},\"Transportation\":{\"etf\":\"XTN\",\"close\":116.12,\"change\":0.41508128675199235,\"weekChg\":0.16389200379539182,\"adx\":24.594778092815865,\"bias\":\"BULLISH\",\"score\":100,\"hot\":true,\"dRS\":0.917243933885648,\"wRS\":-1.7606885803004082}},\"breakoutNames\":[]}"
+      },
+      {
+        "id": 23,
+        "date": "2026-07-01",
+        "slot": "09:56",
+        "captured_at": 1782914160004,
+        "data": "{\"capturedAt\":\"2026-07-01T13:55:00.429Z\",\"date\":\"2026-07-01\",\"indices\":{\"SPY\":{\"close\":743.18,\"change\":-0.48073704085595725,\"weekChg\":1.946528758967879,\"sma5\":738.8479999999996,\"sma20\":741.4199999999995,\"sma50\":736.559999999999,\"sma200\":691.8542000000002,\"bbUpper\":758.0333957998095,\"bbLower\":724.8066042001896},\"QQQ\":{\"close\":726.28,\"change\":-1.3742531233025537,\"weekChg\":2.7968068844477143,\"sma5\":721.9319999999998,\"sma20\":722.74,\"sma50\":707.8063999999996,\"sma200\":634.3305,\"bbUpper\":751.1121017903247,\"bbLower\":694.3678982096753},\"IWM\":{\"close\":299.24,\"change\":-0.4027292394741154,\"weekChg\":-0.196778174298761},\"DIA\":{\"close\":520.44,\"change\":-0.37328432780105514},\"VIX\":{\"close\":16.68,\"change\":1.3365735115431279,\"weekChg\":-9.347826086956516}},\"shortTerm\":{\"result\":\"NEUTRAL\",\"score\":-2,\"signals\":[{\"name\":\"SPY Day\",\"value\":-1},{\"name\":\"QQQ Day\",\"value\":-1},{\"name\":\"IWM Day\",\"value\":-1},{\"name\":\"VIX\",\"value\":-1},{\"name\":\"SPY Week\",\"value\":1},{\"name\":\"QQQ Week\",\"value\":1}]},\"midTerm\":{\"result\":\"UPTREND\",\"stageLabel\":\"UPTREND\",\"src\":\"SPY\",\"bull\":4,\"unk\":2,\"bb\":\"MID\",\"bbPct\":0.5529693032420434,\"signals\":[{\"name\":\"Close > SMA5\",\"value\":true},{\"name\":\"Close > SMA20\",\"value\":true},{\"name\":\"SMA5 > SMA20\",\"value\":false},{\"name\":\"SMA20 > SMA50\",\"value\":true},{\"name\":\"1H Close > 20H MA (proxy)\",\"value\":true},{\"name\":\"1H 5MA > 20H MA (proxy)\",\"value\":false}],\"_meta\":{\"sma5\":738.8479999999996,\"sma20\":741.4199999999995,\"sma50\":736.559999999999,\"sma200\":691.8542000000002,\"bbUpper\":758.0333957998095,\"bbLower\":724.8066042001896,\"bbPct\":0.5529693032420434,\"bb\":\"MID\",\"close\":743.18}},\"longTerm\":{\"result\":\"BULLISH\",\"label\":\"BULLISH\",\"src\":\"SPY\",\"dist\":7.418586170323128,\"above200\":true,\"goldenCross\":true},\"regime\":{\"slug\":\"STRONG_UP\",\"label\":\"Strong Uptrend\",\"icon\":\"🟢⬆️\",\"color\":\"#16a34a\",\"stance\":\"LONG\",\"guidance\":\"Strong bullish conditions. Favor long setups with momentum.\",\"confidence\":\"high\",\"aligned\":true},\"sectors\":{\"Technology\":{\"etf\":\"XLK\",\"close\":185.92,\"change\":-2.414444677724135,\"weekChg\":2.655844514383509,\"adx\":17.264703865233493,\"bias\":\"NEUTRAL\",\"score\":24,\"hot\":true,\"dRS\":-1.9337076368681778,\"wRS\":0.7093157554156302},\"Financial\":{\"etf\":\"XLF\",\"close\":53.92,\"change\":0.5782503264316402,\"weekChg\":0.6533507560201631,\"adx\":25.965312463335756,\"bias\":\"BULLISH\",\"score\":100,\"hot\":true,\"dRS\":1.0589873672875973,\"wRS\":-1.293178002947716},\"Industrial\":{\"etf\":\"XLI\",\"close\":183.04,\"change\":-1.1823138800410289,\"weekChg\":1.0154525386313487,\"adx\":17.884095051793228,\"bias\":\"BULLISH\",\"score\":45,\"hot\":true,\"dRS\":-0.7015768391850716,\"wRS\":-0.9310762203365304},\"Consumer Discretionary\":{\"etf\":\"XLY\",\"close\":117.3,\"change\":0.01705320600272512,\"weekChg\":2.561860627787001,\"adx\":11.363804906124466,\"bias\":\"BULLISH\",\"score\":50,\"hot\":false,\"dRS\":0.4977902468586824,\"wRS\":0.6153318688191218},\"Energy\":{\"etf\":\"XLE\",\"close\":53.4,\"change\":0.5460365279608345,\"weekChg\":-0.8172362555720742,\"adx\":22.745137649342997,\"bias\":\"BULLISH\",\"score\":50,\"hot\":false,\"dRS\":1.0267735688167918,\"wRS\":-2.7637650145399535},\"Health Care\":{\"etf\":\"XLV\",\"close\":159.07,\"change\":0.25841421908483336,\"weekChg\":-0.7920668579269118,\"adx\":21.040125021184082,\"bias\":\"BULLISH\",\"score\":70,\"hot\":true,\"dRS\":0.7391512599407906,\"wRS\":-2.738595616894791},\"Communication Services\":{\"etf\":\"XLC\",\"close\":109.61,\"change\":2.3149444600018705,\"weekChg\":3.2303635336221435,\"adx\":29.281235812597682,\"bias\":\"BULLISH\",\"score\":96,\"hot\":true,\"dRS\":2.7956815008578277,\"wRS\":1.2838347746542644},\"Utilities\":{\"etf\":\"XLU\",\"close\":45.22,\"change\":-0.2646669607410775,\"weekChg\":-2.1212121212121295,\"adx\":15.02084633298776,\"bias\":\"BULLISH\",\"score\":33,\"hot\":false,\"dRS\":0.21607008011487977,\"wRS\":-4.067740880180009},\"Materials\":{\"etf\":\"XLB\",\"close\":50.545,\"change\":-0.5606925044265131,\"weekChg\":-2.0445736434108523,\"adx\":13.89772540188681,\"bias\":\"NEUTRAL\",\"score\":16,\"hot\":false,\"dRS\":-0.07995546357055583,\"wRS\":-3.9911024023787314},\"Real Estate\":{\"etf\":\"XLRE\",\"close\":44.25,\"change\":0.49965932318873235,\"weekChg\":-2.1883289124668477,\"adx\":12.265626908729441,\"bias\":\"BULLISH\",\"score\":52,\"hot\":false,\"dRS\":0.9803963640446895,\"wRS\":-4.134857671434727},\"Consumer Staples\":{\"etf\":\"XLP\",\"close\":83.02,\"change\":-0.06019020103526804,\"weekChg\":-1.9950419076850405,\"adx\":12.131743276989555,\"bias\":\"BULLISH\",\"score\":34,\"hot\":false,\"dRS\":0.4205468398206892,\"wRS\":-3.9415706666529196},\"Semiconductors\":{\"etf\":\"SMH\",\"close\":628.785,\"change\":-4.1325527146320296,\"weekChg\":2.808162064060423,\"adx\":14.592919425479248,\"bias\":\"BULLISH\",\"score\":33,\"hot\":true,\"dRS\":-3.6518156737760723,\"wRS\":0.861633305092544},\"Biotechnology\":{\"etf\":\"IBB\",\"close\":189.99,\"change\":-0.10515799989483601,\"weekChg\":1.4037147736976916,\"adx\":27.48234926641755,\"bias\":\"BULLISH\",\"score\":100,\"hot\":true,\"dRS\":0.37557904096112127,\"wRS\":-0.5428139852701874},\"Retail\":{\"etf\":\"XRT\",\"close\":87.38,\"change\":-0.4103031684522447,\"weekChg\":-1.5103697024346296,\"adx\":14.997956377894422,\"bias\":\"BULLISH\",\"score\":48,\"hot\":false,\"dRS\":0.07043387240371257,\"wRS\":-3.456898461402509},\"Transportation\":{\"etf\":\"XTN\",\"close\":115.75,\"change\":0.09512279488066364,\"weekChg\":-0.15526610885879996,\"adx\":24.594778092815865,\"bias\":\"BULLISH\",\"score\":69,\"hot\":true,\"dRS\":0.5758598357366209,\"wRS\":-2.101794867826679}},\"breakoutNames\":[]}"
+      },
+      {
+        "id": 24,
+        "date": "2026-07-01",
+        "slot": "10:01",
+        "captured_at": 1782914460001,
+        "data": "{\"capturedAt\":\"2026-07-01T14:00:00.408Z\",\"date\":\"2026-07-01\",\"indices\":{\"SPY\":{\"close\":743.3771,\"change\":-0.4543433721226001,\"weekChg\":1.973566166888439,\"sma5\":738.8874199999997,\"sma20\":741.4298549999995,\"sma50\":736.5639419999991,\"sma200\":691.8551855000004,\"bbUpper\":758.0476484636074,\"bbLower\":724.8120615363916},\"QQQ\":{\"close\":727.27,\"change\":-1.2398153177620852,\"weekChg\":2.9369303062899847,\"sma5\":722.1299999999999,\"sma20\":722.7895000000001,\"sma50\":707.8261999999995,\"sma200\":634.33545,\"bbUpper\":751.1895742780688,\"bbLower\":694.3894257219314},\"IWM\":{\"close\":299.59,\"change\":-0.2862373107006203,\"weekChg\":-0.08004535903679055},\"DIA\":{\"close\":520.78,\"change\":-0.30819885526139734},\"VIX\":{\"close\":16.58,\"change\":0.7290400972053307,\"weekChg\":-9.89130434782609}},\"shortTerm\":{\"result\":\"NEUTRAL\",\"score\":0,\"signals\":[{\"name\":\"SPY Day\",\"value\":-1},{\"name\":\"QQQ Day\",\"value\":-1},{\"name\":\"IWM Day\",\"value\":0},{\"name\":\"VIX\",\"value\":0},{\"name\":\"SPY Week\",\"value\":1},{\"name\":\"QQQ Week\",\"value\":1}]},\"midTerm\":{\"result\":\"UPTREND\",\"stageLabel\":\"UPTREND\",\"src\":\"SPY\",\"bull\":4,\"unk\":2,\"bb\":\"MID\",\"bbPct\":0.5585891563842362,\"signals\":[{\"name\":\"Close > SMA5\",\"value\":true},{\"name\":\"Close > SMA20\",\"value\":true},{\"name\":\"SMA5 > SMA20\",\"value\":false},{\"name\":\"SMA20 > SMA50\",\"value\":true},{\"name\":\"1H Close > 20H MA (proxy)\",\"value\":true},{\"name\":\"1H 5MA > 20H MA (proxy)\",\"value\":false}],\"_meta\":{\"sma5\":738.8874199999997,\"sma20\":741.4298549999995,\"sma50\":736.5639419999991,\"sma200\":691.8551855000004,\"bbUpper\":758.0476484636074,\"bbLower\":724.8120615363916,\"bbPct\":0.5585891563842362,\"bb\":\"MID\",\"close\":743.3771}},\"longTerm\":{\"result\":\"BULLISH\",\"label\":\"BULLISH\",\"src\":\"SPY\",\"dist\":7.446921780714125,\"above200\":true,\"goldenCross\":true},\"regime\":{\"slug\":\"STRONG_UP\",\"label\":\"Strong Uptrend\",\"icon\":\"🟢⬆️\",\"color\":\"#16a34a\",\"stance\":\"LONG\",\"guidance\":\"Strong bullish conditions. Favor long setups with momentum.\",\"confidence\":\"high\",\"aligned\":true},\"sectors\":{\"Technology\":{\"etf\":\"XLK\",\"close\":186.58,\"change\":-2.0680243543984873,\"weekChg\":3.0202639279995576,\"adx\":17.264703865233493,\"bias\":\"BULLISH\",\"score\":58,\"hot\":true,\"dRS\":-1.6136809822758873,\"wRS\":1.0466977611111186},\"Financial\":{\"etf\":\"XLF\",\"close\":53.985,\"change\":0.6994963626189143,\"weekChg\":0.7746873249953317,\"adx\":26.03159069346584,\"bias\":\"BULLISH\",\"score\":100,\"hot\":true,\"dRS\":1.1538397347415144,\"wRS\":-1.1988788418931073},\"Industrial\":{\"etf\":\"XLI\",\"close\":183.55,\"change\":-0.906980510716395,\"weekChg\":1.2969094922737434,\"adx\":17.884095051793228,\"bias\":\"BULLISH\",\"score\":46,\"hot\":true,\"dRS\":-0.45263713859379484,\"wRS\":-0.6766566746146956},\"Consumer Discretionary\":{\"etf\":\"XLY\",\"close\":117.12,\"change\":-0.1364256480218252,\"weekChg\":2.4044766984349044,\"adx\":11.363804906124466,\"bias\":\"BULLISH\",\"score\":49,\"hot\":false,\"dRS\":0.3179177241007749,\"wRS\":0.4309105315464654},\"Energy\":{\"etf\":\"XLE\",\"close\":53.33,\"change\":0.41423460741856316,\"weekChg\":-0.9472511144130853,\"adx\":22.745137649342997,\"bias\":\"BULLISH\",\"score\":49,\"hot\":false,\"dRS\":0.8685779795411632,\"wRS\":-2.9208172813015243},\"Health Care\":{\"etf\":\"XLV\",\"close\":159.01,\"change\":0.2205975040968072,\"weekChg\":-0.8294873394037748,\"adx\":21.040125021184082,\"bias\":\"BULLISH\",\"score\":70,\"hot\":true,\"dRS\":0.6749408762194073,\"wRS\":-2.8030535062922137},\"Communication Services\":{\"etf\":\"XLC\",\"close\":109.26,\"change\":1.9882385886306446,\"weekChg\":2.900734601619889,\"adx\":29.281235812597682,\"bias\":\"BULLISH\",\"score\":94,\"hot\":true,\"dRS\":2.4425819607532446,\"wRS\":0.9271684347314499},\"Utilities\":{\"etf\":\"XLU\",\"close\":45.185,\"change\":-0.3418614909572147,\"weekChg\":-2.196969696969698,\"adx\":15.02084633298776,\"bias\":\"BULLISH\",\"score\":32,\"hot\":false,\"dRS\":0.11248188116538543,\"wRS\":-4.170535863858137},\"Materials\":{\"etf\":\"XLB\",\"close\":50.68,\"change\":-0.29510131811921814,\"weekChg\":-1.7829457364341117,\"adx\":13.89772540188681,\"bias\":\"BULLISH\",\"score\":49,\"hot\":false,\"dRS\":0.15924205400338198,\"wRS\":-3.7565119033225507},\"Real Estate\":{\"etf\":\"XLRE\",\"close\":44.22,\"change\":0.4315239609357205,\"weekChg\":-2.2546419098143304,\"adx\":12.265626908729441,\"bias\":\"BULLISH\",\"score\":52,\"hot\":false,\"dRS\":0.8858673330583207,\"wRS\":-4.228208076702769},\"Consumer Staples\":{\"etf\":\"XLP\",\"close\":83.045,\"change\":-0.030095100517625463,\"weekChg\":-1.9655294534293382,\"adx\":12.131743276989555,\"bias\":\"BULLISH\",\"score\":50,\"hot\":false,\"dRS\":0.42424827160497464,\"wRS\":-3.939095620317777},\"Semiconductors\":{\"etf\":\"SMH\",\"close\":632.77,\"change\":-3.5249813230877134,\"weekChg\":3.4597210640767755,\"adx\":14.592919425479248,\"bias\":\"BULLISH\",\"score\":36,\"hot\":true,\"dRS\":-3.0706379509651134,\"wRS\":1.4861548971883365},\"Biotechnology\":{\"etf\":\"IBB\",\"close\":189.845,\"change\":-0.18139754981860184,\"weekChg\":1.3263236549957222,\"adx\":27.482349266417554,\"bias\":\"BULLISH\",\"score\":100,\"hot\":true,\"dRS\":0.2729458223039983,\"wRS\":-0.6472425118927168},\"Retail\":{\"etf\":\"XRT\",\"close\":87.29,\"change\":-0.5128789605652937,\"weekChg\":-1.6118124436429133,\"adx\":14.997956377894422,\"bias\":\"BULLISH\",\"score\":32,\"hot\":false,\"dRS\":-0.058535588442693576,\"wRS\":-3.585378610531352},\"Transportation\":{\"etf\":\"XTN\",\"close\":115.43,\"change\":-0.18159806295398975,\"weekChg\":-0.4312947468299836,\"adx\":24.594778092815865,\"bias\":\"BULLISH\",\"score\":68,\"hot\":true,\"dRS\":0.2727453091686104,\"wRS\":-2.4048609137184225}},\"breakoutNames\":[]}"
+      }
+    ],
+    "r3a": [
+      {
+        "date": "2026-07-01",
+        "ticker": "BTOG",
+        "entry_price_a": 1.3899999856948853,
+        "hh_a": 1.5299999713897705,
+        "ll_a": 1.2200000286102295,
+        "atr14": 0.2054999896458217,
+        "up_r_a": 0.6812651715271354,
+        "down_r_a": 0.8272504411199724,
+        "captured_at": 1782936509543
+      },
+      {
+        "date": "2026-07-01",
+        "ticker": "JEM",
+        "entry_price_a": 8.140000343322754,
+        "hh_a": 11.210000038146973,
+        "ll_a": 2.819999933242798,
+        "atr14": 0.7939286231994629,
+        "up_r_a": 3.8668459671505335,
+        "down_r_a": 6.700854780421973,
+        "captured_at": 1782936509543
+      },
+      {
+        "date": "2026-07-01",
+        "ticker": "SOC",
+        "entry_price_a": 4.210000038146973,
+        "hh_a": 4.449999809265137,
+        "ll_a": 3.9200000762939453,
+        "atr14": 1.0696427822113037,
+        "up_r_a": 0.22437375833267023,
+        "down_r_a": 0.27111851421415845,
+        "captured_at": 1782936509543
+      },
+      {
+        "date": "2026-07-01",
+        "ticker": "SVRE",
+        "entry_price_a": 2.3550000190734863,
+        "hh_a": 2.5699000358581543,
+        "ll_a": 2.2200000286102295,
+        "atr14": 0.6743571077074323,
+        "up_r_a": 0.31867391079371804,
+        "down_r_a": 0.20019065406192196,
+        "captured_at": 1782936509543
+      }
+    ],
+    "r3b": [
+      {
+        "date": "2026-07-01",
+        "ticker": "BTOG",
+        "entry_price_b": 1.3798999786376953,
+        "hh_b": 1.5299999713897705,
+        "ll_b": 1.2200000286102295,
+        "atr14": 0.2054999896458217,
+        "up_r_b": 0.7304136268365359,
+        "down_r_b": 0.7781019858105719,
+        "captured_at": 1782936509543
+      },
+      {
+        "date": "2026-07-01",
+        "ticker": "JEM",
+        "entry_price_b": 7.974999904632568,
+        "hh_b": 11.210000038146973,
+        "ll_b": 2.819999933242798,
+        "atr14": 0.7939286231994629,
+        "up_r_b": 4.074673766613473,
+        "down_r_b": 6.4930269809590335,
+        "captured_at": 1782936509543
+      },
+      {
+        "date": "2026-07-01",
+        "ticker": "SOC",
+        "entry_price_b": 4.025000095367432,
+        "hh_b": 4.449999809265137,
+        "ll_b": 3.9200000762939453,
+        "atr14": 1.0696427822113037,
+        "up_r_b": 0.39732864182852784,
+        "down_r_b": 0.09816363071830086,
+        "captured_at": 1782936509543
+      }
+    ]
+  }
+}
