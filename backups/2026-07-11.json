@@ -1,6 +1,6 @@
 {
   "version": "1",
-  "exportedAt": "2026-07-11T16:07:00.045Z",
+  "exportedAt": "2026-07-11T16:09:00.028Z",
   "tables": {
     "settings": [
       {
@@ -194,6 +194,10 @@
       {
         "key": "shortlistTopN",
         "value": "5"
+      },
+      {
+        "key": "lastBackupAt",
+        "value": "2026-07-11T16:07:00.052Z"
       }
     ],
     "shortlist": [
