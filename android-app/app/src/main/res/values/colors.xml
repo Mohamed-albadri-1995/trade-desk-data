@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="brand_primary">#3F51B5</color>
-    <color name="brand_primary_dark">#303F9F</color>
+    <color name="brand_primary">#5D4037</color>
+    <color name="brand_primary_dark">#4E342E</color>
+    <color name="brand_accent">#8D6E63</color>
     <color name="white">#FFFFFFFF</color>
-    <color name="reader_background">#EEEEEE</color>
+    <color name="reader_background">#EFEBE9</color>
 </resources>

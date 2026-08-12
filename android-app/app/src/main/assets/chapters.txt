@@ -1,0 +1,13 @@
+# Chapter / section index for the side navigation menu.
+# One entry per line, in the form:   PAGE|TITLE
+#   PAGE  = the page number shown in the app (the book has 54 pages)
+#   TITLE = the section name (Arabic is fine)
+# Lines starting with # are ignored.
+#
+# Example:
+#   1|البداية
+#   5|التحصين الشريف
+#   12|الحزب الكبير
+#
+# Replace the line below with the real sections and their page numbers.
+1|البداية

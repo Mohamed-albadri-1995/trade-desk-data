@@ -2,4 +2,22 @@
 <resources>
     <!-- Change this to your book's name. It shows under the app icon and in the title bar. -->
     <string name="app_name">دلائل الرحمات</string>
+
+    <!-- Reader UI -->
+    <string name="page_of">%1$s / %2$s</string>
+    <string name="page_of_label">صفحة %1$s</string>
+    <string name="menu_goto">الذهاب إلى صفحة</string>
+    <string name="menu_add_bookmark">إضافة علامة</string>
+    <string name="menu_bookmarks">العلامات المحفوظة</string>
+    <string name="next_page">الصفحة التالية</string>
+    <string name="prev_page">الصفحة السابقة</string>
+    <string name="open_menu">فتح القائمة</string>
+    <string name="goto_hint">رقم الصفحة</string>
+    <string name="ok">تم</string>
+    <string name="cancel">إلغاء</string>
+    <string name="bookmark_added">تم حفظ العلامة عند الصفحة %1$s</string>
+    <string name="no_bookmarks">لا توجد علامات محفوظة بعد</string>
+    <string name="no_chapters">لا توجد فهرسة للأبواب بعد</string>
+    <string name="chapters_title">الفهرس</string>
+    <string name="err_open">تعذّر فتح الكتاب. تأكد من وجود ملف book.pdf.</string>
 </resources>
