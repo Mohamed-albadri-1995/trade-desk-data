@@ -9,7 +9,11 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import com.github.barteksc.pdfviewer.scroll.DefaultScrollHandle
+import com.github.barteksc.pdfviewer.util.FitPolicy
 import com.pdfbook.reader.databinding.ActivityMainBinding
 
 /**
@@ -30,6 +34,7 @@ class MainActivity : AppCompatActivity() {
 
     private var pageCount = 0
     private var currentPage = 0
+    private var immersive = false
 
     // Chapter title -> 0-based page index, loaded from assets/chapters.txt
     private val chapters = ArrayList<Pair<String, Int>>()
@@ -50,8 +55,30 @@ class MainActivity : AppCompatActivity() {
         binding.btnPrev.setOnClickListener { goToPage(currentPage - 1) }
         binding.btnNext.setOnClickListener { goToPage(currentPage + 1) }
 
+        // Allow zooming in further for the fine calligraphy.
+        binding.pdfView.minZoom = 1f
+        binding.pdfView.midZoom = 2.5f
+        binding.pdfView.maxZoom = 6f
+
         val startPage = prefs().getInt(lastPageKey, 0)
         loadPdf(startPage)
+    }
+
+    /** Single tap toggles a distraction-free full-screen reading mode. */
+    private fun toggleFullscreen() {
+        immersive = !immersive
+        val controller = WindowInsetsControllerCompat(window, binding.root)
+        if (immersive) {
+            supportActionBar?.hide()
+            binding.bottomBar.visibility = View.GONE
+            controller.systemBarsBehavior =
+                WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+            controller.hide(WindowInsetsCompat.Type.systemBars())
+        } else {
+            supportActionBar?.show()
+            binding.bottomBar.visibility = View.VISIBLE
+            controller.show(WindowInsetsCompat.Type.systemBars())
+        }
     }
 
     private fun prefs() = getSharedPreferences(prefsName, MODE_PRIVATE)
@@ -73,6 +100,12 @@ class MainActivity : AppCompatActivity() {
             .pageFling(true)
             .enableDoubletap(true)
             .enableAnnotationRendering(true)
+            .pageFitPolicy(FitPolicy.BOTH)   // fit the WHOLE page on screen, not just width
+            .fitEachPage(true)
+            .onTap { _ ->
+                toggleFullscreen()
+                true
+            }
             .scrollHandle(DefaultScrollHandle(this))
             .onLoad { nbPages ->
                 pageCount = nbPages
@@ -229,9 +262,11 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onBackPressed() {
-        if (binding.drawerLayout.isDrawerOpen(GravityCompat.START))
-            binding.drawerLayout.closeDrawer(GravityCompat.START)
-        else
-            super.onBackPressed()
+        when {
+            binding.drawerLayout.isDrawerOpen(GravityCompat.START) ->
+                binding.drawerLayout.closeDrawer(GravityCompat.START)
+            immersive -> toggleFullscreen()
+            else -> super.onBackPressed()
+        }
     }
 }
