@@ -52,7 +52,7 @@ jobs:
           mkdir -p _bookdl
           if echo "$URL" | grep -q "drive.google.com/drive/folders/"; then
             echo "Detected a Google Drive FOLDER link — downloading its contents..."
-            gdown --folder "$URL" -O _bookdl --remaining-ok
+            gdown --folder "$URL" -O _bookdl
           elif echo "$URL" | grep -q "drive.google.com"; then
             echo "Detected a Google Drive FILE link..."
             FILEID="$(echo "$URL" | sed -nE 's#.*/d/([^/]+).*#\1#p; s#.*[?&]id=([^&]+).*#\1#p' | head -n1)"
@@ -74,6 +74,33 @@ jobs:
             exit 1
           fi
           echo "Book ready: $(basename "$PDF") -> book.pdf ($(du -h "$DEST" | cut -f1))"
+          # Diagnostic: print page count and the built-in table of contents (chapters),
+          # so we can wire the side navigation menu to the book's own sections.
+          pip install --quiet pypdf
+          python3 - "$DEST" <<'PY'
+          import sys
+          from pypdf import PdfReader
+          r = PdfReader(sys.argv[1])
+          print("PAGES:", len(r.pages))
+          def walk(items, depth=0):
+              for it in items:
+                  if isinstance(it, list):
+                      walk(it, depth + 1)
+                  else:
+                      try:
+                          pg = r.get_destination_page_number(it) + 1
+                      except Exception:
+                          pg = "?"
+                      print("TOC " + "  " * depth + "p%s | %s" % (pg, it.title))
+          try:
+              ol = r.outline
+              if ol:
+                  walk(ol)
+              else:
+                  print("NO_OUTLINE: the PDF has no embedded chapter marks.")
+          except Exception as e:
+              print("NO_OUTLINE:", e)
+          PY
 
       - name: Build debug APK
         working-directory: android-app
