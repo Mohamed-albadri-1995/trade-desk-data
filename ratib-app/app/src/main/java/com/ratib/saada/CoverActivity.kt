@@ -1,0 +1,25 @@
+package com.ratib.saada
+
+import android.content.Intent
+import android.os.Bundle
+import androidx.appcompat.app.AppCompatActivity
+import com.ratib.saada.databinding.ActivityCoverBinding
+
+/** Opening cover screen: the photo, the title, and a button into the reader. */
+class CoverActivity : AppCompatActivity() {
+
+    private lateinit var binding: ActivityCoverBinding
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        binding = ActivityCoverBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+
+        BackgroundLoader.apply(this, binding.coverImage)
+
+        binding.btnEnter.setOnClickListener {
+            startActivity(Intent(this, MainActivity::class.java))
+            finish()
+        }
+    }
+}

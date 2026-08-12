@@ -4,4 +4,7 @@
     <color name="reading_bg">#121212</color>
     <color name="reading_text">#ECECEC</color>
     <color name="heading_text">#7CC47F</color>
+
+    <!-- Veil over the background photo (dark). -->
+    <color name="reading_scrim">#E0121212</color>
 </resources>

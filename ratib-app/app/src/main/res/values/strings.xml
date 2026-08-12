@@ -8,4 +8,5 @@
     <string name="font_smaller">تصغير الخط</string>
     <string name="toggle_theme">الوضع الليلي / النهاري</string>
     <string name="sections_title">الفهرس</string>
+    <string name="enter_reading">ابدأ القراءة</string>
 </resources>

@@ -47,7 +47,7 @@ class RatibAdapter(private val blocks: List<Block>) :
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         when (val b = blocks[position]) {
             is Block.Heading -> (holder as HeadingVH).tv.apply {
-                text = b.text
+                text = "۞  ${b.text}  ۞"
                 setTextSize(TypedValue.COMPLEX_UNIT_SP, baseHeadingSp * scale)
             }
             is Block.Body -> (holder as BodyVH).tv.apply {

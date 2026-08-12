@@ -41,6 +41,8 @@ class MainActivity : AppCompatActivity() {
         supportActionBar?.title = getString(R.string.app_name)
         binding.toolbar.setNavigationOnClickListener { toggleDrawer() }
 
+        BackgroundLoader.apply(this, binding.bgImage)
+
         parseContent()
 
         adapter = RatibAdapter(blocks).apply { scale = prefs().getFloat(scaleKey, 1f) }

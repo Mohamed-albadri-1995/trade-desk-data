@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Elegant fallback shown until the user's photo (assets/background.jpg) is added. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <gradient
+        android:angle="135"
+        android:startColor="#1B5E20"
+        android:centerColor="#2E7D32"
+        android:endColor="#14351A"
+        android:type="linear" />
+</shape>

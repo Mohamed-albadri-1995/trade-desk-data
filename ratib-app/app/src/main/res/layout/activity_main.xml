@@ -21,16 +21,35 @@
             app:navigationIcon="@drawable/ic_menu"
             app:titleTextColor="@color/white" />
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/recyclerView"
+        <!-- Reading area: photo -> veil -> text -->
+        <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
-            android:background="@color/reading_bg"
-            android:clipToPadding="false"
-            android:paddingHorizontal="18dp"
-            android:paddingVertical="16dp"
-            android:scrollbars="vertical" />
+            android:background="@drawable/fallback_bg">
+
+            <ImageView
+                android:id="@+id/bgImage"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="centerCrop"
+                android:contentDescription="@null" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@color/reading_scrim" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recyclerView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@android:color/transparent"
+                android:clipToPadding="false"
+                android:paddingHorizontal="18dp"
+                android:paddingVertical="16dp"
+                android:scrollbars="vertical" />
+        </FrameLayout>
     </LinearLayout>
 
     <com.google.android.material.navigation.NavigationView
