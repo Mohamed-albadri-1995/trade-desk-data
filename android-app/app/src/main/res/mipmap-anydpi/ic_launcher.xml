@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Full-icon vector used on Android 5.0-7.1 (no adaptive-icon support). -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <path
+        android:fillColor="#3F51B5"
+        android:pathData="M8,8 h92 v92 h-92 z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M54,38 C48,33 40,32 34,33 L34,73 C40,72 48,73 54,78 C60,73 68,72 74,73 L74,33 C68,32 60,33 54,38 Z" />
+    <path
+        android:fillColor="#C5CAE9"
+        android:pathData="M54,38 L54,78 C60,73 68,72 74,73 L74,33 C68,32 60,33 54,38 Z" />
+    <path
+        android:fillColor="#3F51B5"
+        android:pathData="M52,38 h4 v40 h-4 z" />
+</vector>

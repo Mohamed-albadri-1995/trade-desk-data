@@ -1,0 +1,11 @@
+Put your PDF book in THIS folder and name it exactly:
+
+    book.pdf
+
+That's it. When you Run the app in Android Studio, it will open this file.
+
+Notes:
+- The name must be lowercase "book.pdf". If you want a different name,
+  change the `assetFileName` line in
+  app/src/main/java/com/pdfbook/reader/MainActivity.kt
+- You can delete this .txt file once your book.pdf is in place.
