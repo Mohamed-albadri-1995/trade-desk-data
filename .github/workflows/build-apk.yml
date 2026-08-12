@@ -33,6 +33,48 @@ jobs:
         with:
           packages: "platform-tools platforms;android-35 build-tools;35.0.0"
 
+      # Downloads the book onto the build server and bundles it into the app.
+      # The link lives in android-app/BOOK_PDF_URL.txt (one line). Supports
+      # Google Drive, Dropbox, and any direct-download link. If the file is
+      # missing or empty, the app still builds (without a book).
+      - name: Fetch the PDF book
+        run: |
+          set -e
+          URL_FILE="android-app/BOOK_PDF_URL.txt"
+          DEST="android-app/app/src/main/assets/book.pdf"
+          if [ ! -s "$URL_FILE" ]; then
+            echo "No BOOK_PDF_URL.txt found — building the app without a bundled book."
+            exit 0
+          fi
+          URL="$(head -n1 "$URL_FILE" | tr -d '[:space:]')"
+          echo "Configured link: $URL"
+          pip install --quiet --upgrade gdown
+          mkdir -p _bookdl
+          if echo "$URL" | grep -q "drive.google.com/drive/folders/"; then
+            echo "Detected a Google Drive FOLDER link — downloading its contents..."
+            gdown --folder "$URL" -O _bookdl --remaining-ok
+          elif echo "$URL" | grep -q "drive.google.com"; then
+            echo "Detected a Google Drive FILE link..."
+            FILEID="$(echo "$URL" | sed -nE 's#.*/d/([^/]+).*#\1#p; s#.*[?&]id=([^&]+).*#\1#p' | head -n1)"
+            gdown --id "$FILEID" -O _bookdl/book.pdf
+          else
+            echo "Treating as a direct download link..."
+            URL="$(echo "$URL" | sed 's/dl=0/dl=1/; s#www\.dropbox\.com#dl.dropboxusercontent.com#')"
+            curl -L --fail -o _bookdl/book.pdf "$URL"
+          fi
+          # Pick the first PDF from whatever was downloaded (the folder also has images).
+          PDF="$(find _bookdl -type f -iname '*.pdf' | head -n1)"
+          if [ -z "$PDF" ]; then
+            echo "::error::No PDF found at the link. Make sure the Drive folder is shared as 'Anyone with the link' and the PDF finished uploading."
+            exit 1
+          fi
+          cp "$PDF" "$DEST"
+          if [ ! -s "$DEST" ] || [ "$(head -c 4 "$DEST")" != "%PDF" ]; then
+            echo "::error::The downloaded file is not a valid PDF."
+            exit 1
+          fi
+          echo "Book ready: $(basename "$PDF") -> book.pdf ($(du -h "$DEST" | cut -f1))"
+
       - name: Build debug APK
         working-directory: android-app
         run: ./gradlew assembleDebug --no-daemon --stacktrace
