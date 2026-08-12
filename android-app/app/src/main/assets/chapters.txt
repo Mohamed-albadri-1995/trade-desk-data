@@ -1,13 +1,22 @@
 # Chapter / section index for the side navigation menu.
 # One entry per line, in the form:   PAGE|TITLE
 #   PAGE  = the page number shown in the app (the book has 54 pages)
-#   TITLE = the section name (Arabic is fine)
+#   TITLE = the section name
 # Lines starting with # are ignored.
 #
-# Example:
-#   1|البداية
-#   5|التحصين الشريف
-#   12|الحزب الكبير
-#
-# Replace the line below with the real sections and their page numbers.
-1|البداية
+# Pages marked (~) are estimates between the known page bubbles (14, 20, 31).
+# Open the app, tap a chapter, and if it lands on the wrong page just tell me
+# the correct number from the (X / 54) bubble and I'll fix it.
+
+2|مقدمة
+4|أسماء الله الحسنى
+5|دعوة أسماء الله الحسنى
+7|دعاء النية
+8|الحزب الأول ﴿يوم الاثنين﴾
+14|الحزب الثاني ﴿يوم الثلاثاء﴾
+20|الحزب الثالث ﴿يوم الأربعاء﴾
+25|الحزب الرابع ﴿يوم الخميس﴾
+31|الحزب الخامس ﴿يوم الجمعة﴾
+37|الحزب السادس ﴿يوم السبت﴾
+44|الحزب السابع ﴿يوم الأحد﴾
+49|دعوة الصلوات
