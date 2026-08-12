@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/action_font_larger"
+        android:icon="@drawable/ic_add"
+        android:title="@string/font_larger"
+        app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/action_font_smaller"
+        android:icon="@drawable/ic_remove"
+        android:title="@string/font_smaller"
+        app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/action_theme"
+        android:icon="@drawable/ic_theme"
+        android:title="@string/toggle_theme"
+        app:showAsAction="ifRoom" />
+</menu>

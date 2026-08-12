@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Dark reading palette -->
+    <color name="reading_bg">#121212</color>
+    <color name="reading_text">#ECECEC</color>
+    <color name="heading_text">#7CC47F</color>
+</resources>
