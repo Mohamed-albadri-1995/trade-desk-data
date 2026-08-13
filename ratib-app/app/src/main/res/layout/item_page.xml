@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
@@ -7,11 +8,13 @@
         android:id="@+id/pageText"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:gravity="top|center_horizontal"
+        android:gravity="top"
         android:paddingHorizontal="20dp"
         android:paddingVertical="14dp"
         android:textColor="@color/reading_text"
         android:fontFamily="@font/amiri"
-        android:lineSpacingMultiplier="1.4"
-        android:hyphenationFrequency="none" />
+        android:lineSpacingMultiplier="1.5"
+        android:justificationMode="inter_word"
+        android:hyphenationFrequency="none"
+        tools:targetApi="26" />
 </FrameLayout>

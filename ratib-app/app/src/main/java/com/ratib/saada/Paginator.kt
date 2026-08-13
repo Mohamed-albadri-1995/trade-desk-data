@@ -10,6 +10,7 @@ import android.text.Spanned
 import android.text.StaticLayout
 import android.text.TextPaint
 import android.text.style.AbsoluteSizeSpan
+import android.text.style.AlignmentSpan
 import android.text.style.ForegroundColorSpan
 import android.text.style.StyleSpan
 import androidx.core.content.ContextCompat
@@ -45,6 +46,9 @@ object Paginator {
     // Parenthetical cues like (٣) ( ثلاثًا ) (سورة الفاتحة), or a bare number (١٠٠، ١٢٩…).
     private val cueRegex = Regex("\\([^)]*\\)|[0-9\\u0660-\\u0669]+")
 
+    // Shared leading; the page TextView must use the same value so pages fit.
+    const val LINE_SPACING = 1.5f
+
     fun paginate(
         context: Context,
         blocks: List<Block>,
@@ -72,7 +76,14 @@ object Paginator {
 
         fun measure(cs: CharSequence): Int {
             @Suppress("DEPRECATION")
-            return StaticLayout(cs, paint, w, Layout.Alignment.ALIGN_CENTER, 1.4f, 0f, false).height
+            return StaticLayout(cs, paint, w, Layout.Alignment.ALIGN_CENTER, LINE_SPACING, 0f, false).height
+        }
+
+        fun center(sb: SpannableStringBuilder) {
+            sb.setSpan(
+                AlignmentSpan.Standard(Layout.Alignment.ALIGN_CENTER),
+                0, sb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+            )
         }
 
         fun buildBlock(b: Block): CharSequence {
@@ -83,12 +94,14 @@ object Paginator {
                     sb.setSpan(AbsoluteSizeSpan(headingPx), 0, sb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
                     sb.setSpan(StyleSpan(Typeface.BOLD), 0, sb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
                     sb.setSpan(ForegroundColorSpan(headingColor), 0, sb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+                    center(sb)
                 }
                 is Block.Subheading -> {
                     sb.append("﴿ ${b.text} ﴾")
                     sb.setSpan(AbsoluteSizeSpan(subheadingPx), 0, sb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
                     sb.setSpan(StyleSpan(Typeface.BOLD), 0, sb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
                     sb.setSpan(ForegroundColorSpan(subheadingColor), 0, sb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+                    center(sb)
                 }
                 is Block.Body -> {
                     sb.append(b.text)
@@ -100,6 +113,11 @@ object Paginator {
                         sb.setSpan(ForegroundColorSpan(cueColor), cs, ce, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
                         sb.setSpan(StyleSpan(Typeface.BOLD), cs, ce, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
                     }
+                    // Long single-line prose is justified (even, full-width lines);
+                    // short lines and multi-line verse/salawat stay centered.
+                    val isProse = !b.text.contains('\n') && b.text.length > 55
+                    val align = if (isProse) Layout.Alignment.ALIGN_NORMAL else Layout.Alignment.ALIGN_CENTER
+                    sb.setSpan(AlignmentSpan.Standard(align), 0, sb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
                 }
             }
             return sb
@@ -143,7 +161,7 @@ object Paginator {
                     // Block taller than a full page (long prose): split by lines.
                     if (b.isNav) headingPage[i] = pages.size
                     @Suppress("DEPRECATION")
-                    val bl = StaticLayout(blockCs, paint, w, Layout.Alignment.ALIGN_CENTER, 1.4f, 0f, false)
+                    val bl = StaticLayout(blockCs, paint, w, Layout.Alignment.ALIGN_CENTER, LINE_SPACING, 0f, false)
                     val lc = bl.lineCount
                     var startLine = 0
                     while (startLine < lc) {
