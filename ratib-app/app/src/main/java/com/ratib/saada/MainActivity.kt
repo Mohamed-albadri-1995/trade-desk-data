@@ -200,14 +200,32 @@ class MainActivity : AppCompatActivity() {
             binding.drawerLayout.openDrawer(GravityCompat.START)
     }
 
+    /**
+     * A passage of running prose, as opposed to verse or a short centred line
+     * like بسم الله الرحمن الرحيم. One source line, and long enough that it
+     * wraps rather than sitting on its own.
+     */
+    private fun isFlowingProse(text: String) = !text.contains('\n') && text.length > 55
+
     private fun parseContent() {
         // A blank line ends a stanza. Consecutive non-blank lines form one block
         // and keep their line breaks (so a couplet's two halves stay together).
         val buffer = ArrayList<String>()
         fun flushBuffer() {
-            if (buffer.isNotEmpty()) {
-                blocks.add(Block.Body(buffer.joinToString("\n")))
-                buffer.clear()
+            if (buffer.isEmpty()) return
+            val text = buffer.joinToString("\n")
+            buffer.clear()
+            // Two prose passages in a row are one continuous recitation, so the
+            // second carries on from the first instead of starting a new line —
+            // ...ما أعظم الله runs straight into نعم المولى ونعم النصير. Verse
+            // and short centred lines always begin on a line of their own.
+            val prev = blocks.lastOrNull()
+            if (isFlowingProse(text) && prev is Block.Body && isFlowingProse(prev.text) &&
+                !footnotes.containsKey(blocks.lastIndex)
+            ) {
+                blocks[blocks.lastIndex] = Block.Body(prev.text + " " + text)
+            } else {
+                blocks.add(Block.Body(text))
             }
         }
         assets.open("ratib.txt").bufferedReader().forEachLine { raw ->
