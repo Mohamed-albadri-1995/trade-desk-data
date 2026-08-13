@@ -6,4 +6,15 @@
         <item name="colorOnPrimary">@color/white</item>
         <item name="android:statusBarColor">@color/brand_primary_dark</item>
     </style>
+
+    <!-- Overflow menu (theme/settings) popup. The toolbar itself is dark-on-green,
+         but its popup must use the reading colours so the item text is visible
+         (dark text on a light sheet by day, light text on dark by night) instead
+         of white-on-white. -->
+    <style name="Ratib.PopupOverlay" parent="ThemeOverlay.MaterialComponents.Light">
+        <item name="android:textColorPrimary">@color/reading_text</item>
+        <item name="android:colorBackground">@color/reading_bg</item>
+        <item name="colorSurface">@color/reading_bg</item>
+        <item name="colorOnSurface">@color/reading_text</item>
+    </style>
 </resources>

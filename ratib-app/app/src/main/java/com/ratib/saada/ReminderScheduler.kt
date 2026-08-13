@@ -18,6 +18,7 @@ object ReminderScheduler {
     const val ACTION_STOP = "com.ratib.saada.ALARM_STOP"
     const val EXTRA_LABEL = "label"
     private const val REQ_ALARM = 4201
+    private const val REQ_TEST = 4202
 
     data class Fire(val timeMillis: Long, val label: String)
 
@@ -54,6 +55,39 @@ object ReminderScheduler {
             }
         } catch (t: Throwable) {
             android.util.Log.e("ReminderScheduler", "rescheduleNext failed", t)
+        }
+    }
+
+    /** The next reminder that will fire, or null if none is armed. */
+    fun nextFire(context: Context): Fire? {
+        if (!ReminderPrefs.master(context) || !ReminderPrefs.hasLocation(context)) return null
+        val now = System.currentTimeMillis()
+        return buildFires(context).filter { it.timeMillis > now + 1000 }.minByOrNull { it.timeMillis }
+    }
+
+    /** Fires a real alarm a few seconds from now so the user can test the sound. */
+    fun scheduleTest(context: Context, seconds: Int = 5) {
+        val am = context.getSystemService(AlarmManager::class.java) ?: return
+        val at = System.currentTimeMillis() + seconds * 1000L
+        val op = PendingIntent.getBroadcast(
+            context, REQ_TEST,
+            Intent(context, AlarmReceiver::class.java)
+                .setAction(ACTION_FIRE)
+                .putExtra(EXTRA_LABEL, context.getString(R.string.test_alarm_label)),
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+        )
+        val show = PendingIntent.getActivity(
+            context, 0, Intent(context, MainActivity::class.java),
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+        )
+        try {
+            am.setAlarmClock(AlarmManager.AlarmClockInfo(at, show), op)
+        } catch (_: Throwable) {
+            try {
+                am.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at, op)
+            } catch (_: Throwable) {
+                am.set(AlarmManager.RTC_WAKEUP, at, op)
+            }
         }
     }
 

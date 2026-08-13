@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Night variant of the toolbar popup: same reading colours, but based on
+         the dark overlay so the popup's own widgets are styled for a dark sheet. -->
+    <style name="Ratib.PopupOverlay" parent="ThemeOverlay.MaterialComponents.Dark">
+        <item name="android:textColorPrimary">@color/reading_text</item>
+        <item name="android:colorBackground">@color/reading_bg</item>
+        <item name="colorSurface">@color/reading_bg</item>
+        <item name="colorOnSurface">@color/reading_text</item>
+    </style>
+</resources>

@@ -43,7 +43,6 @@ class MainActivity : AppCompatActivity() {
     private var scale = 1f
     private var needsAutoFit = false
     private val maxPages = 25
-    private val minPages = 10
 
     private val locationPerms = arrayOf(
         Manifest.permission.ACCESS_FINE_LOCATION,
@@ -237,15 +236,14 @@ class MainActivity : AppCompatActivity() {
     private fun paddingV() = (14f * density * 2 + 20f * density).toInt()
 
     /**
-     * Pick the default zoom so the whole ratib lands in a comfortable page
-     * band: at most [maxPages] (bigger font ⇒ more pages, so shrink if we
-     * overflow) and at least [minPages] (so no run of half-empty pages, grow
-     * the font if the book would otherwise be too short).
+     * Pick the default zoom: the largest comfortable text that still keeps the
+     * whole ratib within [maxPages]. Pages are packed full by the paginator, so
+     * the book normally lands well under that ceiling — the bigger font then
+     * uses the room up instead of leaving pages half empty.
      */
     private fun autoFitScale(w: Int, h: Int): Float {
         fun count(s: Float) = Paginator.paginate(this, blocks, footnotes, w, h, s).pages.size
-        val start = count(1.0f)
-        if (start > maxPages) {
+        if (count(1.0f) > maxPages) {
             var s = 1.0f
             while (s > 0.55f) {
                 s -= 0.05f
@@ -253,15 +251,14 @@ class MainActivity : AppCompatActivity() {
             }
             return 0.55f
         }
-        if (start < minPages) {
-            var s = 1.0f
-            while (s < 1.8f) {
-                s += 0.05f
-                if (count(s) >= minPages) return s
-            }
-            return 1.8f
+        // Room to spare: grow the text while the book still fits in maxPages.
+        var s = 1.0f
+        while (s < 1.5f) {
+            val next = s + 0.05f
+            if (count(next) > maxPages) break
+            s = next
         }
-        return 1.0f
+        return s
     }
 
     private fun repaginate(restorePage: Int) {

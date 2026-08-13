@@ -36,6 +36,18 @@
     <string name="stop">إيقاف</string>
     <string name="battery_hint">لضمان عمل المنبّه دائمًا: اسمح للتطبيق بالعمل في الخلفية وأوقف تحسين البطارية له من إعدادات الهاتف.</string>
 
+    <!-- Alarm troubleshooting -->
+    <string name="test_alarm">تجربة المنبّه الآن</string>
+    <string name="test_alarm_label">تجربة المنبّه</string>
+    <string name="test_alarm_toast">سينطلق المنبّه بعد ٥ ثوانٍ… أغلق الشاشة للتجربة.</string>
+    <string name="fix_restrictions">إصلاح قيود التشغيل في الخلفية</string>
+    <string name="battery_ok">التطبيق مستثنى من تحسين البطارية ✔</string>
+    <string name="open_app_settings">فتح إعدادات التطبيق</string>
+    <string name="next_reminder">التنبيه القادم: %1$s</string>
+    <string name="next_reminder_none">لا يوجد تنبيه مجدول — فعّل التنبيهات وحدّد موقعك.</string>
+    <string name="troubleshoot_title">حل مشكلة عدم عمل المنبّه</string>
+    <string name="troubleshoot_hint">إذا لم ينطلق المنبّه: ١) جرّب زر «تجربة المنبّه الآن». ٢) اضغط «إصلاح قيود التشغيل» واسمح بكل شيء. ٣) في هواوي/شاومي: افتح إعدادات الهاتف ← البطارية ← تشغيل التطبيقات، واجعل «راتب السعادة» يدويًا مع تفعيل التشغيل التلقائي والعمل في الخلفية. ٤) ثبّت التطبيق في قائمة التطبيقات الأخيرة (اسحب لأسفل على بطاقة التطبيق).</string>
+
     <string-array name="methods_array">
         <item>رابطة العالم الإسلامي</item>
         <item>أم القرى (مكة)</item>

@@ -148,7 +148,6 @@ object Paginator {
         var currentStart = -1
         var currentFn: CharSequence? = null
         var currentFnHeight = 0
-        var lastWasNav = false
         val gap = "\n\n"
 
         fun reserve(fn: CharSequence?, fnH: Int) = if (fn != null) fnH + oneLine else 0
@@ -165,12 +164,44 @@ object Paginator {
             }
         }
 
-        blocks.forEachIndexed { i, b ->
-            // Start a section heading on a fresh page (but keep consecutive
-            // heading + sub-heading together instead of leaving a heading alone).
-            if (b.isNav && current.isNotEmpty() && !lastWasNav) flush()
+        // Pre-build every block once so the look-ahead below is cheap.
+        val built = blocks.map { buildBlock(it) }
 
-            val blockCs = buildBlock(b)
+        /**
+         * A heading must never be stranded at the foot of a page. Returns the
+         * height of the heading (plus any sub-heading directly under it) *and*
+         * the first stanza that follows, i.e. the smallest group that has to
+         * stay together for the heading to look like it opens something.
+         */
+        fun headingGroupHeight(i: Int): Int {
+            var j = i
+            val group = SpannableStringBuilder()
+            while (j < blocks.size && blocks[j].isNav) {
+                if (group.isNotEmpty()) group.append(gap)
+                group.append(built[j]); j++
+            }
+            if (j < blocks.size) { group.append(gap); group.append(built[j]) }
+            return measure(group)
+        }
+
+        var prevWasNav = false
+
+        blocks.forEachIndexed { i, b ->
+            // Pages are packed as full as they will go. The only reason to break
+            // early is an orphaned heading: if the heading and the text it
+            // introduces cannot both fit in what is left, move them to the next
+            // page — but only when they would actually fit better there.
+            // Skipped right after another heading: the run was already measured
+            // as one group, and breaking here would strand that heading.
+            if (b.isNav && current.isNotEmpty() && !prevWasNav) {
+                val used = measure(current)
+                val groupH = headingGroupHeight(i)
+                val room = limit - reserve(currentFn, currentFnHeight)
+                if (used + oneLine + groupH > room && groupH <= room) flush()
+            }
+            prevWasNav = b.isNav
+
+            val blockCs = built[i]
             val blockFn = footnotes[i]?.let { buildFootnote(it) }
             val blockFnHeight = if (blockFn != null) measure(blockFn) else 0
 
@@ -220,7 +251,6 @@ object Paginator {
                     }
                 }
             }
-            lastWasNav = b.isNav
         }
         flush()
 

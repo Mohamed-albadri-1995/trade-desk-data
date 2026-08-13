@@ -1,23 +1,32 @@
 package com.ratib.saada
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.Looper
+import android.os.PowerManager
+import android.provider.Settings
 import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.EditText
 import android.widget.Spinner
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SwitchCompat
 import androidx.core.content.ContextCompat
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 /** Reminder settings: which reminders are on, calculation method, and location. */
 class SettingsActivity : AppCompatActivity() {
@@ -67,6 +76,15 @@ class SettingsActivity : AppCompatActivity() {
         findViewById<Button>(R.id.btnUseLocation).setOnClickListener { requestLocation() }
         findViewById<Button>(R.id.btnSave).setOnClickListener { save() }
 
+        // Alarm troubleshooting: fire a real alarm now, and open the system
+        // screens that control background/battery restrictions.
+        findViewById<Button>(R.id.btnTestAlarm).setOnClickListener {
+            ReminderScheduler.scheduleTest(this)
+            Toast.makeText(this, R.string.test_alarm_toast, Toast.LENGTH_LONG).show()
+        }
+        findViewById<Button>(R.id.btnFixRestrictions).setOnClickListener { requestIgnoreBattery() }
+        findViewById<Button>(R.id.btnAppSettings).setOnClickListener { openAppSettings() }
+
         // Ask for location up-front (like notifications) when reminders are on and
         // we don't have a location yet.
         if (ReminderPrefs.master(this) && !hasLocationPermission() && !ReminderPrefs.hasLocation(this)) {
@@ -78,6 +96,63 @@ class SettingsActivity : AppCompatActivity() {
         Manifest.permission.ACCESS_FINE_LOCATION,
         Manifest.permission.ACCESS_COARSE_LOCATION
     )
+
+    override fun onResume() {
+        super.onResume()
+        showNextReminder()
+    }
+
+    /** Shows when the next alarm will actually go off, so it can be verified. */
+    private fun showNextReminder() {
+        val tv = findViewById<TextView>(R.id.txtNextReminder)
+        val next = runCatching { ReminderScheduler.nextFire(this) }.getOrNull()
+        tv.text = if (next == null) {
+            getString(R.string.next_reminder_none)
+        } else {
+            val fmt = SimpleDateFormat("EEEE d MMMM • HH:mm", Locale("ar"))
+            getString(R.string.next_reminder, "${fmt.format(Date(next.timeMillis))}\n${next.label}")
+        }
+    }
+
+    /** Asks the system to exempt us from battery optimisation (kills alarms). */
+    @SuppressLint("BatteryLife")
+    private fun requestIgnoreBattery() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return
+        val pm = getSystemService(Context.POWER_SERVICE) as? PowerManager
+        if (pm != null && pm.isIgnoringBatteryOptimizations(packageName)) {
+            Toast.makeText(this, R.string.battery_ok, Toast.LENGTH_LONG).show()
+            openBatterySettings()
+            return
+        }
+        try {
+            startActivity(
+                Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS)
+                    .setData(Uri.parse("package:$packageName"))
+            )
+        } catch (_: Throwable) {
+            openBatterySettings()
+        }
+    }
+
+    private fun openBatterySettings() {
+        try {
+            startActivity(Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS))
+        } catch (_: Throwable) {
+            openAppSettings()
+        }
+    }
+
+    /** Opens this app's system settings page (notifications, battery, autostart). */
+    private fun openAppSettings() {
+        try {
+            startActivity(
+                Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+                    .setData(Uri.parse("package:$packageName"))
+            )
+        } catch (_: Throwable) {
+            Toast.makeText(this, R.string.location_failed, Toast.LENGTH_SHORT).show()
+        }
+    }
 
     private fun hasLocationPermission(): Boolean =
         ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) ==

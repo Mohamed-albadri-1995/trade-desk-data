@@ -105,6 +105,44 @@
             android:text="@string/save" android:textSize="18sp"
             app:backgroundTint="@color/brand_primary" />
 
+        <View android:layout_width="match_parent" android:layout_height="1dp"
+            android:layout_marginVertical="14dp" android:background="#33000000" />
+
+        <TextView
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:text="@string/troubleshoot_title" android:textColor="@color/heading_text"
+            android:textSize="18sp" android:textStyle="bold" android:paddingBottom="6dp" />
+
+        <TextView
+            android:id="@+id/txtNextReminder"
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:textColor="@color/reading_text" android:textSize="14sp"
+            android:textStyle="bold" android:paddingBottom="10dp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnTestAlarm"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:layout_marginTop="4dp" android:text="@string/test_alarm" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnFixRestrictions"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:layout_marginTop="8dp" android:text="@string/fix_restrictions" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnAppSettings"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:layout_marginTop="8dp" android:text="@string/open_app_settings" />
+
+        <TextView
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:paddingTop="14dp" android:text="@string/troubleshoot_hint"
+            android:textColor="@color/reading_text" android:textSize="13sp"
+            android:lineSpacingMultiplier="1.3" />
+
         <TextView
             android:layout_width="match_parent" android:layout_height="wrap_content"
             android:paddingTop="18dp" android:text="@string/battery_hint"
