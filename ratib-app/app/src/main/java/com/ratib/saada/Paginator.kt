@@ -75,12 +75,17 @@ object Paginator {
             if (amiri != null) typeface = amiri
         }
         val w = widthPx.coerceAtLeast(1)
-        val limit = heightPx.coerceAtLeast(1)
         val oneLine = (bodyPx * LINE_SPACING).toInt().coerceAtLeast(1)
+        // Keep one blank line of slack at the bottom so the final rendered line
+        // is never clipped (the TextView adds font padding we can't predict
+        // exactly), which is what made "the bottom of the page" disappear.
+        val limit = (heightPx.coerceAtLeast(1) - oneLine).coerceAtLeast(oneLine)
 
         fun measure(cs: CharSequence): Int {
+            // includePad = true so the measured height matches the padded height
+            // the TextView actually draws with.
             @Suppress("DEPRECATION")
-            return StaticLayout(cs, paint, w, Layout.Alignment.ALIGN_CENTER, LINE_SPACING, 0f, false).height
+            return StaticLayout(cs, paint, w, Layout.Alignment.ALIGN_CENTER, LINE_SPACING, 0f, true).height
         }
 
         fun center(sb: SpannableStringBuilder) {
@@ -193,7 +198,7 @@ object Paginator {
                 } else {
                     if (b.isNav) headingPage[i] = pages.size
                     @Suppress("DEPRECATION")
-                    val bl = StaticLayout(blockCs, paint, w, Layout.Alignment.ALIGN_CENTER, LINE_SPACING, 0f, false)
+                    val bl = StaticLayout(blockCs, paint, w, Layout.Alignment.ALIGN_CENTER, LINE_SPACING, 0f, true)
                     val lc = bl.lineCount
                     var startLine = 0
                     while (startLine < lc) {

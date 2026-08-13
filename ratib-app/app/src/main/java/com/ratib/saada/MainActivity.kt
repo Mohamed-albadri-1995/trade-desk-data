@@ -1,11 +1,16 @@
 package com.ratib.saada
 
 import android.Manifest
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.Configuration
+import android.location.Location
+import android.location.LocationListener
+import android.location.LocationManager
 import android.os.Build
 import android.os.Bundle
+import android.os.Looper
 import android.view.Menu
 import android.view.MenuItem
 import androidx.activity.result.contract.ActivityResultContracts
@@ -37,10 +42,24 @@ class MainActivity : AppCompatActivity() {
     private var pagination: Pagination? = null
     private var scale = 1f
     private var needsAutoFit = false
-    private val targetPages = 25
+    private val maxPages = 25
+    private val minPages = 10
 
+    private val locationPerms = arrayOf(
+        Manifest.permission.ACCESS_FINE_LOCATION,
+        Manifest.permission.ACCESS_COARSE_LOCATION
+    )
+
+    // After notifications are answered, move on to asking for location.
     private val notifPermission =
-        registerForActivityResult(ActivityResultContracts.RequestPermission()) { }
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) {
+            requestLocationIfNeeded()
+        }
+
+    private val locationPermission =
+        registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { result ->
+            if (result.values.any { it }) captureLocationAndEnable()
+        }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         AppCompatDelegate.setDefaultNightMode(
@@ -81,13 +100,88 @@ class MainActivity : AppCompatActivity() {
         // Paginate once the pager has real dimensions.
         binding.pager.post { repaginate(restorePage = prefs().getInt(pageKey, 0)) }
 
-        // Ask for notification permission (Android 13+) so reminders can alert.
+        // From the very first launch, set the reminders up: ask for notification
+        // permission, then location, capture the location and arm the alarms. If
+        // the user declines, we simply try again on the next launch (nothing is
+        // stored until permission is granted).
+        setupRemindersOnLaunch()
+    }
+
+    /** Ask for notifications first (Android 13+), then chain into location. */
+    private fun setupRemindersOnLaunch() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
             ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
             != PackageManager.PERMISSION_GRANTED
         ) {
             notifPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
+        } else {
+            requestLocationIfNeeded()
         }
+    }
+
+    private fun hasLocationPermission(): Boolean =
+        ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) ==
+            PackageManager.PERMISSION_GRANTED ||
+            ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) ==
+            PackageManager.PERMISSION_GRANTED
+
+    /** Ask for location while we still have no saved coordinates. */
+    private fun requestLocationIfNeeded() {
+        if (ReminderPrefs.hasLocation(this)) return
+        if (hasLocationPermission()) captureLocationAndEnable()
+        else locationPermission.launch(locationPerms)
+    }
+
+    /** Grab a location fix, store it, and arm the reminders. */
+    private fun captureLocationAndEnable() {
+        if (!hasLocationPermission()) return
+        try {
+            val lm = getSystemService(Context.LOCATION_SERVICE) as? LocationManager ?: return
+            var best: Location? = null
+            for (p in listOf(
+                LocationManager.GPS_PROVIDER,
+                LocationManager.NETWORK_PROVIDER,
+                LocationManager.PASSIVE_PROVIDER
+            )) {
+                if (!lm.isProviderEnabled(p)) continue
+                @Suppress("MissingPermission")
+                val l = lm.getLastKnownLocation(p)
+                if (l != null && (best == null || l.time > best!!.time)) best = l
+            }
+            if (best != null) { saveLocation(best!!); return }
+            requestSingleFix(lm)
+        } catch (_: SecurityException) {
+        }
+    }
+
+    private fun requestSingleFix(lm: LocationManager) {
+        val provider = when {
+            lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER) -> LocationManager.NETWORK_PROVIDER
+            lm.isProviderEnabled(LocationManager.GPS_PROVIDER) -> LocationManager.GPS_PROVIDER
+            else -> return
+        }
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                lm.getCurrentLocation(provider, null, mainExecutor) { loc ->
+                    if (loc != null) runOnUiThread { saveLocation(loc) }
+                }
+            } else {
+                @Suppress("DEPRECATION")
+                lm.requestSingleUpdate(provider, object : LocationListener {
+                    override fun onLocationChanged(location: Location) { saveLocation(location) }
+                    override fun onStatusChanged(p: String?, s: Int, e: Bundle?) {}
+                    override fun onProviderEnabled(p: String) {}
+                    override fun onProviderDisabled(p: String) {}
+                }, Looper.getMainLooper())
+            }
+        } catch (_: SecurityException) {
+        }
+    }
+
+    private fun saveLocation(loc: Location) {
+        ReminderPrefs.setLocation(this, loc.latitude, loc.longitude)
+        // Reminders default to on, so once we have a location the alarms can arm.
+        ReminderScheduler.rescheduleNext(this)
     }
 
     override fun onResume() {
@@ -143,20 +237,31 @@ class MainActivity : AppCompatActivity() {
     private fun paddingV() = (14f * density * 2 + 20f * density).toInt()
 
     /**
-     * Default to a comfortable reading size and only shrink it if the whole
-     * ratib would exceed targetPages, so pages stay full but never too many.
+     * Pick the default zoom so the whole ratib lands in a comfortable page
+     * band: at most [maxPages] (bigger font ⇒ more pages, so shrink if we
+     * overflow) and at least [minPages] (so no run of half-empty pages, grow
+     * the font if the book would otherwise be too short).
      */
     private fun autoFitScale(w: Int, h: Int): Float {
-        val preferred = 1.0f
-        if (Paginator.paginate(this, blocks, footnotes, w, h, preferred).pages.size <= targetPages) {
-            return preferred
+        fun count(s: Float) = Paginator.paginate(this, blocks, footnotes, w, h, s).pages.size
+        val start = count(1.0f)
+        if (start > maxPages) {
+            var s = 1.0f
+            while (s > 0.55f) {
+                s -= 0.05f
+                if (count(s) <= maxPages) return s
+            }
+            return 0.55f
         }
-        var s = preferred
-        while (s > 0.6f) {
-            s -= 0.05f
-            if (Paginator.paginate(this, blocks, footnotes, w, h, s).pages.size <= targetPages) return s
+        if (start < minPages) {
+            var s = 1.0f
+            while (s < 1.8f) {
+                s += 0.05f
+                if (count(s) >= minPages) return s
+            }
+            return 1.8f
         }
-        return 0.6f
+        return 1.0f
     }
 
     private fun repaginate(restorePage: Int) {
