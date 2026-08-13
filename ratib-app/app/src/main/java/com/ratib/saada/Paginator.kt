@@ -158,14 +158,11 @@ object Paginator {
         var currentFn: CharSequence? = null
         var currentFnHeight = 0
 
-        // The blank line between paragraphs used to be a full-height line, which
-        // ate roughly a quarter of every page. It is kept as a visible breath
-        // between stanzas but at under half that height.
-        val gapPx = (bodyPx * 0.45f).toInt().coerceAtLeast(1)
-        val gap: CharSequence = SpannableString("\n\n").apply {
-            setSpan(AbsoluteSizeSpan(gapPx), 0, length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-        }
-        val gapH = (gapPx * LINE_SPACING).toInt().coerceAtLeast(1)
+        // No blank line between blocks at all: one block simply starts on the
+        // line after the last. Shrinking the blank line was not enough — it is
+        // removed outright, so a break costs nothing beyond the line itself.
+        val gap: CharSequence = "\n"
+        val gapH = 0
 
         fun reserve(fn: CharSequence?, fnH: Int) = if (fn != null) fnH + oneLine else 0
 
