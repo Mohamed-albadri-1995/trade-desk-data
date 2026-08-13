@@ -19,22 +19,23 @@
         android:layout_height="match_parent"
         android:background="@drawable/cover_scrim" />
 
-    <!-- Title block -->
+    <!-- Title panel, anchored to the bottom so the photo stays clear -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="center"
+        android:layout_gravity="bottom"
         android:orientation="vertical"
         android:gravity="center"
-        android:paddingHorizontal="28dp">
+        android:paddingHorizontal="28dp"
+        android:paddingBottom="40dp">
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="۞"
             android:textColor="@color/gold"
-            android:textSize="34sp"
-            android:paddingBottom="10dp" />
+            android:textSize="30sp"
+            android:paddingBottom="6dp" />
 
         <TextView
             android:layout_width="wrap_content"
@@ -46,12 +47,12 @@
             android:shadowColor="#000000"
             android:shadowDx="0"
             android:shadowDy="2"
-            android:shadowRadius="8" />
+            android:shadowRadius="10" />
 
         <View
             android:layout_width="120dp"
             android:layout_height="2dp"
-            android:layout_marginVertical="14dp"
+            android:layout_marginVertical="12dp"
             android:background="@color/gold" />
 
         <TextView
@@ -60,26 +61,24 @@
             android:gravity="center"
             android:text="@string/subtitle"
             android:textColor="#F2F2F2"
-            android:textSize="16sp"
+            android:textSize="15sp"
             android:shadowColor="#000000"
             android:shadowDx="0"
             android:shadowDy="2"
-            android:shadowRadius="6" />
-    </LinearLayout>
+            android:shadowRadius="8" />
 
-    <!-- Enter button -->
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnEnter"
-        style="@style/Widget.MaterialComponents.Button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom|center_horizontal"
-        android:layout_marginBottom="56dp"
-        android:paddingHorizontal="36dp"
-        android:text="@string/enter_reading"
-        android:textColor="#1B5E20"
-        android:textSize="17sp"
-        app:backgroundTint="@color/gold"
-        app:cornerRadius="26dp" />
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnEnter"
+            style="@style/Widget.MaterialComponents.Button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:paddingHorizontal="40dp"
+            android:text="@string/enter_reading"
+            android:textColor="#1B5E20"
+            android:textSize="17sp"
+            app:backgroundTint="@color/gold"
+            app:cornerRadius="26dp" />
+    </LinearLayout>
 
 </FrameLayout>
