@@ -69,7 +69,10 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         setSupportActionBar(binding.toolbar)
-        supportActionBar?.title = getString(R.string.app_name)
+        // Build number in the title bar: the quickest way to tell at a glance
+        // whether the phone is actually running the newest APK.
+        supportActionBar?.title =
+            getString(R.string.app_name) + "  ·  " + BuildConfig.VERSION_NAME
         binding.toolbar.setNavigationOnClickListener { toggleDrawer() }
 
         BackgroundLoader.apply(this, binding.bgImage)

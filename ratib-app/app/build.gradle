@@ -16,9 +16,26 @@ android {
         versionName ((project.findProperty('verName') ?: '1.0').toString())
     }
 
+    // A fixed key committed with the project. Without it every CI run generated
+    // a throw-away debug key, so each APK had a different signature and Android
+    // refused to install it over the previous one ("App not installed") — the
+    // phone silently kept running the old build.
+    signingConfigs {
+        shared {
+            storeFile file('../ratib-debug.keystore')
+            storePassword 'ratibapp'
+            keyAlias 'ratibkey'
+            keyPassword 'ratibapp'
+        }
+    }
+
     buildTypes {
+        debug {
+            signingConfig signingConfigs.shared
+        }
         release {
             minifyEnabled false
+            signingConfig signingConfigs.shared
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
