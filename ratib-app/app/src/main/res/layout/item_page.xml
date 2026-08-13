@@ -11,6 +11,7 @@
         android:paddingHorizontal="20dp"
         android:paddingVertical="14dp"
         android:textColor="@color/reading_text"
+        android:fontFamily="@font/amiri"
         android:lineSpacingMultiplier="1.4"
         android:hyphenationFrequency="none" />
 </FrameLayout>

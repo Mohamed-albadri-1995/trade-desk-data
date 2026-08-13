@@ -13,6 +13,7 @@ import android.text.style.AbsoluteSizeSpan
 import android.text.style.ForegroundColorSpan
 import android.text.style.StyleSpan
 import androidx.core.content.ContextCompat
+import androidx.core.content.res.ResourcesCompat
 
 /** A renderable block: a section heading, a sub-heading, or a stanza. */
 sealed class Block {
@@ -60,9 +61,11 @@ object Paginator {
         val subheadingColor = ContextCompat.getColor(context, R.color.subheading_text)
         val cueColor = ContextCompat.getColor(context, R.color.marker_color)
 
+        val amiri = runCatching { ResourcesCompat.getFont(context, R.font.amiri) }.getOrNull()
         val paint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
             textSize = bodyPx.toFloat()
             color = bodyColor
+            if (amiri != null) typeface = amiri
         }
         val w = widthPx.coerceAtLeast(1)
         val limit = heightPx.coerceAtLeast(1)
