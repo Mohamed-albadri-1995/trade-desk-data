@@ -297,12 +297,8 @@ class MainActivity : AppCompatActivity() {
 
     private fun updateIndicator(position: Int) {
         val total = pagination?.pages?.size ?: 1
-        val counter = getString(R.string.page_of, toArabicDigits(position + 1), toArabicDigits(total))
-        // Temporary: how much of this page is used, how much it had, and the
-        // height of one line. Screenshots alone cannot tell me why a page stops
-        // short; these numbers can. Removed once the cause is found.
-        val fill = pagination?.fill?.getOrNull(position)
-        binding.pageIndicator.text = if (fill == null) counter else "$counter   $fill"
+        binding.pageIndicator.text =
+            getString(R.string.page_of, toArabicDigits(position + 1), toArabicDigits(total))
     }
 
     private fun toArabicDigits(n: Int): String {

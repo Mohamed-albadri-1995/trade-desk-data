@@ -30,14 +30,12 @@ sealed class Block {
  * @param footnotes      footnote text pinned to the bottom of each page (null if none)
  * @param pageStartBlock  block index that begins each page
  * @param headingPage     heading block-index -> the page it lands on
- * @param fill            per page: used/room/line, for diagnosing leftover space
  */
 data class Pagination(
     val pages: List<CharSequence>,
     val footnotes: List<CharSequence?>,
     val pageStartBlock: List<Int>,
-    val headingPage: Map<Int, Int>,
-    val fill: List<String> = emptyList()
+    val headingPage: Map<Int, Int>
 )
 
 /**
@@ -50,17 +48,11 @@ object Paginator {
 
     private val cueRegex = Regex("\\([^)]*\\)|[0-9\\u0660-\\u0669]+")
 
-    /**
-     * Must match item_page.xml's lineSpacingMultiplier, or pages mis-measure.
-     *
-     * Amiri's own ascenders and descenders already leave generous room between
-     * lines — measured on the device, a line of 21sp body text came to 159px
-     * with a 1.3 multiplier on top, so a page held barely eleven lines and a
-     * two-line couplet needed 318px of the 1816px available. The multiplier is
-     * dropped to the font's natural spacing, which is airy enough for Arabic
-     * with its diacritics and gives a page about four more lines.
-     */
-    const val LINE_SPACING = 1.0f
+    /** Must match item_page.xml's lineSpacingMultiplier, or pages mis-measure. */
+    const val LINE_SPACING = 1.3f
+
+    /** Footnotes are set tighter than the body; matches item_page.xml. */
+    private const val FOOTNOTE_LINE_SPACING = 1.0f
 
     /**
      * Fewest lines that may be left on either side when a block is broken over
@@ -188,6 +180,14 @@ object Paginator {
             return sb
         }
 
+        /** The footnote is set tighter than the body, so it measures that way. */
+        fun measureFootnote(cs: CharSequence): Int {
+            @Suppress("DEPRECATION")
+            return StaticLayout(
+                cs, paint, w, Layout.Alignment.ALIGN_CENTER, FOOTNOTE_LINE_SPACING, 0f, true
+            ).height
+        }
+
         fun buildFootnote(text: String): CharSequence {
             val sb = SpannableStringBuilder("٭ $text")
             sb.setSpan(AbsoluteSizeSpan(footnotePx), 0, sb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
@@ -201,7 +201,6 @@ object Paginator {
         val pageFns = ArrayList<CharSequence?>()
         val pageStartBlock = ArrayList<Int>()
         val headingPage = HashMap<Int, Int>()
-        val pageFill = ArrayList<String>()
 
         var current = SpannableStringBuilder()
         var currentStart = -1
@@ -224,11 +223,6 @@ object Paginator {
 
         fun flush() {
             if (current.isNotEmpty()) {
-                // Recorded so the leftover at the foot of a page can be read off
-                // the device instead of guessed at from a screenshot.
-                pageFill.add(
-                    "${measure(current)}/${limit - reserve(currentFn, currentFnHeight)}/$oneLine"
-                )
                 pages.add(SpannableString(current))
                 pageFns.add(currentFn)
                 pageStartBlock.add(if (currentStart < 0) 0 else currentStart)
@@ -328,7 +322,7 @@ object Paginator {
             prevWasNav = b.isNav
 
             val blockFn = footnotes[i]?.let { buildFootnote(it) }
-            val blockFnHeight = if (blockFn != null) measure(blockFn) else 0
+            val blockFnHeight = if (blockFn != null) measureFootnote(blockFn) else 0
 
             // Whatever is still left of this block to place. A page is only ever
             // ended because it ran out of room, never because of what comes next,
@@ -421,8 +415,6 @@ object Paginator {
         if (pages.isEmpty()) {
             pages.add(""); pageFns.add(null); pageStartBlock.add(0)
         }
-        while (pageFill.size < pages.size) pageFill.add("-")
-
-        return Pagination(pages, pageFns, pageStartBlock, headingPage, pageFill)
+        return Pagination(pages, pageFns, pageStartBlock, headingPage)
     }
 }
