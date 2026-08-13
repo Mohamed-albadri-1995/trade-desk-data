@@ -236,29 +236,20 @@ class MainActivity : AppCompatActivity() {
     private fun paddingV() = (14f * density * 2 + 20f * density).toInt()
 
     /**
-     * Pick the default zoom: the largest comfortable text that still keeps the
-     * whole ratib within [maxPages]. Pages are packed full by the paginator, so
-     * the book normally lands well under that ceiling — the bigger font then
-     * uses the room up instead of leaving pages half empty.
+     * The default zoom is the normal reading size; it is only reduced if the
+     * ratib would otherwise run past [maxPages]. The font is deliberately not
+     * enlarged to "use up" spare room — that would push the page count back up,
+     * and the point is to end with as few, as full, pages as possible.
      */
     private fun autoFitScale(w: Int, h: Int): Float {
         fun count(s: Float) = Paginator.paginate(this, blocks, footnotes, w, h, s).pages.size
-        if (count(1.0f) > maxPages) {
-            var s = 1.0f
-            while (s > 0.55f) {
-                s -= 0.05f
-                if (count(s) <= maxPages) return s
-            }
-            return 0.55f
-        }
-        // Room to spare: grow the text while the book still fits in maxPages.
+        if (count(1.0f) <= maxPages) return 1.0f
         var s = 1.0f
-        while (s < 1.5f) {
-            val next = s + 0.05f
-            if (count(next) > maxPages) break
-            s = next
+        while (s > 0.55f) {
+            s -= 0.05f
+            if (count(s) <= maxPages) return s
         }
-        return s
+        return 0.55f
     }
 
     private fun repaginate(restorePage: Int) {

@@ -47,7 +47,9 @@ data class Pagination(
 object Paginator {
 
     private val cueRegex = Regex("\\([^)]*\\)|[0-9\\u0660-\\u0669]+")
-    const val LINE_SPACING = 1.5f
+
+    /** Must match item_page.xml's lineSpacingMultiplier, or pages mis-measure. */
+    const val LINE_SPACING = 1.3f
 
     fun paginate(
         context: Context,
@@ -168,10 +170,10 @@ object Paginator {
         val built = blocks.map { buildBlock(it) }
 
         /**
-         * A heading must never be stranded at the foot of a page. Returns the
-         * height of the heading (plus any sub-heading directly under it) *and*
-         * the first stanza that follows, i.e. the smallest group that has to
-         * stay together for the heading to look like it opens something.
+         * How much room a heading needs before it is worth starting here: the
+         * heading run itself plus two lines of whatever follows. Only two lines
+         * — demanding the whole next paragraph fit is what was breaking pages
+         * early and leaving them a third empty.
          */
         fun headingGroupHeight(i: Int): Int {
             var j = i
@@ -180,24 +182,42 @@ object Paginator {
                 if (group.isNotEmpty()) group.append(gap)
                 group.append(built[j]); j++
             }
-            if (j < blocks.size) { group.append(gap); group.append(built[j]) }
-            return measure(group)
+            return measure(group) + oneLine + 2 * oneLine
         }
+
+        /**
+         * The character offset at which [cs] should be cut so the part that is
+         * kept is the most whole lines that fit in [avail]. 0 means not even one
+         * line fits.
+         */
+        fun cutAt(cs: CharSequence, avail: Int): Int {
+            if (avail <= 0) return 0
+            @Suppress("DEPRECATION")
+            val bl = StaticLayout(cs, paint, w, Layout.Alignment.ALIGN_CENTER, LINE_SPACING, 0f, true)
+            var end = 0
+            for (line in 0 until bl.lineCount) {
+                if (bl.getLineBottom(line) > avail) break
+                end = bl.getLineEnd(line)
+            }
+            return end
+        }
+
+        /** Prose may be broken across pages; verse and headings may not. */
+        fun isSplittable(b: Block) = b is Block.Body && !b.text.contains('\n') && b.text.length > 55
 
         var prevWasNav = false
 
         blocks.forEachIndexed { i, b ->
             // Pages are packed as full as they will go. The only reason to break
-            // early is an orphaned heading: if the heading and the text it
-            // introduces cannot both fit in what is left, move them to the next
-            // page — but only when they would actually fit better there.
+            // early is an orphaned heading: if the heading plus a couple of lines
+            // of its text cannot fit in what is left, move it to the next page.
             // Skipped right after another heading: the run was already measured
             // as one group, and breaking here would strand that heading.
             if (b.isNav && current.isNotEmpty() && !prevWasNav) {
                 val used = measure(current)
                 val groupH = headingGroupHeight(i)
-                val room = limit - reserve(currentFn, currentFnHeight)
-                if (used + oneLine + groupH > room && groupH <= room) flush()
+                val pageRoom = limit - reserve(currentFn, currentFnHeight)
+                if (used + oneLine + groupH > pageRoom && groupH <= pageRoom) flush()
             }
             prevWasNav = b.isNav
 
@@ -211,8 +231,36 @@ object Paginator {
 
             val pageFn = currentFn ?: blockFn
             val pageFnHeight = if (currentFn != null) currentFnHeight else blockFnHeight
+            val room = limit - reserve(pageFn, pageFnHeight)
 
-            if (measure(candidate) <= limit - reserve(pageFn, pageFnHeight)) {
+            // A long paragraph that does not fit in what is left is not moved
+            // whole to the next page (that is what left big gaps at the bottom):
+            // it fills this page down to the last line and continues overleaf.
+            if (measure(candidate) > room && current.isNotEmpty() && isSplittable(b)) {
+                val avail = room - measure(current) - oneLine
+                val cut = cutAt(blockCs, avail)
+                if (cut > 0) {
+                    current.append(gap)
+                    current.append(blockCs.subSequence(0, cut))
+                    if (currentFn == null && blockFn != null) {
+                        currentFn = blockFn; currentFnHeight = blockFnHeight
+                    }
+                    flush()
+                    var rest: CharSequence = blockCs.subSequence(cut, blockCs.length)
+                    while (measure(rest) > limit) {
+                        val c2 = cutAt(rest, limit)
+                        if (c2 <= 0 || c2 >= rest.length) break
+                        pages.add(rest.subSequence(0, c2))
+                        pageFns.add(null); pageStartBlock.add(i)
+                        rest = rest.subSequence(c2, rest.length)
+                    }
+                    current = SpannableStringBuilder(rest)
+                    currentStart = i
+                    return@forEachIndexed
+                }
+            }
+
+            if (measure(candidate) <= room) {
                 current = candidate
                 if (currentStart < 0) currentStart = i
                 if (b.isNav) headingPage[i] = pages.size
