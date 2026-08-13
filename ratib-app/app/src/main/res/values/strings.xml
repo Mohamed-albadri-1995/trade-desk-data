@@ -29,6 +29,7 @@
     <string name="save">حفظ</string>
     <string name="saved">تم الحفظ</string>
     <string name="location_failed">تعذّر الحصول على الموقع، أدخل الإحداثيات يدويًا.</string>
+    <string name="locating">جاري تحديد الموقع…</string>
     <string name="need_location">أدخل موقعك أولًا لتفعيل التنبيهات.</string>
     <string name="reminders_channel">تنبيهات الأوراد</string>
     <string name="stop">إيقاف</string>

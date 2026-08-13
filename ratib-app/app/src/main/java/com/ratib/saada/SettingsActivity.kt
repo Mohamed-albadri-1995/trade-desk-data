@@ -3,8 +3,12 @@ package com.ratib.saada
 import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
+import android.location.Location
+import android.location.LocationListener
 import android.location.LocationManager
+import android.os.Build
 import android.os.Bundle
+import android.os.Looper
 import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.EditText
@@ -62,45 +66,87 @@ class SettingsActivity : AppCompatActivity() {
 
         findViewById<Button>(R.id.btnUseLocation).setOnClickListener { requestLocation() }
         findViewById<Button>(R.id.btnSave).setOnClickListener { save() }
-    }
 
-    private fun requestLocation() {
-        val fine = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
-        val coarse = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)
-        if (fine == PackageManager.PERMISSION_GRANTED || coarse == PackageManager.PERMISSION_GRANTED) {
-            fetchLocation()
-        } else {
-            locationPermission.launch(
-                arrayOf(
-                    Manifest.permission.ACCESS_FINE_LOCATION,
-                    Manifest.permission.ACCESS_COARSE_LOCATION
-                )
-            )
+        // Ask for location up-front (like notifications) when reminders are on and
+        // we don't have a location yet.
+        if (ReminderPrefs.master(this) && !hasLocationPermission() && !ReminderPrefs.hasLocation(this)) {
+            locationPermission.launch(locationPerms)
         }
     }
 
+    private val locationPerms = arrayOf(
+        Manifest.permission.ACCESS_FINE_LOCATION,
+        Manifest.permission.ACCESS_COARSE_LOCATION
+    )
+
+    private fun hasLocationPermission(): Boolean =
+        ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) ==
+            PackageManager.PERMISSION_GRANTED ||
+            ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) ==
+            PackageManager.PERMISSION_GRANTED
+
+    private fun requestLocation() {
+        if (hasLocationPermission()) fetchLocation()
+        else locationPermission.launch(locationPerms)
+    }
+
+    private fun fill(loc: Location) {
+        etLat.setText(loc.latitude.toString())
+        etLng.setText(loc.longitude.toString())
+        Toast.makeText(this, R.string.saved, Toast.LENGTH_SHORT).show()
+    }
+
     private fun fetchLocation() {
+        if (!hasLocationPermission()) { requestLocation(); return }
         try {
             val lm = getSystemService(Context.LOCATION_SERVICE) as LocationManager
-            val providers = listOf(
+            // Best cached fix first.
+            var loc: Location? = null
+            for (p in listOf(
                 LocationManager.GPS_PROVIDER,
                 LocationManager.NETWORK_PROVIDER,
                 LocationManager.PASSIVE_PROVIDER
-            )
-            var loc: android.location.Location? = null
-            for (p in providers) {
-                if (lm.isProviderEnabled(p)) {
-                    @Suppress("MissingPermission")
-                    val l = lm.getLastKnownLocation(p)
-                    if (l != null && (loc == null || l.time > loc.time)) loc = l
-                }
+            )) {
+                if (!lm.isProviderEnabled(p)) continue
+                @Suppress("MissingPermission")
+                val l = lm.getLastKnownLocation(p)
+                if (l != null && (loc == null || l.time > loc.time)) loc = l
             }
-            if (loc != null) {
-                etLat.setText(loc.latitude.toString())
-                etLng.setText(loc.longitude.toString())
-                Toast.makeText(this, R.string.saved, Toast.LENGTH_SHORT).show()
+            if (loc != null) { fill(loc); return }
+            // No cache — request one live fix.
+            requestLiveFix(lm)
+        } catch (_: SecurityException) {
+            Toast.makeText(this, R.string.location_failed, Toast.LENGTH_LONG).show()
+        }
+    }
+
+    private fun requestLiveFix(lm: LocationManager) {
+        val provider = when {
+            lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER) -> LocationManager.NETWORK_PROVIDER
+            lm.isProviderEnabled(LocationManager.GPS_PROVIDER) -> LocationManager.GPS_PROVIDER
+            else -> null
+        }
+        if (provider == null) {
+            Toast.makeText(this, R.string.location_failed, Toast.LENGTH_LONG).show()
+            return
+        }
+        Toast.makeText(this, R.string.locating, Toast.LENGTH_SHORT).show()
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                lm.getCurrentLocation(provider, null, mainExecutor) { loc ->
+                    runOnUiThread {
+                        if (loc != null) fill(loc)
+                        else Toast.makeText(this, R.string.location_failed, Toast.LENGTH_LONG).show()
+                    }
+                }
             } else {
-                Toast.makeText(this, R.string.location_failed, Toast.LENGTH_LONG).show()
+                @Suppress("DEPRECATION")
+                lm.requestSingleUpdate(provider, object : LocationListener {
+                    override fun onLocationChanged(location: Location) { fill(location) }
+                    override fun onStatusChanged(p: String?, s: Int, e: Bundle?) {}
+                    override fun onProviderEnabled(p: String) {}
+                    override fun onProviderDisabled(p: String) {}
+                }, Looper.getMainLooper())
             }
         } catch (_: SecurityException) {
             Toast.makeText(this, R.string.location_failed, Toast.LENGTH_LONG).show()
