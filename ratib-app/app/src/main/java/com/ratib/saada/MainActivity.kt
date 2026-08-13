@@ -33,7 +33,6 @@ class MainActivity : AppCompatActivity() {
     private lateinit var pagerAdapter: PagerAdapter
 
     private val prefsName = "ratib_prefs"
-    private val scaleKey = "font_scale"
     private val pageKey = "page_index"
     private val nightKey = "night_mode"
 
@@ -304,26 +303,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun changeFont(delta: Float) {
-        val s = (scale + delta).coerceIn(0.8f, 2.4f)
-        if (s == scale) return
-        // Keep our place: remember which block was at the top of the current page.
-        val anchorBlock = pagination?.pageStartBlock?.getOrNull(binding.pager.currentItem) ?: 0
-        scale = s
-        prefs().edit().putFloat(scaleKey, s).apply()
-        val w = binding.pager.width - paddingH()
-        val h = binding.pager.height - paddingV()
-        val result = Paginator.paginate(this, blocks, footnotes, w, h, scale)
-        pagination = result
-        pagerAdapter.submit(result.pages, result.footnotes)
-        buildDrawerMenu(result)
-        // Find the page that starts at or before that block.
-        var page = result.pageStartBlock.indexOfLast { it <= anchorBlock }
-        if (page < 0) page = 0
-        binding.pager.setCurrentItem(page, false)
-        updateIndicator(page)
-    }
-
     private fun isNightActive(): Boolean =
         (resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) ==
             Configuration.UI_MODE_NIGHT_YES
@@ -343,8 +322,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean = when (item.itemId) {
-        R.id.action_font_larger -> { changeFont(0.1f); true }
-        R.id.action_font_smaller -> { changeFont(-0.1f); true }
         R.id.action_theme -> { toggleTheme(); true }
         R.id.action_settings -> { startActivity(Intent(this, SettingsActivity::class.java)); true }
         else -> super.onOptionsItemSelected(item)
