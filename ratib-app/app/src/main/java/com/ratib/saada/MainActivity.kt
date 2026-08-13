@@ -7,27 +7,28 @@ import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.view.GravityCompat
-import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.viewpager2.widget.ViewPager2
 import com.ratib.saada.databinding.ActivityMainBinding
 
 /**
- * Reader for راتب السعادة. The text lives in assets/ratib.txt (lines starting
- * with "# " are section headings). Features: section drawer, adjustable font
- * size, light/dark mode, and it remembers the reading position.
+ * Book-style reader for راتب السعادة: the text is laid out and cut into
+ * screen-sized pages you flip through (right-to-left). Includes a section
+ * drawer, page counter, flip arrows, adjustable font, light/dark mode, a
+ * photo background, and it remembers the page you were on.
  */
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
-    private lateinit var adapter: RatibAdapter
-    private lateinit var layoutManager: LinearLayoutManager
+    private lateinit var pagerAdapter: PagerAdapter
 
     private val prefsName = "ratib_prefs"
     private val scaleKey = "font_scale"
-    private val posKey = "scroll_pos"
+    private val pageKey = "page_index"
     private val nightKey = "night_mode"
 
     private val blocks = ArrayList<Block>()
-    private val headings = ArrayList<Pair<String, Int>>() // title, block index
+    private var pagination: Pagination? = null
+    private var scale = 1f
 
     override fun onCreate(savedInstanceState: Bundle?) {
         AppCompatDelegate.setDefaultNightMode(
@@ -42,18 +43,28 @@ class MainActivity : AppCompatActivity() {
         binding.toolbar.setNavigationOnClickListener { toggleDrawer() }
 
         BackgroundLoader.apply(this, binding.bgImage)
-
+        scale = prefs().getFloat(scaleKey, 1f)
         parseContent()
 
-        adapter = RatibAdapter(blocks).apply { scale = prefs().getFloat(scaleKey, 1f) }
-        layoutManager = LinearLayoutManager(this)
-        binding.recyclerView.layoutManager = layoutManager
-        binding.recyclerView.adapter = adapter
+        pagerAdapter = PagerAdapter(emptyList())
+        binding.pager.adapter = pagerAdapter
+        binding.pager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
+            override fun onPageSelected(position: Int) {
+                updateIndicator(position)
+                prefs().edit().putInt(pageKey, position).apply()
+            }
+        })
 
-        buildDrawerMenu()
+        binding.btnPrev.setOnClickListener {
+            binding.pager.currentItem = (binding.pager.currentItem - 1).coerceAtLeast(0)
+        }
+        binding.btnNext.setOnClickListener {
+            val max = (pagination?.pages?.size ?: 1) - 1
+            binding.pager.currentItem = (binding.pager.currentItem + 1).coerceAtMost(max)
+        }
 
-        val pos = prefs().getInt(posKey, 0)
-        if (pos in blocks.indices) layoutManager.scrollToPosition(pos)
+        // Paginate once the pager has real dimensions.
+        binding.pager.post { repaginate(restorePage = prefs().getInt(pageKey, 0)) }
     }
 
     private fun prefs() = getSharedPreferences(prefsName, MODE_PRIVATE)
@@ -69,36 +80,73 @@ class MainActivity : AppCompatActivity() {
         assets.open("ratib.txt").bufferedReader().forEachLine { raw ->
             val line = raw.trim()
             if (line.isEmpty()) return@forEachLine
-            if (line.startsWith("# ")) {
-                val title = line.removePrefix("# ").trim()
-                headings.add(Pair(title, blocks.size))
-                blocks.add(Block.Heading(title))
-            } else {
-                blocks.add(Block.Body(line))
-            }
+            if (line.startsWith("# ")) blocks.add(Block.Heading(line.removePrefix("# ").trim()))
+            else blocks.add(Block.Body(line))
         }
     }
 
-    private fun buildDrawerMenu() {
+    private fun paddingH() = (20f * resources.displayMetrics.density * 2).toInt()
+    private fun paddingV() = (12f * resources.displayMetrics.density * 2).toInt()
+
+    private fun repaginate(restorePage: Int) {
+        val w = binding.pager.width - paddingH()
+        val h = binding.pager.height - paddingV()
+        if (w <= 0 || h <= 0) {
+            binding.pager.post { repaginate(restorePage) }
+            return
+        }
+        val result = Paginator.paginate(this, blocks, w, h, scale)
+        pagination = result
+        pagerAdapter.submit(result.pages)
+        buildDrawerMenu(result)
+        val target = restorePage.coerceIn(0, result.pages.size - 1)
+        binding.pager.setCurrentItem(target, false)
+        updateIndicator(target)
+    }
+
+    private fun updateIndicator(position: Int) {
+        val total = pagination?.pages?.size ?: 1
+        binding.pageIndicator.text =
+            getString(R.string.page_of, toArabicDigits(position + 1), toArabicDigits(total))
+    }
+
+    private fun toArabicDigits(n: Int): String {
+        val d = charArrayOf('٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩')
+        return buildString { for (c in n.toString()) append(if (c in '0'..'9') d[c - '0'] else c) }
+    }
+
+    private fun buildDrawerMenu(result: Pagination) {
         val menu = binding.navView.menu
         menu.clear()
-        headings.forEachIndexed { i, (title, _) -> menu.add(Menu.NONE, i, i, title) }
+        blocks.forEachIndexed { i, b ->
+            if (b is Block.Heading) menu.add(Menu.NONE, i, i, b.text)
+        }
         binding.navView.setNavigationItemSelectedListener { item ->
-            val idx = item.itemId
-            if (idx in headings.indices) {
-                layoutManager.scrollToPositionWithOffset(headings[idx].second, 0)
-            }
+            val page = pagination?.headingPage?.get(item.itemId)
+            if (page != null) binding.pager.setCurrentItem(page, false)
             binding.drawerLayout.closeDrawer(GravityCompat.START)
             true
         }
     }
 
     private fun changeFont(delta: Float) {
-        val s = (adapter.scale + delta).coerceIn(0.8f, 2.4f)
-        if (s == adapter.scale) return
-        adapter.scale = s
+        val s = (scale + delta).coerceIn(0.8f, 2.4f)
+        if (s == scale) return
+        // Keep our place: remember the character offset at the top of the current page.
+        val anchorChar = pagination?.starts?.getOrNull(binding.pager.currentItem) ?: 0
+        scale = s
         prefs().edit().putFloat(scaleKey, s).apply()
-        adapter.notifyDataSetChanged()
+        val w = binding.pager.width - paddingH()
+        val h = binding.pager.height - paddingV()
+        val result = Paginator.paginate(this, blocks, w, h, scale)
+        pagination = result
+        pagerAdapter.submit(result.pages)
+        buildDrawerMenu(result)
+        // Find the page whose start is nearest but not past the anchor.
+        var page = result.starts.indexOfLast { it <= anchorChar }
+        if (page < 0) page = 0
+        binding.pager.setCurrentItem(page, false)
+        updateIndicator(page)
     }
 
     private fun isNightActive(): Boolean =
@@ -111,7 +159,7 @@ class MainActivity : AppCompatActivity() {
         else
             AppCompatDelegate.MODE_NIGHT_YES
         prefs().edit().putInt(nightKey, next).apply()
-        AppCompatDelegate.setDefaultNightMode(next) // recreates the activity
+        AppCompatDelegate.setDefaultNightMode(next)
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -124,12 +172,6 @@ class MainActivity : AppCompatActivity() {
         R.id.action_font_smaller -> { changeFont(-0.1f); true }
         R.id.action_theme -> { toggleTheme(); true }
         else -> super.onOptionsItemSelected(item)
-    }
-
-    override fun onPause() {
-        super.onPause()
-        val first = layoutManager.findFirstVisibleItemPosition().coerceAtLeast(0)
-        prefs().edit().putInt(posKey, first).apply()
     }
 
     override fun onBackPressed() {
