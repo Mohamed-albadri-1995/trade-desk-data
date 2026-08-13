@@ -22,26 +22,39 @@ object ReminderScheduler {
     data class Fire(val timeMillis: Long, val label: String)
 
     fun rescheduleNext(context: Context) {
-        val am = context.getSystemService(AlarmManager::class.java) ?: return
-        val firePi = firePendingIntent(context, null)
+        // Never let a scheduling problem crash the app.
+        try {
+            val am = context.getSystemService(AlarmManager::class.java) ?: return
+            val firePi = firePendingIntent(context, null)
 
-        if (!ReminderPrefs.master(context) || !ReminderPrefs.hasLocation(context)) {
-            am.cancel(firePi)
-            return
+            if (!ReminderPrefs.master(context) || !ReminderPrefs.hasLocation(context)) {
+                am.cancel(firePi)
+                return
+            }
+
+            val now = System.currentTimeMillis()
+            val next = buildFires(context)
+                .filter { it.timeMillis > now + 1000 }
+                .minByOrNull { it.timeMillis } ?: return
+
+            val show = PendingIntent.getActivity(
+                context, 0,
+                Intent(context, MainActivity::class.java),
+                PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+            )
+            val op = firePendingIntent(context, next.label)
+            try {
+                am.setAlarmClock(AlarmManager.AlarmClockInfo(next.timeMillis, show), op)
+            } catch (_: Throwable) {
+                try {
+                    am.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, next.timeMillis, op)
+                } catch (_: Throwable) {
+                    am.set(AlarmManager.RTC_WAKEUP, next.timeMillis, op)
+                }
+            }
+        } catch (t: Throwable) {
+            android.util.Log.e("ReminderScheduler", "rescheduleNext failed", t)
         }
-
-        val now = System.currentTimeMillis()
-        val next = buildFires(context)
-            .filter { it.timeMillis > now + 1000 }
-            .minByOrNull { it.timeMillis } ?: return
-
-        val show = PendingIntent.getActivity(
-            context, 0,
-            Intent(context, MainActivity::class.java),
-            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
-        )
-        val op = firePendingIntent(context, next.label)
-        am.setAlarmClock(AlarmManager.AlarmClockInfo(next.timeMillis, show), op)
     }
 
     fun cancel(context: Context) {

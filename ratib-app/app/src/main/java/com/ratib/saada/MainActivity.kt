@@ -35,6 +35,8 @@ class MainActivity : AppCompatActivity() {
     private val blocks = ArrayList<Block>()
     private var pagination: Pagination? = null
     private var scale = 1f
+    private var needsAutoFit = false
+    private val targetPages = 15
 
     private val notifPermission =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { }
@@ -52,6 +54,7 @@ class MainActivity : AppCompatActivity() {
         binding.toolbar.setNavigationOnClickListener { toggleDrawer() }
 
         BackgroundLoader.apply(this, binding.bgImage)
+        needsAutoFit = !prefs().contains(scaleKey)
         scale = prefs().getFloat(scaleKey, 1f)
         parseContent()
 
@@ -127,8 +130,22 @@ class MainActivity : AppCompatActivity() {
         flushBuffer()
     }
 
-    private fun paddingH() = (20f * resources.displayMetrics.density * 2).toInt()
-    private fun paddingV() = (12f * resources.displayMetrics.density * 2).toInt()
+    private val density get() = resources.displayMetrics.density
+    private fun paddingH() = (20f * density * 2).toInt()
+    // 14dp padding top+bottom in item_page, plus a safety line so nothing clips.
+    private fun paddingV() = (14f * density * 2 + 20f * density).toInt()
+
+    /** Largest font scale that keeps the whole ratib within ~targetPages pages. */
+    private fun autoFitScale(w: Int, h: Int): Float {
+        var best = 0.7f
+        var s = 0.7f
+        while (s <= 1.51f) {
+            val pages = Paginator.paginate(this, blocks, w, h, s).pages.size
+            if (pages <= targetPages) best = s
+            s += 0.05f
+        }
+        return best
+    }
 
     private fun repaginate(restorePage: Int) {
         val w = binding.pager.width - paddingH()
@@ -136,6 +153,11 @@ class MainActivity : AppCompatActivity() {
         if (w <= 0 || h <= 0) {
             binding.pager.post { repaginate(restorePage) }
             return
+        }
+        if (needsAutoFit) {
+            needsAutoFit = false
+            scale = autoFitScale(w, h)
+            prefs().edit().putFloat(scaleKey, scale).apply()
         }
         val result = Paginator.paginate(this, blocks, w, h, scale)
         pagination = result

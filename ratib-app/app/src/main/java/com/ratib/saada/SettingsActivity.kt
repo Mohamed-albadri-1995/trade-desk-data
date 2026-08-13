@@ -46,9 +46,9 @@ class SettingsActivity : AppCompatActivity() {
         etLat = findViewById(R.id.etLat)
         etLng = findViewById(R.id.etLng)
 
-        spMethod.adapter = ArrayAdapter.createFromResource(
-            this, R.array.methods_array, android.R.layout.simple_spinner_dropdown_item
-        )
+        spMethod.adapter = ArrayAdapter(
+            this, R.layout.spinner_item, resources.getStringArray(R.array.methods_array)
+        ).also { it.setDropDownViewResource(R.layout.spinner_item) }
 
         // Load current values.
         swMaster.isChecked = ReminderPrefs.master(this)
@@ -108,23 +108,25 @@ class SettingsActivity : AppCompatActivity() {
     }
 
     private fun save() {
-        ReminderPrefs.setFlag(this, "master", swMaster.isChecked)
-        ReminderPrefs.setFlag(this, "asas", swAsas.isChecked)
-        ReminderPrefs.setFlag(this, "morning", swMorning.isChecked)
-        ReminderPrefs.setFlag(this, "evening", swEvening.isChecked)
-        ReminderPrefs.setFlag(this, "suhur", swSuhur.isChecked)
-        ReminderPrefs.setMethod(this, spMethod.selectedItemPosition)
+        try {
+            ReminderPrefs.setFlag(this, "master", swMaster.isChecked)
+            ReminderPrefs.setFlag(this, "asas", swAsas.isChecked)
+            ReminderPrefs.setFlag(this, "morning", swMorning.isChecked)
+            ReminderPrefs.setFlag(this, "evening", swEvening.isChecked)
+            ReminderPrefs.setFlag(this, "suhur", swSuhur.isChecked)
+            ReminderPrefs.setMethod(this, spMethod.selectedItemPosition)
 
-        val lat = etLat.text.toString().toDoubleOrNull()
-        val lng = etLng.text.toString().toDoubleOrNull()
-        if (lat != null && lng != null) ReminderPrefs.setLocation(this, lat, lng)
+            val lat = etLat.text.toString().trim().toDoubleOrNull()
+            val lng = etLng.text.toString().trim().toDoubleOrNull()
+            if (lat != null && lng != null) ReminderPrefs.setLocation(this, lat, lng)
 
-        ReminderScheduler.rescheduleNext(this)
+            ReminderScheduler.rescheduleNext(this)
 
-        if (swMaster.isChecked && !ReminderPrefs.hasLocation(this)) {
-            Toast.makeText(this, R.string.need_location, Toast.LENGTH_LONG).show()
-        } else {
-            Toast.makeText(this, R.string.saved, Toast.LENGTH_SHORT).show()
+            val msg = if (swMaster.isChecked && !ReminderPrefs.hasLocation(this))
+                R.string.need_location else R.string.saved
+            Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
+        } catch (t: Throwable) {
+            android.util.Log.e("SettingsActivity", "save failed", t)
         }
         finish()
     }

@@ -7,11 +7,10 @@
         android:id="@+id/pageText"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:gravity="center"
+        android:gravity="top|center_horizontal"
         android:paddingHorizontal="20dp"
-        android:paddingVertical="12dp"
+        android:paddingVertical="14dp"
         android:textColor="@color/reading_text"
         android:lineSpacingMultiplier="1.4"
-        android:breakStrategy="balanced"
         android:hyphenationFrequency="none" />
 </FrameLayout>
