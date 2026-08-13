@@ -51,6 +51,13 @@ object Paginator {
     /** Must match item_page.xml's lineSpacingMultiplier, or pages mis-measure. */
     const val LINE_SPACING = 1.3f
 
+    /**
+     * Fewest lines that may be left on either side when a block is broken over
+     * a page. Two means a couplet (two lines) is never halved, while a longer
+     * paragraph flows on and fills the page.
+     */
+    private const val MIN_SPLIT_LINES = 2
+
     fun paginate(
         context: Context,
         blocks: List<Block>,
@@ -170,134 +177,82 @@ object Paginator {
         val built = blocks.map { buildBlock(it) }
 
         /**
-         * How much room a heading needs before it is worth starting here: the
-         * heading run itself plus two lines of whatever follows. Only two lines
-         * — demanding the whole next paragraph fit is what was breaking pages
-         * early and leaving them a third empty.
+         * Where [cs] would have to be cut to fill [avail]: the character offset
+         * after the last line that fits, how many lines that is, and how many
+         * lines the whole thing has.
          */
-        fun headingGroupHeight(i: Int): Int {
-            var j = i
-            val group = SpannableStringBuilder()
-            while (j < blocks.size && blocks[j].isNav) {
-                if (group.isNotEmpty()) group.append(gap)
-                group.append(built[j]); j++
-            }
-            return measure(group) + oneLine + 2 * oneLine
-        }
-
-        /**
-         * The character offset at which [cs] should be cut so the part that is
-         * kept is the most whole lines that fit in [avail]. 0 means not even one
-         * line fits.
-         */
-        fun cutAt(cs: CharSequence, avail: Int): Int {
-            if (avail <= 0) return 0
+        fun splitPoint(cs: CharSequence, avail: Int): Triple<Int, Int, Int> {
             @Suppress("DEPRECATION")
             val bl = StaticLayout(cs, paint, w, Layout.Alignment.ALIGN_CENTER, LINE_SPACING, 0f, true)
+            val total = bl.lineCount
+            if (avail <= 0) return Triple(0, 0, total)
             var end = 0
-            for (line in 0 until bl.lineCount) {
+            var fit = 0
+            for (line in 0 until total) {
                 if (bl.getLineBottom(line) > avail) break
                 end = bl.getLineEnd(line)
+                fit = line + 1
             }
-            return end
+            return Triple(end, fit, total)
         }
 
-        /** Prose may be broken across pages; verse and headings may not. */
-        fun isSplittable(b: Block) = b is Block.Body && !b.text.contains('\n') && b.text.length > 55
-
-        var prevWasNav = false
-
         blocks.forEachIndexed { i, b ->
-            // Pages are packed as full as they will go. The only reason to break
-            // early is an orphaned heading: if the heading plus a couple of lines
-            // of its text cannot fit in what is left, move it to the next page.
-            // Skipped right after another heading: the run was already measured
-            // as one group, and breaking here would strand that heading.
-            if (b.isNav && current.isNotEmpty() && !prevWasNav) {
-                val used = measure(current)
-                val groupH = headingGroupHeight(i)
-                val pageRoom = limit - reserve(currentFn, currentFnHeight)
-                if (used + oneLine + groupH > pageRoom && groupH <= pageRoom) flush()
-            }
-            prevWasNav = b.isNav
-
-            val blockCs = built[i]
             val blockFn = footnotes[i]?.let { buildFootnote(it) }
             val blockFnHeight = if (blockFn != null) measure(blockFn) else 0
 
-            val candidate = SpannableStringBuilder(current)
-            if (candidate.isNotEmpty()) candidate.append(gap)
-            candidate.append(blockCs)
+            // Whatever is still left of this block to place. A page is only ever
+            // ended because it ran out of room, never because of what comes next,
+            // so every page is filled right down to its last line.
+            var piece: CharSequence = built[i]
 
-            val pageFn = currentFn ?: blockFn
-            val pageFnHeight = if (currentFn != null) currentFnHeight else blockFnHeight
-            val room = limit - reserve(pageFn, pageFnHeight)
+            while (true) {
+                val pageFn = currentFn ?: blockFn
+                val pageFnHeight = if (currentFn != null) currentFnHeight else blockFnHeight
+                val room = limit - reserve(pageFn, pageFnHeight)
+                val used = if (current.isEmpty()) 0 else measure(current)
+                val gapH = if (current.isEmpty()) 0 else oneLine
 
-            // A long paragraph that does not fit in what is left is not moved
-            // whole to the next page (that is what left big gaps at the bottom):
-            // it fills this page down to the last line and continues overleaf.
-            if (measure(candidate) > room && current.isNotEmpty() && isSplittable(b)) {
-                val avail = room - measure(current) - oneLine
-                val cut = cutAt(blockCs, avail)
-                if (cut > 0) {
-                    current.append(gap)
-                    current.append(blockCs.subSequence(0, cut))
+                fun take(cs: CharSequence) {
+                    if (current.isEmpty()) currentStart = i else current.append(gap)
+                    current.append(cs)
+                    if (b.isNav) headingPage[i] = pages.size
                     if (currentFn == null && blockFn != null) {
                         currentFn = blockFn; currentFnHeight = blockFnHeight
                     }
-                    flush()
-                    var rest: CharSequence = blockCs.subSequence(cut, blockCs.length)
-                    while (measure(rest) > limit) {
-                        val c2 = cutAt(rest, limit)
-                        if (c2 <= 0 || c2 >= rest.length) break
-                        pages.add(rest.subSequence(0, c2))
-                        pageFns.add(null); pageStartBlock.add(i)
-                        rest = rest.subSequence(c2, rest.length)
-                    }
-                    current = SpannableStringBuilder(rest)
-                    currentStart = i
-                    return@forEachIndexed
                 }
-            }
 
-            if (measure(candidate) <= room) {
-                current = candidate
-                if (currentStart < 0) currentStart = i
-                if (b.isNav) headingPage[i] = pages.size
-                if (currentFn == null && blockFn != null) {
-                    currentFn = blockFn; currentFnHeight = blockFnHeight
+                if (used + gapH + measure(piece) <= room) {
+                    take(piece)
+                    break
                 }
-            } else {
+
+                // Too tall for what is left. Put as many of its lines here as
+                // fit and carry the rest over, as long as a sensible amount
+                // lands on each side — that keeps a couplet from being halved.
+                val (cut, fit, total) = splitPoint(piece, room - used - gapH)
+                if (cut > 0 && fit >= MIN_SPLIT_LINES && total - fit >= MIN_SPLIT_LINES) {
+                    take(piece.subSequence(0, cut))
+                    flush()
+                    piece = piece.subSequence(cut, piece.length)
+                    continue
+                }
+
+                if (current.isNotEmpty()) {
+                    // Try again with a whole empty page underneath it.
+                    flush()
+                    continue
+                }
+
+                // Taller than an entire empty page and not splittable on the
+                // rules above: cut it hard so we always make progress.
+                val (hard, _, _) = splitPoint(piece, room)
+                if (hard <= 0 || hard >= piece.length) {
+                    take(piece)
+                    break
+                }
+                take(piece.subSequence(0, hard))
                 flush()
-                if (measure(blockCs) <= limit - reserve(blockFn, blockFnHeight)) {
-                    current = SpannableStringBuilder(blockCs)
-                    currentStart = i
-                    if (b.isNav) headingPage[i] = pages.size
-                    if (blockFn != null) { currentFn = blockFn; currentFnHeight = blockFnHeight }
-                } else {
-                    if (b.isNav) headingPage[i] = pages.size
-                    @Suppress("DEPRECATION")
-                    val bl = StaticLayout(blockCs, paint, w, Layout.Alignment.ALIGN_CENTER, LINE_SPACING, 0f, true)
-                    val lc = bl.lineCount
-                    var startLine = 0
-                    while (startLine < lc) {
-                        val top = bl.getLineTop(startLine)
-                        var endLine = startLine
-                        while (endLine < lc && bl.getLineBottom(endLine) - top <= limit) endLine++
-                        if (endLine == startLine) endLine = startLine + 1
-                        val cs = bl.getLineStart(startLine)
-                        val ce = bl.getLineEnd(endLine - 1)
-                        val chunk = blockCs.subSequence(cs, ce)
-                        if (endLine < lc) {
-                            pages.add(chunk); pageFns.add(null); pageStartBlock.add(i)
-                        } else {
-                            current = SpannableStringBuilder(chunk)
-                            currentStart = i
-                            if (blockFn != null) { currentFn = blockFn; currentFnHeight = blockFnHeight }
-                        }
-                        startLine = endLine
-                    }
-                }
+                piece = piece.subSequence(hard, piece.length)
             }
         }
         flush()
