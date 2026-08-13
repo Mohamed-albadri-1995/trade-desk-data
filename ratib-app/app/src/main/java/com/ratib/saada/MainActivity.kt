@@ -253,7 +253,10 @@ class MainActivity : AppCompatActivity() {
     private val density get() = resources.displayMetrics.density
     private fun paddingH() = (20f * density * 2).toInt()
     // 14dp padding top+bottom in item_page, plus a safety line so nothing clips.
-    private fun paddingV() = (14f * density * 2 + 20f * density).toInt()
+    // Exactly item_page's 14dp top and bottom. There used to be a further 20dp
+    // held back against clipping, but the paginator measures with the font
+    // padding included now, so that was simply half a line taken off every page.
+    private fun paddingV() = (14f * density * 2).toInt()
 
     /**
      * The default zoom is the normal reading size; it is only reduced if the

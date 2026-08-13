@@ -202,11 +202,13 @@ object Paginator {
         val gap: CharSequence = "\n"
         val gapH = 0
 
-        // Room held back for a footnote pinned to the foot of the page. This is
-        // charged to the page before the footnoted verse is placed, so any
-        // padding here costs a verse its place and opens a hole above it. The
-        // note's own height, and nothing more.
-        fun reserve(fn: CharSequence?, fnH: Int) = if (fn != null) fnH else 0
+        // Room held back for a footnote pinned to the foot of the page: the
+        // note itself plus the rule above it and its margins, which is exactly
+        // what item_page.xml takes away from the text when a note is shown —
+        // no more, since this is charged to the page before the footnoted verse
+        // is placed, and any padding here costs that verse its place.
+        val footnoteChrome = (13f * dm.density).toInt()
+        fun reserve(fn: CharSequence?, fnH: Int) = if (fn != null) fnH + footnoteChrome else 0
 
         fun flush() {
             if (current.isNotEmpty()) {
@@ -248,6 +250,30 @@ object Paginator {
                 fit = line + 1
             }
             return Triple(end, fit, total)
+        }
+
+        /**
+         * Nudges a page break back to the end of the nearest clause, so a page
+         * stops at a completed phrase rather than in the middle of one —
+         * ...وجد كل نخارٍ في دينه، not ...وجد كل نخارٍ في. Gives up and keeps
+         * the original break if the nearest pause is more than a line back,
+         * rather than open a hole at the foot of the page.
+         */
+        fun clauseCut(cs: CharSequence, cut: Int, avail: Int): Int {
+            if (cut <= 0 || cut >= cs.length) return cut
+            val pauses = "،؛,.!؟?"
+            var p = cut - 1
+            while (p > 0) {
+                if (cs[p] in pauses) {
+                    var e = p + 1
+                    while (e < cs.length && cs[e] == ' ') e++
+                    if (e >= cs.length) return cut
+                    val kept = measure(cs.subSequence(0, e))
+                    return if (kept >= avail - oneLine && kept >= MIN_SPLIT_LINES * oneLine) e else cut
+                }
+                p--
+            }
+            return cut
         }
 
         /**
@@ -308,7 +334,14 @@ object Paginator {
                     }
                 }
 
-                if (used + gapBefore + measure(piece) <= room) {
+                // Measured as one piece of text, not as two heights added
+                // together: each separate measurement carries its own font
+                // padding, and summing them charged the page for padding twice
+                // — half a line of imagined height on every test.
+                val candidate = SpannableStringBuilder(current)
+                if (candidate.isNotEmpty()) candidate.append(gap)
+                candidate.append(piece)
+                if (measure(candidate) <= room) {
                     take(piece)
                     break
                 }
@@ -316,8 +349,10 @@ object Paginator {
                 // Too tall for what is left. Put as many of its lines here as
                 // fit and carry the rest over, as long as a sensible amount
                 // lands on each side — that keeps a couplet from being halved.
-                val (cut, fit, total) = splitPoint(piece, room - used - gapBefore)
-                if (cut > 0 && fit >= MIN_SPLIT_LINES && total - fit >= MIN_SPLIT_LINES) {
+                val avail = room - used - gapBefore
+                val (lineCut, fit, total) = splitPoint(piece, avail)
+                if (lineCut > 0 && fit >= MIN_SPLIT_LINES && total - fit >= MIN_SPLIT_LINES) {
+                    val cut = clauseCut(piece, lineCut, avail)
                     take(piece.subSequence(0, cut))
                     flush()
                     piece = piece.subSequence(cut, piece.length)
