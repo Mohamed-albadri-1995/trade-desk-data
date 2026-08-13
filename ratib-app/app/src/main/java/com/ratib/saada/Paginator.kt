@@ -30,12 +30,14 @@ sealed class Block {
  * @param footnotes      footnote text pinned to the bottom of each page (null if none)
  * @param pageStartBlock  block index that begins each page
  * @param headingPage     heading block-index -> the page it lands on
+ * @param fill            per page: used/room/line, for diagnosing leftover space
  */
 data class Pagination(
     val pages: List<CharSequence>,
     val footnotes: List<CharSequence?>,
     val pageStartBlock: List<Int>,
-    val headingPage: Map<Int, Int>
+    val headingPage: Map<Int, Int>,
+    val fill: List<String> = emptyList()
 )
 
 /**
@@ -190,6 +192,7 @@ object Paginator {
         val pageFns = ArrayList<CharSequence?>()
         val pageStartBlock = ArrayList<Int>()
         val headingPage = HashMap<Int, Int>()
+        val pageFill = ArrayList<String>()
 
         var current = SpannableStringBuilder()
         var currentStart = -1
@@ -212,6 +215,11 @@ object Paginator {
 
         fun flush() {
             if (current.isNotEmpty()) {
+                // Recorded so the leftover at the foot of a page can be read off
+                // the device instead of guessed at from a screenshot.
+                pageFill.add(
+                    "${measure(current)}/${limit - reserve(currentFn, currentFnHeight)}/$oneLine"
+                )
                 pages.add(SpannableString(current))
                 pageFns.add(currentFn)
                 pageStartBlock.add(if (currentStart < 0) 0 else currentStart)
@@ -404,7 +412,8 @@ object Paginator {
         if (pages.isEmpty()) {
             pages.add(""); pageFns.add(null); pageStartBlock.add(0)
         }
+        while (pageFill.size < pages.size) pageFill.add("-")
 
-        return Pagination(pages, pageFns, pageStartBlock, headingPage)
+        return Pagination(pages, pageFns, pageStartBlock, headingPage, pageFill)
     }
 }
