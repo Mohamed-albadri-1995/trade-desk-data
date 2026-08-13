@@ -124,6 +124,10 @@ class MainActivity : AppCompatActivity() {
                     flushBuffer()
                     blocks.add(Block.Heading(line.removePrefix("# ").trim()))
                 }
+                line.startsWith("> ") -> {
+                    flushBuffer()
+                    blocks.add(Block.Footnote(line.removePrefix("> ").trim()))
+                }
                 else -> buffer.add(line)
             }
         }

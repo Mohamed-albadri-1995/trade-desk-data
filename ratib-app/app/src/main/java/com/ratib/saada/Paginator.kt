@@ -21,6 +21,7 @@ sealed class Block {
     data class Heading(val text: String) : Block()
     data class Subheading(val text: String) : Block()
     data class Body(val text: String) : Block()
+    data class Footnote(val text: String) : Block()
 
     val isNav get() = this is Heading || this is Subheading
 }
@@ -60,9 +61,11 @@ object Paginator {
         val bodyPx = (21f * scale * dm.scaledDensity).toInt().coerceAtLeast(1)
         val headingPx = (24f * scale * dm.scaledDensity).toInt().coerceAtLeast(1)
         val subheadingPx = (20f * scale * dm.scaledDensity).toInt().coerceAtLeast(1)
+        val footnotePx = (15f * scale * dm.scaledDensity).toInt().coerceAtLeast(1)
         val bodyColor = ContextCompat.getColor(context, R.color.reading_text)
         val headingColor = ContextCompat.getColor(context, R.color.heading_text)
         val subheadingColor = ContextCompat.getColor(context, R.color.subheading_text)
+        val footnoteColor = ContextCompat.getColor(context, R.color.footnote_text)
         val cueColor = ContextCompat.getColor(context, R.color.marker_color)
 
         val amiri = runCatching { ResourcesCompat.getFont(context, R.font.amiri) }.getOrNull()
@@ -118,6 +121,13 @@ object Paginator {
                     val isProse = !b.text.contains('\n') && b.text.length > 55
                     val align = if (isProse) Layout.Alignment.ALIGN_NORMAL else Layout.Alignment.ALIGN_CENTER
                     sb.setSpan(AlignmentSpan.Standard(align), 0, sb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+                }
+                is Block.Footnote -> {
+                    sb.append("ــــــــ\n٭ ${b.text}")
+                    sb.setSpan(AbsoluteSizeSpan(footnotePx), 0, sb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+                    sb.setSpan(StyleSpan(Typeface.ITALIC), 0, sb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+                    sb.setSpan(ForegroundColorSpan(footnoteColor), 0, sb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+                    center(sb)
                 }
             }
             return sb
