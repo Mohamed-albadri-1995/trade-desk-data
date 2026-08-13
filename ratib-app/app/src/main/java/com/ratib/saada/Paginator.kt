@@ -79,7 +79,11 @@ object Paginator {
 
         val amiri = runCatching { ResourcesCompat.getFont(context, R.font.amiri) }.getOrNull()
         val paint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
-            textSize = bodyPx.toFloat()
+            // Base size only. Every character emitted carries an explicit size
+            // span, so this applies to nothing but the newlines between blocks;
+            // keeping it small stops them from inflating a line on the shrunken
+            // الأوراد page. It matches item_page.xml's textSize deliberately.
+            textSize = 10f * dm.scaledDensity
             color = bodyColor
             if (amiri != null) typeface = amiri
         }
@@ -98,28 +102,16 @@ object Paginator {
             return StaticLayout(cs, paint, w, Layout.Alignment.ALIGN_CENTER, LINE_SPACING, 0f, true).height
         }
 
-        /**
-         * A heading carries a ۞ ornament at each end. When the text is long
-         * enough to wrap, the closing ornament is left stranded on a short
-         * second line and the frame stops reading as a frame. Shrink the
-         * heading until the whole thing sits on one line.
-         */
-        fun oneLineSize(display: CharSequence, startPx: Int): Int {
-            val floor = (startPx * 0.62f).toInt().coerceAtLeast(1)
-            var px = startPx
-            while (px > floor) {
-                val tp = TextPaint(paint).apply {
-                    textSize = px.toFloat()
-                    typeface = Typeface.create(paint.typeface, Typeface.BOLD)
-                }
-                @Suppress("DEPRECATION")
-                val lines = StaticLayout(
-                    display, tp, w, Layout.Alignment.ALIGN_CENTER, LINE_SPACING, 0f, true
-                ).lineCount
-                if (lines <= 1) return px
-                px = (px * 0.94f).toInt()
+        /** Whether [text] fits on a single line at [px], set bold as headings are. */
+        fun fitsOneLine(text: CharSequence, px: Int): Boolean {
+            val tp = TextPaint(paint).apply {
+                textSize = px.toFloat()
+                typeface = Typeface.create(paint.typeface, Typeface.BOLD)
             }
-            return floor
+            @Suppress("DEPRECATION")
+            return StaticLayout(
+                text, tp, w, Layout.Alignment.ALIGN_CENTER, LINE_SPACING, 0f, true
+            ).lineCount <= 1
         }
 
         fun center(sb: SpannableStringBuilder) {
@@ -129,36 +121,43 @@ object Paginator {
             )
         }
 
-        fun buildBlock(b: Block): CharSequence {
+        /**
+         * Builds one block. [m] scales every size, which is only ever anything
+         * but 1 for the الأوراد المربوطة page, which is squeezed to fit whole.
+         *
+         * Every heading is set at the same size — no shrinking one to fit. A
+         * heading whose ۞ … ۞ frame will not go on a single line is drawn
+         * without the ornaments rather than with a broken frame.
+         */
+        fun buildBlock(b: Block, m: Float = 1f): CharSequence {
+            val bPx = (bodyPx * m).toInt().coerceAtLeast(1)
+            val hPx = (headingPx * m).toInt().coerceAtLeast(1)
+            val sPx = (subheadingPx * m).toInt().coerceAtLeast(1)
             val sb = SpannableStringBuilder()
             when (b) {
                 is Block.Heading -> {
-                    sb.append("۞  ${b.text}  ۞")
-                    sb.setSpan(
-                        AbsoluteSizeSpan(oneLineSize(sb, headingPx)),
-                        0, sb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
-                    )
+                    val framed = "۞  ${b.text}  ۞"
+                    sb.append(if (fitsOneLine(framed, hPx)) framed else b.text)
+                    sb.setSpan(AbsoluteSizeSpan(hPx), 0, sb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
                     sb.setSpan(StyleSpan(Typeface.BOLD), 0, sb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
                     sb.setSpan(ForegroundColorSpan(headingColor), 0, sb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
                     center(sb)
                 }
                 is Block.Subheading -> {
-                    sb.append("﴿ ${b.text} ﴾")
-                    sb.setSpan(
-                        AbsoluteSizeSpan(oneLineSize(sb, subheadingPx)),
-                        0, sb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
-                    )
+                    val framed = "﴿ ${b.text} ﴾"
+                    sb.append(if (fitsOneLine(framed, sPx)) framed else b.text)
+                    sb.setSpan(AbsoluteSizeSpan(sPx), 0, sb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
                     sb.setSpan(StyleSpan(Typeface.BOLD), 0, sb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
                     sb.setSpan(ForegroundColorSpan(subheadingColor), 0, sb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
                     center(sb)
                 }
                 is Block.Body -> {
                     sb.append(b.text)
-                    sb.setSpan(AbsoluteSizeSpan(bodyPx), 0, sb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+                    sb.setSpan(AbsoluteSizeSpan(bPx), 0, sb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
                     sb.setSpan(ForegroundColorSpan(bodyColor), 0, sb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-                    for (m in cueRegex.findAll(b.text)) {
-                        val cs = m.range.first
-                        val ce = m.range.last + 1
+                    for (hit in cueRegex.findAll(b.text)) {
+                        val cs = hit.range.first
+                        val ce = hit.range.last + 1
                         sb.setSpan(ForegroundColorSpan(cueColor), cs, ce, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
                         sb.setSpan(StyleSpan(Typeface.BOLD), cs, ce, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
                     }
@@ -213,8 +212,15 @@ object Paginator {
             }
         }
 
+        // الأوراد المربوطة and everything after it is held back and set as a
+        // single page of its own below, shrunk if that is what it takes.
+        val tailStart = blocks.indexOfFirst {
+            it is Block.Heading && it.text.contains("الأوراد المربوطة")
+        }
+        val mainEnd = if (tailStart >= 0) tailStart else blocks.size
+
         // Pre-build every block once so the look-ahead below is cheap.
-        val built = blocks.map { buildBlock(it) }
+        val built = (0 until mainEnd).map { buildBlock(blocks[it]) }
 
         /**
          * Where [cs] would have to be cut to fill [avail]: the character offset
@@ -246,7 +252,7 @@ object Paginator {
             var j = i
             var h = 0
             var first = true
-            while (j < blocks.size && blocks[j].isNav) {
+            while (j < mainEnd && blocks[j].isNav) {
                 if (!first) h += gapH
                 h += measure(built[j])
                 first = false
@@ -257,7 +263,8 @@ object Paginator {
 
         var prevWasNav = false
 
-        blocks.forEachIndexed { i, b ->
+        (0 until mainEnd).forEach { i ->
+            val b = blocks[i]
             // A heading left alone at the foot of a page, with its text starting
             // overleaf, reads as a mistake. If it and a couple of its lines will
             // not fit in what is left, start it on the next page instead. Not
@@ -328,6 +335,28 @@ object Paginator {
             }
         }
         flush()
+
+        // الأوراد المربوطة is wanted whole on one page, so it is set on its own
+        // and the type shrunk — by as much as half — until all of it fits. This
+        // is the one place the text is not at the book's size.
+        if (tailStart >= 0) {
+            var m = 1f
+            var tail: CharSequence = SpannableStringBuilder()
+            while (true) {
+                val sb = SpannableStringBuilder()
+                for (i in tailStart until blocks.size) {
+                    if (sb.isNotEmpty()) sb.append("\n")
+                    sb.append(buildBlock(blocks[i], m))
+                }
+                tail = sb
+                if (measure(sb) <= limit || m <= 0.5f) break
+                m -= 0.05f
+            }
+            for (i in tailStart until blocks.size) {
+                if (blocks[i].isNav) headingPage[i] = pages.size
+            }
+            pages.add(tail); pageFns.add(null); pageStartBlock.add(tailStart)
+        }
 
         if (pages.isEmpty()) {
             pages.add(""); pageFns.add(null); pageStartBlock.add(0)
