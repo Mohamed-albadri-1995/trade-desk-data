@@ -12,4 +12,7 @@
 
     <!-- Veil drawn over the background photo so text stays readable (light). -->
     <color name="reading_scrim">#DCFBFBF6</color>
+
+    <!-- Colour for repetition cues like (٣) ( ثلاثًا ) (سورة الفاتحة). -->
+    <color name="marker_color">#A9791A</color>
 </resources>

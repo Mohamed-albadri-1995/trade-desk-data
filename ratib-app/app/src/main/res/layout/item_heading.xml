@@ -9,4 +9,6 @@
     android:textAlignment="center"
     android:textColor="@color/heading_text"
     android:textStyle="bold"
-    android:textSize="24sp" />
+    android:textSize="24sp"
+    android:breakStrategy="balanced"
+    android:hyphenationFrequency="none" />

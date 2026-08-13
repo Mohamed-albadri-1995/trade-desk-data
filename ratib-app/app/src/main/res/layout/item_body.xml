@@ -8,4 +8,6 @@
     android:textAlignment="center"
     android:textColor="@color/reading_text"
     android:textSize="21sp"
-    android:lineSpacingMultiplier="1.35" />
+    android:lineSpacingMultiplier="1.4"
+    android:breakStrategy="balanced"
+    android:hyphenationFrequency="none" />

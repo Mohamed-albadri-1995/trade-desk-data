@@ -7,4 +7,6 @@
 
     <!-- Veil over the background photo (dark). -->
     <color name="reading_scrim">#E0121212</color>
+
+    <color name="marker_color">#E2C15C</color>
 </resources>
