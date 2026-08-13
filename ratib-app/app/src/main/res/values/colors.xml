@@ -15,4 +15,7 @@
 
     <!-- Colour for repetition cues like (٣) ( ثلاثًا ) (سورة الفاتحة). -->
     <color name="marker_color">#A9791A</color>
+
+    <!-- Sub-section headings (e.g. الأساس, أوراد السحر). -->
+    <color name="subheading_text">#8A6D3B</color>
 </resources>

@@ -90,6 +90,10 @@ class MainActivity : AppCompatActivity() {
             val line = raw.trim()
             when {
                 line.isEmpty() -> flushBuffer()
+                line.startsWith("## ") -> {
+                    flushBuffer()
+                    blocks.add(Block.Subheading(line.removePrefix("## ").trim()))
+                }
                 line.startsWith("# ") -> {
                     flushBuffer()
                     blocks.add(Block.Heading(line.removePrefix("# ").trim()))
@@ -134,7 +138,11 @@ class MainActivity : AppCompatActivity() {
         val menu = binding.navView.menu
         menu.clear()
         blocks.forEachIndexed { i, b ->
-            if (b is Block.Heading) menu.add(Menu.NONE, i, i, b.text)
+            when (b) {
+                is Block.Heading -> menu.add(Menu.NONE, i, i, b.text)
+                is Block.Subheading -> menu.add(Menu.NONE, i, i, "—  ${b.text}")
+                else -> {}
+            }
         }
         binding.navView.setNavigationItemSelectedListener { item ->
             val page = pagination?.headingPage?.get(item.itemId)

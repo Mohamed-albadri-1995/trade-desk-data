@@ -14,10 +14,13 @@ import android.text.style.ForegroundColorSpan
 import android.text.style.StyleSpan
 import androidx.core.content.ContextCompat
 
-/** A renderable block: a section heading, or a stanza (its own line breaks kept). */
+/** A renderable block: a section heading, a sub-heading, or a stanza. */
 sealed class Block {
     data class Heading(val text: String) : Block()
+    data class Subheading(val text: String) : Block()
     data class Body(val text: String) : Block()
+
+    val isNav get() = this is Heading || this is Subheading
 }
 
 /**
@@ -50,8 +53,10 @@ object Paginator {
         val dm = context.resources.displayMetrics
         val bodyPx = (21f * scale * dm.scaledDensity).toInt().coerceAtLeast(1)
         val headingPx = (24f * scale * dm.scaledDensity).toInt().coerceAtLeast(1)
+        val subheadingPx = (20f * scale * dm.scaledDensity).toInt().coerceAtLeast(1)
         val bodyColor = ContextCompat.getColor(context, R.color.reading_text)
         val headingColor = ContextCompat.getColor(context, R.color.heading_text)
+        val subheadingColor = ContextCompat.getColor(context, R.color.subheading_text)
         val cueColor = ContextCompat.getColor(context, R.color.marker_color)
 
         val paint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
@@ -74,6 +79,12 @@ object Paginator {
                     sb.setSpan(AbsoluteSizeSpan(headingPx), 0, sb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
                     sb.setSpan(StyleSpan(Typeface.BOLD), 0, sb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
                     sb.setSpan(ForegroundColorSpan(headingColor), 0, sb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+                }
+                is Block.Subheading -> {
+                    sb.append("﴿ ${b.text} ﴾")
+                    sb.setSpan(AbsoluteSizeSpan(subheadingPx), 0, sb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+                    sb.setSpan(StyleSpan(Typeface.BOLD), 0, sb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+                    sb.setSpan(ForegroundColorSpan(subheadingColor), 0, sb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
                 }
                 is Block.Body -> {
                     sb.append(b.text)
@@ -117,16 +128,16 @@ object Paginator {
             if (measure(candidate) <= limit) {
                 current = candidate
                 if (currentStartBlock < 0) currentStartBlock = i
-                if (b is Block.Heading) headingPage[i] = pages.size
+                if (b.isNav) headingPage[i] = pages.size
             } else {
                 flush()
                 if (measure(blockCs) <= limit) {
                     current = SpannableStringBuilder(blockCs)
                     currentStartBlock = i
-                    if (b is Block.Heading) headingPage[i] = pages.size
+                    if (b.isNav) headingPage[i] = pages.size
                 } else {
                     // Block taller than a full page (long prose): split by lines.
-                    if (b is Block.Heading) headingPage[i] = pages.size
+                    if (b.isNav) headingPage[i] = pages.size
                     @Suppress("DEPRECATION")
                     val bl = StaticLayout(blockCs, paint, w, Layout.Alignment.ALIGN_CENTER, 1.4f, 0f, false)
                     val lc = bl.lineCount
