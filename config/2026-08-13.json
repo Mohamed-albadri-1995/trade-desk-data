@@ -1,0 +1,69 @@
+{
+  "version": "1",
+  "exportedAt": "2026-08-13T21:35:00.329Z",
+  "files": {
+    "risk.json": {
+      "accountSize": 100000,
+      "riskPerTrade": 25,
+      "maxPositionPct": 16.66,
+      "updatedAt": 1786604037348
+    },
+    "setup-prefs.json": {
+      "setups": {
+        "T2-VWAP-EXT": {
+          "enabled": true,
+          "updatedAt": 1786229465065
+        },
+        "OR + VWAP 09:35@09:35": {
+          "enabled": true,
+          "updatedAt": 1786540952082,
+          "topN": 6,
+          "maxTradesPerDay": 6,
+          "rankMetric": "vwap_extension",
+          "autoTrade": false
+        },
+        "T2 10:00 VWAP Extension@10:00": {
+          "topN": 2,
+          "updatedAt": 1786538846987,
+          "enabled": false
+        }
+      },
+      "updatedAt": 1786540952082
+    },
+    "alert-rules.json": {
+      "updatedAt": 1786368541736,
+      "rules": [
+        {
+          "id": 1,
+          "name": "Break PM high",
+          "enabled": true,
+          "left": "price",
+          "operator": "crosses_above",
+          "right": "pmHigh",
+          "scope": {
+            "tools": [
+              "T2"
+            ],
+            "tickers": []
+          },
+          "updatedAt": 1786133009161
+        },
+        {
+          "id": 2,
+          "name": "Break PM low",
+          "enabled": true,
+          "left": "price",
+          "operator": "crosses_below",
+          "right": "pmLow",
+          "scope": {
+            "tools": [
+              "T2"
+            ],
+            "tickers": []
+          },
+          "updatedAt": 1786133077949
+        }
+      ]
+    }
+  }
+}
