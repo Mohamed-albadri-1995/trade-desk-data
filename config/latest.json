@@ -1,12 +1,12 @@
 {
   "version": "1",
-  "exportedAt": "2026-08-12T21:35:00.701Z",
+  "exportedAt": "2026-08-13T21:35:00.329Z",
   "files": {
     "risk.json": {
-      "accountSize": 5000,
+      "accountSize": 100000,
       "riskPerTrade": 25,
       "maxPositionPct": 16.66,
-      "updatedAt": 1786553550054
+      "updatedAt": 1786604037348
     },
     "setup-prefs.json": {
       "setups": {
