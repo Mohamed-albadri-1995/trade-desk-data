@@ -16,7 +16,7 @@
         android:textSize="10sp"
         android:textColor="@color/reading_text"
         android:fontFamily="@font/amiri"
-        android:lineSpacingMultiplier="1.3"
+        android:lineSpacingMultiplier="1.0"
         android:justificationMode="inter_word"
         android:hyphenationFrequency="none"
         tools:targetApi="26" />

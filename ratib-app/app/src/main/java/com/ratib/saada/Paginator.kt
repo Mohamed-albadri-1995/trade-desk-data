@@ -50,8 +50,17 @@ object Paginator {
 
     private val cueRegex = Regex("\\([^)]*\\)|[0-9\\u0660-\\u0669]+")
 
-    /** Must match item_page.xml's lineSpacingMultiplier, or pages mis-measure. */
-    const val LINE_SPACING = 1.3f
+    /**
+     * Must match item_page.xml's lineSpacingMultiplier, or pages mis-measure.
+     *
+     * Amiri's own ascenders and descenders already leave generous room between
+     * lines — measured on the device, a line of 21sp body text came to 159px
+     * with a 1.3 multiplier on top, so a page held barely eleven lines and a
+     * two-line couplet needed 318px of the 1816px available. The multiplier is
+     * dropped to the font's natural spacing, which is airy enough for Arabic
+     * with its diacritics and gives a page about four more lines.
+     */
+    const val LINE_SPACING = 1.0f
 
     /**
      * Fewest lines that may be left on either side when a block is broken over
