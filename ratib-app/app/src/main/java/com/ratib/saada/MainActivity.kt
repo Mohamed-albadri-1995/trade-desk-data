@@ -77,12 +77,27 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun parseContent() {
+        // A blank line ends a stanza. Consecutive non-blank lines form one block
+        // and keep their line breaks (so a couplet's two halves stay together).
+        val buffer = ArrayList<String>()
+        fun flushBuffer() {
+            if (buffer.isNotEmpty()) {
+                blocks.add(Block.Body(buffer.joinToString("\n")))
+                buffer.clear()
+            }
+        }
         assets.open("ratib.txt").bufferedReader().forEachLine { raw ->
             val line = raw.trim()
-            if (line.isEmpty()) return@forEachLine
-            if (line.startsWith("# ")) blocks.add(Block.Heading(line.removePrefix("# ").trim()))
-            else blocks.add(Block.Body(line))
+            when {
+                line.isEmpty() -> flushBuffer()
+                line.startsWith("# ") -> {
+                    flushBuffer()
+                    blocks.add(Block.Heading(line.removePrefix("# ").trim()))
+                }
+                else -> buffer.add(line)
+            }
         }
+        flushBuffer()
     }
 
     private fun paddingH() = (20f * resources.displayMetrics.density * 2).toInt()
@@ -132,8 +147,8 @@ class MainActivity : AppCompatActivity() {
     private fun changeFont(delta: Float) {
         val s = (scale + delta).coerceIn(0.8f, 2.4f)
         if (s == scale) return
-        // Keep our place: remember the character offset at the top of the current page.
-        val anchorChar = pagination?.starts?.getOrNull(binding.pager.currentItem) ?: 0
+        // Keep our place: remember which block was at the top of the current page.
+        val anchorBlock = pagination?.pageStartBlock?.getOrNull(binding.pager.currentItem) ?: 0
         scale = s
         prefs().edit().putFloat(scaleKey, s).apply()
         val w = binding.pager.width - paddingH()
@@ -142,8 +157,8 @@ class MainActivity : AppCompatActivity() {
         pagination = result
         pagerAdapter.submit(result.pages)
         buildDrawerMenu(result)
-        // Find the page whose start is nearest but not past the anchor.
-        var page = result.starts.indexOfLast { it <= anchorChar }
+        // Find the page that starts at or before that block.
+        var page = result.pageStartBlock.indexOfLast { it <= anchorBlock }
         if (page < 0) page = 0
         binding.pager.setCurrentItem(page, false)
         updateIndicator(page)
