@@ -41,7 +41,8 @@ data class Pagination(
  */
 object Paginator {
 
-    private val cueRegex = Regex("\\([^)]*\\)")
+    // Parenthetical cues like (٣) ( ثلاثًا ) (سورة الفاتحة), or a bare number (١٠٠، ١٢٩…).
+    private val cueRegex = Regex("\\([^)]*\\)|[0-9\\u0660-\\u0669]+")
 
     fun paginate(
         context: Context,
