@@ -21,38 +21,38 @@ sealed class Block {
     data class Heading(val text: String) : Block()
     data class Subheading(val text: String) : Block()
     data class Body(val text: String) : Block()
-    data class Footnote(val text: String) : Block()
 
     val isNav get() = this is Heading || this is Subheading
 }
 
 /**
- * @param pages          styled text for each page
- * @param pageStartBlock  block index that begins each page (used to keep place on font change)
+ * @param pages          main text for each page
+ * @param footnotes      footnote text pinned to the bottom of each page (null if none)
+ * @param pageStartBlock  block index that begins each page
  * @param headingPage     heading block-index -> the page it lands on
  */
 data class Pagination(
     val pages: List<CharSequence>,
+    val footnotes: List<CharSequence?>,
     val pageStartBlock: List<Int>,
     val headingPage: Map<Int, Int>
 )
 
 /**
- * Cuts the ratib into "book" pages. Whole blocks (a couplet, a salawat, a
- * heading) are kept together on a page and never split across a page turn;
- * only a block taller than a whole page (long prose) is split by lines.
+ * Cuts the ratib into "book" pages. Whole blocks stay together; a block taller
+ * than a page is split by lines. A footnote attached to a block is rendered at
+ * the BOTTOM of the page that block lands on, and the main text is kept short
+ * enough to leave room for it.
  */
 object Paginator {
 
-    // Parenthetical cues like (٣) ( ثلاثًا ) (سورة الفاتحة), or a bare number (١٠٠، ١٢٩…).
     private val cueRegex = Regex("\\([^)]*\\)|[0-9\\u0660-\\u0669]+")
-
-    // Shared leading; the page TextView must use the same value so pages fit.
     const val LINE_SPACING = 1.5f
 
     fun paginate(
         context: Context,
         blocks: List<Block>,
+        footnotes: Map<Int, String>,
         widthPx: Int,
         heightPx: Int,
         scale: Float
@@ -76,6 +76,7 @@ object Paginator {
         }
         val w = widthPx.coerceAtLeast(1)
         val limit = heightPx.coerceAtLeast(1)
+        val oneLine = (bodyPx * LINE_SPACING).toInt().coerceAtLeast(1)
 
         fun measure(cs: CharSequence): Int {
             @Suppress("DEPRECATION")
@@ -116,59 +117,75 @@ object Paginator {
                         sb.setSpan(ForegroundColorSpan(cueColor), cs, ce, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
                         sb.setSpan(StyleSpan(Typeface.BOLD), cs, ce, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
                     }
-                    // Long single-line prose is justified (even, full-width lines);
-                    // short lines and multi-line verse/salawat stay centered.
                     val isProse = !b.text.contains('\n') && b.text.length > 55
                     val align = if (isProse) Layout.Alignment.ALIGN_NORMAL else Layout.Alignment.ALIGN_CENTER
                     sb.setSpan(AlignmentSpan.Standard(align), 0, sb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-                }
-                is Block.Footnote -> {
-                    sb.append("ــــــــ\n٭ ${b.text}")
-                    sb.setSpan(AbsoluteSizeSpan(footnotePx), 0, sb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-                    sb.setSpan(StyleSpan(Typeface.ITALIC), 0, sb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-                    sb.setSpan(ForegroundColorSpan(footnoteColor), 0, sb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-                    center(sb)
                 }
             }
             return sb
         }
 
+        fun buildFootnote(text: String): CharSequence {
+            val sb = SpannableStringBuilder("٭ $text")
+            sb.setSpan(AbsoluteSizeSpan(footnotePx), 0, sb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+            sb.setSpan(StyleSpan(Typeface.ITALIC), 0, sb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+            sb.setSpan(ForegroundColorSpan(footnoteColor), 0, sb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+            center(sb)
+            return sb
+        }
+
         val pages = ArrayList<CharSequence>()
+        val pageFns = ArrayList<CharSequence?>()
         val pageStartBlock = ArrayList<Int>()
         val headingPage = HashMap<Int, Int>()
 
         var current = SpannableStringBuilder()
-        var currentStartBlock = -1
+        var currentStart = -1
+        var currentFn: CharSequence? = null
+        var currentFnHeight = 0
         val gap = "\n\n"
+
+        fun reserve(fn: CharSequence?, fnH: Int) = if (fn != null) fnH + oneLine else 0
 
         fun flush() {
             if (current.isNotEmpty()) {
                 pages.add(SpannableString(current))
-                pageStartBlock.add(if (currentStartBlock < 0) 0 else currentStartBlock)
+                pageFns.add(currentFn)
+                pageStartBlock.add(if (currentStart < 0) 0 else currentStart)
                 current = SpannableStringBuilder()
-                currentStartBlock = -1
+                currentStart = -1
+                currentFn = null
+                currentFnHeight = 0
             }
         }
 
         blocks.forEachIndexed { i, b ->
             val blockCs = buildBlock(b)
+            val blockFn = footnotes[i]?.let { buildFootnote(it) }
+            val blockFnHeight = if (blockFn != null) measure(blockFn) else 0
 
             val candidate = SpannableStringBuilder(current)
             if (candidate.isNotEmpty()) candidate.append(gap)
             candidate.append(blockCs)
 
-            if (measure(candidate) <= limit) {
+            val pageFn = currentFn ?: blockFn
+            val pageFnHeight = if (currentFn != null) currentFnHeight else blockFnHeight
+
+            if (measure(candidate) <= limit - reserve(pageFn, pageFnHeight)) {
                 current = candidate
-                if (currentStartBlock < 0) currentStartBlock = i
+                if (currentStart < 0) currentStart = i
                 if (b.isNav) headingPage[i] = pages.size
+                if (currentFn == null && blockFn != null) {
+                    currentFn = blockFn; currentFnHeight = blockFnHeight
+                }
             } else {
                 flush()
-                if (measure(blockCs) <= limit) {
+                if (measure(blockCs) <= limit - reserve(blockFn, blockFnHeight)) {
                     current = SpannableStringBuilder(blockCs)
-                    currentStartBlock = i
+                    currentStart = i
                     if (b.isNav) headingPage[i] = pages.size
+                    if (blockFn != null) { currentFn = blockFn; currentFnHeight = blockFnHeight }
                 } else {
-                    // Block taller than a full page (long prose): split by lines.
                     if (b.isNav) headingPage[i] = pages.size
                     @Suppress("DEPRECATION")
                     val bl = StaticLayout(blockCs, paint, w, Layout.Alignment.ALIGN_CENTER, LINE_SPACING, 0f, false)
@@ -183,11 +200,11 @@ object Paginator {
                         val ce = bl.getLineEnd(endLine - 1)
                         val chunk = blockCs.subSequence(cs, ce)
                         if (endLine < lc) {
-                            pages.add(chunk)
-                            pageStartBlock.add(i)
+                            pages.add(chunk); pageFns.add(null); pageStartBlock.add(i)
                         } else {
                             current = SpannableStringBuilder(chunk)
-                            currentStartBlock = i
+                            currentStart = i
+                            if (blockFn != null) { currentFn = blockFn; currentFnHeight = blockFnHeight }
                         }
                         startLine = endLine
                     }
@@ -197,9 +214,9 @@ object Paginator {
         flush()
 
         if (pages.isEmpty()) {
-            pages.add(""); pageStartBlock.add(0)
+            pages.add(""); pageFns.add(null); pageStartBlock.add(0)
         }
 
-        return Pagination(pages, pageStartBlock, headingPage)
+        return Pagination(pages, pageFns, pageStartBlock, headingPage)
     }
 }

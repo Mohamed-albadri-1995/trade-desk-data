@@ -33,6 +33,7 @@ class MainActivity : AppCompatActivity() {
     private val nightKey = "night_mode"
 
     private val blocks = ArrayList<Block>()
+    private val footnotes = HashMap<Int, String>()
     private var pagination: Pagination? = null
     private var scale = 1f
     private var needsAutoFit = false
@@ -58,7 +59,7 @@ class MainActivity : AppCompatActivity() {
         scale = prefs().getFloat(scaleKey, 1f)
         parseContent()
 
-        pagerAdapter = PagerAdapter(emptyList())
+        pagerAdapter = PagerAdapter(emptyList(), emptyList())
         binding.pager.adapter = pagerAdapter
         binding.pager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
             override fun onPageSelected(position: Int) {
@@ -126,7 +127,7 @@ class MainActivity : AppCompatActivity() {
                 }
                 line.startsWith("> ") -> {
                     flushBuffer()
-                    blocks.add(Block.Footnote(line.removePrefix("> ").trim()))
+                    if (blocks.isNotEmpty()) footnotes[blocks.lastIndex] = line.removePrefix("> ").trim()
                 }
                 else -> buffer.add(line)
             }
@@ -144,7 +145,7 @@ class MainActivity : AppCompatActivity() {
         var best = 0.7f
         var s = 0.7f
         while (s <= 1.51f) {
-            val pages = Paginator.paginate(this, blocks, w, h, s).pages.size
+            val pages = Paginator.paginate(this, blocks, footnotes, w, h, s).pages.size
             if (pages <= targetPages) best = s
             s += 0.05f
         }
@@ -163,9 +164,9 @@ class MainActivity : AppCompatActivity() {
             scale = autoFitScale(w, h)
             prefs().edit().putFloat(scaleKey, scale).apply()
         }
-        val result = Paginator.paginate(this, blocks, w, h, scale)
+        val result = Paginator.paginate(this, blocks, footnotes, w, h, scale)
         pagination = result
-        pagerAdapter.submit(result.pages)
+        pagerAdapter.submit(result.pages, result.footnotes)
         buildDrawerMenu(result)
         val target = restorePage.coerceIn(0, result.pages.size - 1)
         binding.pager.setCurrentItem(target, false)
@@ -210,9 +211,9 @@ class MainActivity : AppCompatActivity() {
         prefs().edit().putFloat(scaleKey, s).apply()
         val w = binding.pager.width - paddingH()
         val h = binding.pager.height - paddingV()
-        val result = Paginator.paginate(this, blocks, w, h, scale)
+        val result = Paginator.paginate(this, blocks, footnotes, w, h, scale)
         pagination = result
-        pagerAdapter.submit(result.pages)
+        pagerAdapter.submit(result.pages, result.footnotes)
         buildDrawerMenu(result)
         // Find the page that starts at or before that block.
         var page = result.pageStartBlock.indexOfLast { it <= anchorBlock }
