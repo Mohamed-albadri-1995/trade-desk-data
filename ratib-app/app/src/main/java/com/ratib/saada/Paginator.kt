@@ -157,7 +157,15 @@ object Paginator {
         var currentStart = -1
         var currentFn: CharSequence? = null
         var currentFnHeight = 0
-        val gap = "\n\n"
+
+        // The blank line between paragraphs used to be a full-height line, which
+        // ate roughly a quarter of every page. It is kept as a visible breath
+        // between stanzas but at under half that height.
+        val gapPx = (bodyPx * 0.45f).toInt().coerceAtLeast(1)
+        val gap: CharSequence = SpannableString("\n\n").apply {
+            setSpan(AbsoluteSizeSpan(gapPx), 0, length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+        }
+        val gapH = (gapPx * LINE_SPACING).toInt().coerceAtLeast(1)
 
         fun reserve(fn: CharSequence?, fnH: Int) = if (fn != null) fnH + oneLine else 0
 
@@ -196,7 +204,39 @@ object Paginator {
             return Triple(end, fit, total)
         }
 
+        /**
+         * Room a heading needs to be worth starting on this page: the run of
+         * headings itself plus two lines of the text underneath. Two lines only
+         * — asking for the whole following paragraph is what used to break
+         * pages early and leave them a third empty.
+         */
+        fun navRunNeed(i: Int): Int {
+            var j = i
+            var h = 0
+            var first = true
+            while (j < blocks.size && blocks[j].isNav) {
+                if (!first) h += gapH
+                h += measure(built[j])
+                first = false
+                j++
+            }
+            return h + gapH + MIN_SPLIT_LINES * oneLine
+        }
+
+        var prevWasNav = false
+
         blocks.forEachIndexed { i, b ->
+            // A heading left alone at the foot of a page, with its text starting
+            // overleaf, reads as a mistake. If it and a couple of its lines will
+            // not fit in what is left, start it on the next page instead. Not
+            // applied straight after another heading: that run travels together.
+            if (b.isNav && current.isNotEmpty() && !prevWasNav) {
+                val used = measure(current)
+                val pageRoom = limit - reserve(currentFn, currentFnHeight)
+                if (used + gapH + navRunNeed(i) > pageRoom) flush()
+            }
+            prevWasNav = b.isNav
+
             val blockFn = footnotes[i]?.let { buildFootnote(it) }
             val blockFnHeight = if (blockFn != null) measure(blockFn) else 0
 
@@ -210,7 +250,7 @@ object Paginator {
                 val pageFnHeight = if (currentFn != null) currentFnHeight else blockFnHeight
                 val room = limit - reserve(pageFn, pageFnHeight)
                 val used = if (current.isEmpty()) 0 else measure(current)
-                val gapH = if (current.isEmpty()) 0 else oneLine
+                val gapBefore = if (current.isEmpty()) 0 else gapH
 
                 fun take(cs: CharSequence) {
                     if (current.isEmpty()) currentStart = i else current.append(gap)
@@ -221,7 +261,7 @@ object Paginator {
                     }
                 }
 
-                if (used + gapH + measure(piece) <= room) {
+                if (used + gapBefore + measure(piece) <= room) {
                     take(piece)
                     break
                 }
@@ -229,7 +269,7 @@ object Paginator {
                 // Too tall for what is left. Put as many of its lines here as
                 // fit and carry the rest over, as long as a sensible amount
                 // lands on each side — that keeps a couplet from being halved.
-                val (cut, fit, total) = splitPoint(piece, room - used - gapH)
+                val (cut, fit, total) = splitPoint(piece, room - used - gapBefore)
                 if (cut > 0 && fit >= MIN_SPLIT_LINES && total - fit >= MIN_SPLIT_LINES) {
                     take(piece.subSequence(0, cut))
                     flush()
