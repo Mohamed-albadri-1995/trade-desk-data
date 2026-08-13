@@ -1,11 +1,17 @@
 package com.ratib.saada
 
+import android.Manifest
+import android.content.Intent
+import android.content.pm.PackageManager
 import android.content.res.Configuration
+import android.os.Build
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
 import androidx.viewpager2.widget.ViewPager2
 import com.ratib.saada.databinding.ActivityMainBinding
@@ -29,6 +35,9 @@ class MainActivity : AppCompatActivity() {
     private val blocks = ArrayList<Block>()
     private var pagination: Pagination? = null
     private var scale = 1f
+
+    private val notifPermission =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) { }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         AppCompatDelegate.setDefaultNightMode(
@@ -65,6 +74,20 @@ class MainActivity : AppCompatActivity() {
 
         // Paginate once the pager has real dimensions.
         binding.pager.post { repaginate(restorePage = prefs().getInt(pageKey, 0)) }
+
+        // Ask for notification permission (Android 13+) so reminders can alert.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+            ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
+            != PackageManager.PERMISSION_GRANTED
+        ) {
+            notifPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // Refresh the next reminder from the latest prayer times.
+        ReminderScheduler.rescheduleNext(this)
     }
 
     private fun prefs() = getSharedPreferences(prefsName, MODE_PRIVATE)
@@ -194,6 +217,7 @@ class MainActivity : AppCompatActivity() {
         R.id.action_font_larger -> { changeFont(0.1f); true }
         R.id.action_font_smaller -> { changeFont(-0.1f); true }
         R.id.action_theme -> { toggleTheme(); true }
+        R.id.action_settings -> { startActivity(Intent(this, SettingsActivity::class.java)); true }
         else -> super.onOptionsItemSelected(item)
     }
 

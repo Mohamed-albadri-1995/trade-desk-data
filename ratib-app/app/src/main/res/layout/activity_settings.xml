@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layoutDirection="rtl"
+    android:background="@color/reading_bg"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingBottom="12dp"
+            android:text="@string/settings_title"
+            android:textColor="@color/heading_text"
+            android:textSize="22sp"
+            android:textStyle="bold" />
+
+        <androidx.appcompat.widget.SwitchCompat
+            android:id="@+id/swMaster"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingVertical="10dp"
+            android:text="@string/enable_reminders"
+            android:textColor="@color/reading_text"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <View android:layout_width="match_parent" android:layout_height="1dp"
+            android:layout_marginVertical="8dp" android:background="#33000000" />
+
+        <androidx.appcompat.widget.SwitchCompat
+            android:id="@+id/swAsas"
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:paddingVertical="10dp" android:text="@string/rem_asas"
+            android:textColor="@color/reading_text" android:textSize="16sp" />
+
+        <androidx.appcompat.widget.SwitchCompat
+            android:id="@+id/swMorning"
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:paddingVertical="10dp" android:text="@string/rem_morning"
+            android:textColor="@color/reading_text" android:textSize="16sp" />
+
+        <androidx.appcompat.widget.SwitchCompat
+            android:id="@+id/swEvening"
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:paddingVertical="10dp" android:text="@string/rem_evening"
+            android:textColor="@color/reading_text" android:textSize="16sp" />
+
+        <androidx.appcompat.widget.SwitchCompat
+            android:id="@+id/swSuhur"
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:paddingVertical="10dp" android:text="@string/rem_suhur"
+            android:textColor="@color/reading_text" android:textSize="16sp" />
+
+        <View android:layout_width="match_parent" android:layout_height="1dp"
+            android:layout_marginVertical="8dp" android:background="#33000000" />
+
+        <TextView
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:text="@string/calc_method" android:textColor="@color/reading_text"
+            android:textSize="16sp" android:paddingTop="6dp" />
+
+        <Spinner
+            android:id="@+id/spMethod"
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:layout_marginBottom="6dp" />
+
+        <View android:layout_width="match_parent" android:layout_height="1dp"
+            android:layout_marginVertical="8dp" android:background="#33000000" />
+
+        <TextView
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:text="@string/location_hint" android:textColor="@color/reading_text"
+            android:textSize="14sp" android:paddingBottom="6dp" />
+
+        <EditText
+            android:id="@+id/etLat"
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:hint="@string/latitude" android:inputType="numberDecimal|numberSigned"
+            android:textColor="@color/reading_text" android:autofillHints="" />
+
+        <EditText
+            android:id="@+id/etLng"
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:hint="@string/longitude" android:inputType="numberDecimal|numberSigned"
+            android:textColor="@color/reading_text" android:autofillHints="" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnUseLocation"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:layout_marginTop="8dp" android:text="@string/use_location" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnSave"
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:layout_marginTop="20dp" android:paddingVertical="8dp"
+            android:text="@string/save" android:textSize="18sp"
+            app:backgroundTint="@color/brand_primary" />
+
+        <TextView
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:paddingTop="18dp" android:text="@string/battery_hint"
+            android:textColor="#88000000" android:textSize="12sp" />
+    </LinearLayout>
+</ScrollView>

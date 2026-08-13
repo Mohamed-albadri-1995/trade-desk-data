@@ -12,4 +12,32 @@
     <string name="page_of">%1$s / %2$s</string>
     <string name="next_page">الصفحة التالية</string>
     <string name="prev_page">الصفحة السابقة</string>
+
+    <!-- Reminders / alarm -->
+    <string name="settings">الإعدادات والتنبيهات</string>
+    <string name="settings_title">التنبيهات والأوقات</string>
+    <string name="enable_reminders">تفعيل التنبيهات</string>
+    <string name="rem_asas">الأساس — بعد كل صلاة</string>
+    <string name="rem_morning">أوراد الصباح</string>
+    <string name="rem_evening">أوراد المساء</string>
+    <string name="rem_suhur">أوراد السحر</string>
+    <string name="calc_method">طريقة حساب مواقيت الصلاة</string>
+    <string name="latitude">خط العرض (Latitude)</string>
+    <string name="longitude">خط الطول (Longitude)</string>
+    <string name="location_hint">حدّد موقعك لحساب مواقيت الصلاة (يعمل بدون إنترنت بعد التحديد).</string>
+    <string name="use_location">استخدم موقعي الحالي</string>
+    <string name="save">حفظ</string>
+    <string name="saved">تم الحفظ</string>
+    <string name="location_failed">تعذّر الحصول على الموقع، أدخل الإحداثيات يدويًا.</string>
+    <string name="need_location">أدخل موقعك أولًا لتفعيل التنبيهات.</string>
+    <string name="reminders_channel">تنبيهات الأوراد</string>
+    <string name="stop">إيقاف</string>
+    <string name="battery_hint">لضمان عمل المنبّه دائمًا: اسمح للتطبيق بالعمل في الخلفية وأوقف تحسين البطارية له من إعدادات الهاتف.</string>
+
+    <string-array name="methods_array">
+        <item>رابطة العالم الإسلامي</item>
+        <item>أم القرى (مكة)</item>
+        <item>الهيئة المصرية العامة</item>
+        <item>جامعة العلوم الإسلامية - كراتشي</item>
+    </string-array>
 </resources>
