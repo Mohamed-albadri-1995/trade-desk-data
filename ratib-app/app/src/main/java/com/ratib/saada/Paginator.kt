@@ -70,7 +70,7 @@ object Paginator {
         val bodyPx = (21f * scale * dm.scaledDensity).toInt().coerceAtLeast(1)
         val headingPx = (24f * scale * dm.scaledDensity).toInt().coerceAtLeast(1)
         val subheadingPx = (20f * scale * dm.scaledDensity).toInt().coerceAtLeast(1)
-        val footnotePx = (13f * scale * dm.scaledDensity).toInt().coerceAtLeast(1)
+        val footnotePx = (11f * scale * dm.scaledDensity).toInt().coerceAtLeast(1)
         val bodyColor = ContextCompat.getColor(context, R.color.reading_text)
         val headingColor = ContextCompat.getColor(context, R.color.heading_text)
         val subheadingColor = ContextCompat.getColor(context, R.color.subheading_text)
@@ -88,12 +88,6 @@ object Paginator {
             if (amiri != null) typeface = amiri
         }
         val w = widthPx.coerceAtLeast(1)
-        val oneLine = (bodyPx * LINE_SPACING).toInt().coerceAtLeast(1)
-        // A small guard against the last line clipping. It used to be a whole
-        // line, which left two or three lines unused at the foot of every page;
-        // the caller already holds back 20dp on top of this, so a third of a
-        // line is enough.
-        val limit = (heightPx.coerceAtLeast(1) - oneLine / 3).coerceAtLeast(oneLine)
 
         fun measure(cs: CharSequence): Int {
             // includePad = true so the measured height matches the padded height
@@ -101,6 +95,20 @@ object Paginator {
             @Suppress("DEPRECATION")
             return StaticLayout(cs, paint, w, Layout.Alignment.ALIGN_CENTER, LINE_SPACING, 0f, true).height
         }
+
+        // Measured, not calculated. textSize × lineSpacing badly understates a
+        // real line in Amiri — Arabic ascenders and descenders push the drawn
+        // line about a third taller — and every "will two more lines fit" test
+        // was working from that too-small figure.
+        val oneLine = measure(
+            SpannableStringBuilder("ا").apply {
+                setSpan(AbsoluteSizeSpan(bodyPx), 0, 1, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+            }
+        ).coerceAtLeast(1)
+
+        // No guard line here: measurement includes the font padding the view
+        // draws with, and the caller already withholds 20dp of its own.
+        val limit = heightPx.coerceAtLeast(1)
 
         /** Whether [text] fits on a single line at [px], set bold as headings are. */
         fun fitsOneLine(text: CharSequence, px: Int): Boolean {
@@ -194,11 +202,11 @@ object Paginator {
         val gap: CharSequence = "\n"
         val gapH = 0
 
-        // Room held back for a footnote pinned to the foot of the page. The
-        // separating margin used to be a whole line, and since this is charged
-        // against the page *before* the footnoted verse is placed, it pushed
-        // that verse over and left a hole above it. A third of a line is plenty.
-        fun reserve(fn: CharSequence?, fnH: Int) = if (fn != null) fnH + oneLine / 3 else 0
+        // Room held back for a footnote pinned to the foot of the page. This is
+        // charged to the page before the footnoted verse is placed, so any
+        // padding here costs a verse its place and opens a hole above it. The
+        // note's own height, and nothing more.
+        fun reserve(fn: CharSequence?, fnH: Int) = if (fn != null) fnH else 0
 
         fun flush() {
             if (current.isNotEmpty()) {
