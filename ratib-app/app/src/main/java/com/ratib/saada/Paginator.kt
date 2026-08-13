@@ -70,7 +70,7 @@ object Paginator {
         val bodyPx = (21f * scale * dm.scaledDensity).toInt().coerceAtLeast(1)
         val headingPx = (24f * scale * dm.scaledDensity).toInt().coerceAtLeast(1)
         val subheadingPx = (20f * scale * dm.scaledDensity).toInt().coerceAtLeast(1)
-        val footnotePx = (15f * scale * dm.scaledDensity).toInt().coerceAtLeast(1)
+        val footnotePx = (13f * scale * dm.scaledDensity).toInt().coerceAtLeast(1)
         val bodyColor = ContextCompat.getColor(context, R.color.reading_text)
         val headingColor = ContextCompat.getColor(context, R.color.heading_text)
         val subheadingColor = ContextCompat.getColor(context, R.color.subheading_text)
@@ -98,6 +98,30 @@ object Paginator {
             return StaticLayout(cs, paint, w, Layout.Alignment.ALIGN_CENTER, LINE_SPACING, 0f, true).height
         }
 
+        /**
+         * A heading carries a ۞ ornament at each end. When the text is long
+         * enough to wrap, the closing ornament is left stranded on a short
+         * second line and the frame stops reading as a frame. Shrink the
+         * heading until the whole thing sits on one line.
+         */
+        fun oneLineSize(display: CharSequence, startPx: Int): Int {
+            val floor = (startPx * 0.62f).toInt().coerceAtLeast(1)
+            var px = startPx
+            while (px > floor) {
+                val tp = TextPaint(paint).apply {
+                    textSize = px.toFloat()
+                    typeface = Typeface.create(paint.typeface, Typeface.BOLD)
+                }
+                @Suppress("DEPRECATION")
+                val lines = StaticLayout(
+                    display, tp, w, Layout.Alignment.ALIGN_CENTER, LINE_SPACING, 0f, true
+                ).lineCount
+                if (lines <= 1) return px
+                px = (px * 0.94f).toInt()
+            }
+            return floor
+        }
+
         fun center(sb: SpannableStringBuilder) {
             sb.setSpan(
                 AlignmentSpan.Standard(Layout.Alignment.ALIGN_CENTER),
@@ -110,14 +134,20 @@ object Paginator {
             when (b) {
                 is Block.Heading -> {
                     sb.append("۞  ${b.text}  ۞")
-                    sb.setSpan(AbsoluteSizeSpan(headingPx), 0, sb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+                    sb.setSpan(
+                        AbsoluteSizeSpan(oneLineSize(sb, headingPx)),
+                        0, sb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+                    )
                     sb.setSpan(StyleSpan(Typeface.BOLD), 0, sb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
                     sb.setSpan(ForegroundColorSpan(headingColor), 0, sb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
                     center(sb)
                 }
                 is Block.Subheading -> {
                     sb.append("﴿ ${b.text} ﴾")
-                    sb.setSpan(AbsoluteSizeSpan(subheadingPx), 0, sb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+                    sb.setSpan(
+                        AbsoluteSizeSpan(oneLineSize(sb, subheadingPx)),
+                        0, sb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+                    )
                     sb.setSpan(StyleSpan(Typeface.BOLD), 0, sb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
                     sb.setSpan(ForegroundColorSpan(subheadingColor), 0, sb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
                     center(sb)
@@ -165,7 +195,11 @@ object Paginator {
         val gap: CharSequence = "\n"
         val gapH = 0
 
-        fun reserve(fn: CharSequence?, fnH: Int) = if (fn != null) fnH + oneLine else 0
+        // Room held back for a footnote pinned to the foot of the page. The
+        // separating margin used to be a whole line, and since this is charged
+        // against the page *before* the footnoted verse is placed, it pushed
+        // that verse over and left a hole above it. A third of a line is plenty.
+        fun reserve(fn: CharSequence?, fnH: Int) = if (fn != null) fnH + oneLine / 3 else 0
 
         fun flush() {
             if (current.isNotEmpty()) {
