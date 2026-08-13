@@ -143,6 +143,7 @@ object Paginator {
         var currentStart = -1
         var currentFn: CharSequence? = null
         var currentFnHeight = 0
+        var lastWasNav = false
         val gap = "\n\n"
 
         fun reserve(fn: CharSequence?, fnH: Int) = if (fn != null) fnH + oneLine else 0
@@ -160,6 +161,10 @@ object Paginator {
         }
 
         blocks.forEachIndexed { i, b ->
+            // Start a section heading on a fresh page (but keep consecutive
+            // heading + sub-heading together instead of leaving a heading alone).
+            if (b.isNav && current.isNotEmpty() && !lastWasNav) flush()
+
             val blockCs = buildBlock(b)
             val blockFn = footnotes[i]?.let { buildFootnote(it) }
             val blockFnHeight = if (blockFn != null) measure(blockFn) else 0
@@ -210,6 +215,7 @@ object Paginator {
                     }
                 }
             }
+            lastWasNav = b.isNav
         }
         flush()
 

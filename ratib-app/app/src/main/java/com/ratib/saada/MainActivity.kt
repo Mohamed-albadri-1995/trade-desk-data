@@ -37,7 +37,7 @@ class MainActivity : AppCompatActivity() {
     private var pagination: Pagination? = null
     private var scale = 1f
     private var needsAutoFit = false
-    private val targetPages = 15
+    private val targetPages = 25
 
     private val notifPermission =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { }
@@ -55,8 +55,10 @@ class MainActivity : AppCompatActivity() {
         binding.toolbar.setNavigationOnClickListener { toggleDrawer() }
 
         BackgroundLoader.apply(this, binding.bgImage)
-        needsAutoFit = !prefs().contains(scaleKey)
-        scale = prefs().getFloat(scaleKey, 1f)
+        // Always open at the default (auto-fit) zoom; A+/A− only change the
+        // current session and are not remembered across launches.
+        needsAutoFit = true
+        scale = 1f
         parseContent()
 
         pagerAdapter = PagerAdapter(emptyList(), emptyList())
@@ -140,16 +142,21 @@ class MainActivity : AppCompatActivity() {
     // 14dp padding top+bottom in item_page, plus a safety line so nothing clips.
     private fun paddingV() = (14f * density * 2 + 20f * density).toInt()
 
-    /** Largest font scale that keeps the whole ratib within ~targetPages pages. */
+    /**
+     * Default to a comfortable reading size and only shrink it if the whole
+     * ratib would exceed targetPages, so pages stay full but never too many.
+     */
     private fun autoFitScale(w: Int, h: Int): Float {
-        var best = 0.7f
-        var s = 0.7f
-        while (s <= 1.51f) {
-            val pages = Paginator.paginate(this, blocks, footnotes, w, h, s).pages.size
-            if (pages <= targetPages) best = s
-            s += 0.05f
+        val preferred = 1.0f
+        if (Paginator.paginate(this, blocks, footnotes, w, h, preferred).pages.size <= targetPages) {
+            return preferred
         }
-        return best
+        var s = preferred
+        while (s > 0.6f) {
+            s -= 0.05f
+            if (Paginator.paginate(this, blocks, footnotes, w, h, s).pages.size <= targetPages) return s
+        }
+        return 0.6f
     }
 
     private fun repaginate(restorePage: Int) {
@@ -162,7 +169,6 @@ class MainActivity : AppCompatActivity() {
         if (needsAutoFit) {
             needsAutoFit = false
             scale = autoFitScale(w, h)
-            prefs().edit().putFloat(scaleKey, scale).apply()
         }
         val result = Paginator.paginate(this, blocks, footnotes, w, h, scale)
         pagination = result
