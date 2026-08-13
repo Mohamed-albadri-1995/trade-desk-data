@@ -33,7 +33,10 @@ jobs:
 
       - name: Build debug APK
         working-directory: ratib-app
-        run: ./gradlew assembleDebug --no-daemon --stacktrace
+        run: >
+          ./gradlew assembleDebug --no-daemon --stacktrace
+          -PverCode=${{ github.run_number }}
+          -PverName=1.0.${{ github.run_number }}
 
       - name: Upload APK as a downloadable artifact
         uses: actions/upload-artifact@v4
@@ -46,8 +49,9 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ratib-latest
-          name: راتب السعادة (latest build)
+          name: راتب السعادة — بناء ${{ github.run_number }}
           body: >
-            التطبيق مرفق بالأسفل باسم **app-debug.apk**. نزّله على هاتف أندرويد
-            واضغط عليه للتثبيت (اسمح بالتثبيت من مصادر غير معروفة إذا طُلب).
+            الإصدار: 1.0.${{ github.run_number }} (بناء ${{ github.run_number }}).
+            نزّل **app-debug.apk** بالأسفل وثبّته فوق النسخة القديمة.
+            تحقق من رقم الإصدار داخل التطبيق في شاشة الغلاف بالأسفل.
           files: ratib-app/app/build/outputs/apk/debug/app-debug.apk

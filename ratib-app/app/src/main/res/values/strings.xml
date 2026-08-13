@@ -9,6 +9,7 @@
     <string name="toggle_theme">الوضع الليلي / النهاري</string>
     <string name="sections_title">الفهرس</string>
     <string name="enter_reading">ابدأ القراءة</string>
+    <string name="version_label">الإصدار %1$s</string>
     <string name="page_of">%1$s / %2$s</string>
     <string name="next_page">الصفحة التالية</string>
     <string name="prev_page">الصفحة السابقة</string>

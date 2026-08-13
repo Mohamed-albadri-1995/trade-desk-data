@@ -17,6 +17,8 @@ class CoverActivity : AppCompatActivity() {
 
         BackgroundLoader.apply(this, binding.coverImage)
 
+        binding.versionText.text = getString(R.string.version_label, BuildConfig.VERSION_NAME)
+
         binding.btnEnter.setOnClickListener {
             startActivity(Intent(this, MainActivity::class.java))
             finish()

@@ -11,8 +11,9 @@ android {
         applicationId "com.ratib.saada"
         minSdk 21
         targetSdk 35
-        versionCode 1
-        versionName "1.0"
+        // Rises with each CI build so installing over the old app counts as an update.
+        versionCode ((project.findProperty('verCode') ?: '1').toString().toInteger())
+        versionName ((project.findProperty('verName') ?: '1.0').toString())
     }
 
     buildTypes {
@@ -24,6 +25,7 @@ android {
 
     buildFeatures {
         viewBinding true
+        buildConfig true
     }
 
     compileOptions {
