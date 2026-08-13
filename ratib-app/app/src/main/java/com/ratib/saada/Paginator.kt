@@ -85,10 +85,11 @@ object Paginator {
         }
         val w = widthPx.coerceAtLeast(1)
         val oneLine = (bodyPx * LINE_SPACING).toInt().coerceAtLeast(1)
-        // Keep one blank line of slack at the bottom so the final rendered line
-        // is never clipped (the TextView adds font padding we can't predict
-        // exactly), which is what made "the bottom of the page" disappear.
-        val limit = (heightPx.coerceAtLeast(1) - oneLine).coerceAtLeast(oneLine)
+        // A small guard against the last line clipping. It used to be a whole
+        // line, which left two or three lines unused at the foot of every page;
+        // the caller already holds back 20dp on top of this, so a third of a
+        // line is enough.
+        val limit = (heightPx.coerceAtLeast(1) - oneLine / 3).coerceAtLeast(oneLine)
 
         fun measure(cs: CharSequence): Int {
             // includePad = true so the measured height matches the padded height
