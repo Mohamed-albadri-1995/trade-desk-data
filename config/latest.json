@@ -1,6 +1,6 @@
 {
   "version": "1",
-  "exportedAt": "2026-08-13T21:35:00.329Z",
+  "exportedAt": "2026-08-14T21:35:00.295Z",
   "files": {
     "risk.json": {
       "accountSize": 100000,
@@ -16,7 +16,7 @@
         },
         "OR + VWAP 09:35@09:35": {
           "enabled": true,
-          "updatedAt": 1786540952082,
+          "updatedAt": 1786715493491,
           "topN": 6,
           "maxTradesPerDay": 6,
           "rankMetric": "vwap_extension",
@@ -24,11 +24,11 @@
         },
         "T2 10:00 VWAP Extension@10:00": {
           "topN": 2,
-          "updatedAt": 1786538846987,
+          "updatedAt": 1786716606127,
           "enabled": false
         }
       },
-      "updatedAt": 1786540952082
+      "updatedAt": 1786716606127
     },
     "alert-rules.json": {
       "updatedAt": 1786368541736,
