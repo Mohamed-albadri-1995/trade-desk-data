@@ -22,7 +22,7 @@
     <string name="rem_asas">الأساس — بعد كل صلاة بعشرين دقيقة</string>
     <string name="rem_morning">أوراد الصباح</string>
     <string name="rem_evening">أوراد المساء</string>
-    <string name="rem_suhur">أوراد السحر</string>
+    <string name="rem_suhur">أوراد السحر — منبّه كامل</string>
     <string name="calc_method">طريقة حساب مواقيت الصلاة</string>
     <string name="latitude">خط العرض (Latitude)</string>
     <string name="longitude">خط الطول (Longitude)</string>
