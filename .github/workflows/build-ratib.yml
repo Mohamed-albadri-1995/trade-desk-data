@@ -31,20 +31,34 @@ jobs:
         with:
           packages: "platform-tools platforms;android-35 build-tools;35.0.0"
 
+      # Output is teed to a file as well as the console, so a failure can be
+      # read back from the artifact below when the job log is not reachable.
       - name: Build debug APK
         working-directory: ratib-app
-        run: >
-          ./gradlew assembleDebug --no-daemon --stacktrace
-          -PverCode=${{ github.run_number }}
-          -PverName=1.0.${{ github.run_number }}
+        run: |
+          set -o pipefail
+          ./gradlew assembleDebug --no-daemon --stacktrace \
+            -PverCode=${{ github.run_number }} \
+            -PverName=1.0.${{ github.run_number }} 2>&1 | tee ../build-debug.log
 
       # The Play Store takes an .aab, signed with the release key.
       - name: Build release bundle for Google Play
         working-directory: ratib-app
-        run: >
-          ./gradlew bundleRelease --no-daemon --stacktrace
-          -PverCode=${{ github.run_number }}
-          -PverName=1.0.${{ github.run_number }}
+        run: |
+          set -o pipefail
+          ./gradlew bundleRelease --no-daemon --stacktrace \
+            -PverCode=${{ github.run_number }} \
+            -PverName=1.0.${{ github.run_number }} 2>&1 | tee ../build-release.log
+
+      - name: Keep the build output when something fails
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-failure-log
+          path: |
+            build-debug.log
+            build-release.log
+          if-no-files-found: warn
 
       - name: Upload Play bundle as an artifact
         uses: actions/upload-artifact@v4
