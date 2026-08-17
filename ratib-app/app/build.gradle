@@ -8,7 +8,10 @@ android {
     compileSdk 35
 
     defaultConfig {
-        applicationId "com.ratib.saada"
+        // The app's permanent identity on Google Play, and what appears in its
+        // store URL. Fixed before the first upload, because it can never be
+        // changed afterwards. The Kotlin package above is only internal.
+        applicationId "com.sammaniyya.awrad"
         minSdk 21
         targetSdk 35
         // Rises with each CI build so installing over the old app counts as an update.
