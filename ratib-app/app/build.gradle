@@ -16,16 +16,23 @@ android {
         versionName ((project.findProperty('verName') ?: '1.0').toString())
     }
 
-    // A fixed key committed with the project. Without it every CI run generated
-    // a throw-away debug key, so each APK had a different signature and Android
-    // refused to install it over the previous one ("App not installed") — the
-    // phone silently kept running the old build.
     signingConfigs {
+        // Test builds. Fixed so a new APK installs over the previous one instead
+        // of being refused for a changed signature.
         shared {
             storeFile file('../ratib-debug.keystore')
             storePassword 'ratibapp'
             keyAlias 'ratibkey'
             keyPassword 'ratibapp'
+        }
+        // Play Store builds. Google ties the listing to this key permanently:
+        // once uploaded, a lost keystore cannot be replaced without starting a
+        // new listing, so ratib-release.keystore must be kept safe.
+        release {
+            storeFile file(project.findProperty('releaseStore') ?: '../ratib-release.keystore')
+            storePassword project.findProperty('releaseStorePass') ?: 'ratibrelease'
+            keyAlias project.findProperty('releaseKeyAlias') ?: 'ratibrelease'
+            keyPassword project.findProperty('releaseKeyPass') ?: 'ratibrelease'
         }
     }
 
@@ -35,7 +42,7 @@ android {
         }
         release {
             minifyEnabled false
-            signingConfig signingConfigs.shared
+            signingConfig signingConfigs.release
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }

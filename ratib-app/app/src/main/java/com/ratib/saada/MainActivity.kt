@@ -68,10 +68,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         setSupportActionBar(binding.toolbar)
-        // Build number in the title bar: the quickest way to tell at a glance
-        // whether the phone is actually running the newest APK.
-        supportActionBar?.title =
-            getString(R.string.app_name) + "  ·  " + BuildConfig.VERSION_NAME
+        supportActionBar?.title = getString(R.string.app_name)
         binding.toolbar.setNavigationOnClickListener { toggleDrawer() }
 
         BackgroundLoader.apply(this, binding.bgImage)
@@ -126,9 +123,9 @@ class MainActivity : AppCompatActivity() {
             ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) ==
             PackageManager.PERMISSION_GRANTED
 
-    /** Ask for location while we still have no saved coordinates. */
+    /** Ask for location while we are still working off the timezone estimate. */
     private fun requestLocationIfNeeded() {
-        if (ReminderPrefs.hasLocation(this)) return
+        if (ReminderPrefs.hasLocation(this) && !ReminderPrefs.isLocationApproximate(this)) return
         if (hasLocationPermission()) captureLocationAndEnable()
         else locationPermission.launch(locationPerms)
     }
@@ -136,6 +133,7 @@ class MainActivity : AppCompatActivity() {
     /** Grab a location fix, store it, and arm the reminders. */
     private fun captureLocationAndEnable() {
         if (!hasLocationPermission()) return
+        if (ReminderPrefs.hasLocation(this) && !ReminderPrefs.isLocationApproximate(this)) return
         try {
             val lm = getSystemService(Context.LOCATION_SERVICE) as? LocationManager ?: return
             var best: Location? = null
@@ -180,7 +178,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun saveLocation(loc: Location) {
-        ReminderPrefs.setLocation(this, loc.latitude, loc.longitude)
+        ReminderPrefs.setExactLocation(this, loc.latitude, loc.longitude)
         // Reminders default to on, so once we have a location the alarms can arm.
         ReminderScheduler.rescheduleNext(this)
     }

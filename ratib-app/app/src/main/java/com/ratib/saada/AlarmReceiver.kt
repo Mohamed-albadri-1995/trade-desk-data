@@ -27,30 +27,73 @@ class AlarmReceiver : BroadcastReceiver() {
 
         val label = intent.getStringExtra(ReminderScheduler.EXTRA_LABEL)
             ?: context.getString(R.string.app_name)
+        val short = intent.getBooleanExtra(ReminderScheduler.EXTRA_SHORT, false)
 
-        ensureChannel(context)
-        postAlarm(context, label)
+        ensureChannels(context)
+        if (short) postWard(context, label) else postAlarm(context, label)
 
         // Arm the following reminder.
         ReminderScheduler.rescheduleNext(context)
     }
 
-    private fun ensureChannel(context: Context) {
+    private fun ensureChannels(context: Context) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
         val nm = context.getSystemService(NotificationManager::class.java)
-        if (nm.getNotificationChannel(CHANNEL) != null) return
-        val alarmUri = RingtoneManager.getActualDefaultRingtoneUri(context, RingtoneManager.TYPE_ALARM)
-            ?: RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
-        val ch = NotificationChannel(CHANNEL, context.getString(R.string.reminders_channel), NotificationManager.IMPORTANCE_HIGH)
-        ch.setSound(
-            alarmUri,
-            AudioAttributes.Builder()
-                .setUsage(AudioAttributes.USAGE_ALARM)
-                .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
-                .build()
+        val alarmAudio = AudioAttributes.Builder()
+            .setUsage(AudioAttributes.USAGE_ALARM)
+            .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+            .build()
+
+        if (nm.getNotificationChannel(CHANNEL) == null) {
+            val alarmUri = RingtoneManager.getActualDefaultRingtoneUri(context, RingtoneManager.TYPE_ALARM)
+                ?: RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
+            val ch = NotificationChannel(
+                CHANNEL, context.getString(R.string.reminders_channel),
+                NotificationManager.IMPORTANCE_HIGH
+            )
+            ch.setSound(alarmUri, alarmAudio)
+            ch.enableVibration(true)
+            nm.createNotificationChannel(ch)
+        }
+
+        // The ward tone: a notification sound rather than a ringing alarm, so it
+        // lasts seconds — but carried on the alarm stream so it is not quiet.
+        if (nm.getNotificationChannel(CHANNEL_WARD) == null) {
+            val toneUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
+                ?: RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
+            val ch = NotificationChannel(
+                CHANNEL_WARD, context.getString(R.string.ward_channel),
+                NotificationManager.IMPORTANCE_HIGH
+            )
+            ch.setSound(toneUri, alarmAudio)
+            ch.enableVibration(true)
+            nm.createNotificationChannel(ch)
+        }
+    }
+
+    /**
+     * The ward reminder. Sounds once for a few seconds and can be swiped away —
+     * no full-screen takeover, since the prayer alarm has already done its job.
+     */
+    private fun postWard(context: Context, label: String) {
+        val open = PendingIntent.getActivity(
+            context, 3,
+            Intent(context, CoverActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )
-        ch.enableVibration(true)
-        nm.createNotificationChannel(ch)
+        val n = NotificationCompat.Builder(context, CHANNEL_WARD)
+            .setSmallIcon(R.drawable.ic_notification)
+            .setContentTitle(context.getString(R.string.app_name))
+            .setContentText(label)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setCategory(NotificationCompat.CATEGORY_REMINDER)
+            .setAutoCancel(true)
+            .setContentIntent(open)
+            .build()
+        try {
+            NotificationManagerCompat.from(context).notify(NOTIF_WARD_ID, n)
+        } catch (_: SecurityException) {
+        }
     }
 
     private fun postAlarm(context: Context, label: String) {
@@ -88,6 +131,8 @@ class AlarmReceiver : BroadcastReceiver() {
 
     companion object {
         const val CHANNEL = "ratib_reminders"
+        const val CHANNEL_WARD = "ratib_ward"
         const val NOTIF_ID = 7701
+        const val NOTIF_WARD_ID = 7702
     }
 }

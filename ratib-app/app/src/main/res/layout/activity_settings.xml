@@ -36,6 +36,12 @@
             android:layout_marginVertical="8dp" android:background="#33000000" />
 
         <androidx.appcompat.widget.SwitchCompat
+            android:id="@+id/swPrayer"
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:paddingVertical="10dp" android:text="@string/rem_prayer"
+            android:textColor="@color/reading_text" android:textSize="16sp" />
+
+        <androidx.appcompat.widget.SwitchCompat
             android:id="@+id/swAsas"
             android:layout_width="match_parent" android:layout_height="wrap_content"
             android:paddingVertical="10dp" android:text="@string/rem_asas"

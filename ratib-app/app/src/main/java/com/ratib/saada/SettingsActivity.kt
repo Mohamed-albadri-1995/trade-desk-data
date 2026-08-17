@@ -32,6 +32,7 @@ import java.util.Locale
 class SettingsActivity : AppCompatActivity() {
 
     private lateinit var swMaster: SwitchCompat
+    private lateinit var swPrayer: SwitchCompat
     private lateinit var swAsas: SwitchCompat
     private lateinit var swMorning: SwitchCompat
     private lateinit var swEvening: SwitchCompat
@@ -51,6 +52,7 @@ class SettingsActivity : AppCompatActivity() {
         setContentView(R.layout.activity_settings)
 
         swMaster = findViewById(R.id.swMaster)
+        swPrayer = findViewById(R.id.swPrayer)
         swAsas = findViewById(R.id.swAsas)
         swMorning = findViewById(R.id.swMorning)
         swEvening = findViewById(R.id.swEvening)
@@ -65,6 +67,7 @@ class SettingsActivity : AppCompatActivity() {
 
         // Load current values.
         swMaster.isChecked = ReminderPrefs.master(this)
+        swPrayer.isChecked = ReminderPrefs.prayer(this)
         swAsas.isChecked = ReminderPrefs.asas(this)
         swMorning.isChecked = ReminderPrefs.morning(this)
         swEvening.isChecked = ReminderPrefs.evening(this)
@@ -231,6 +234,7 @@ class SettingsActivity : AppCompatActivity() {
     private fun save() {
         try {
             ReminderPrefs.setFlag(this, "master", swMaster.isChecked)
+            ReminderPrefs.setFlag(this, "prayer", swPrayer.isChecked)
             ReminderPrefs.setFlag(this, "asas", swAsas.isChecked)
             ReminderPrefs.setFlag(this, "morning", swMorning.isChecked)
             ReminderPrefs.setFlag(this, "evening", swEvening.isChecked)
@@ -239,7 +243,7 @@ class SettingsActivity : AppCompatActivity() {
 
             val lat = etLat.text.toString().trim().toDoubleOrNull()
             val lng = etLng.text.toString().trim().toDoubleOrNull()
-            if (lat != null && lng != null) ReminderPrefs.setLocation(this, lat, lng)
+            if (lat != null && lng != null) ReminderPrefs.setExactLocation(this, lat, lng)
 
             ReminderScheduler.rescheduleNext(this)
 

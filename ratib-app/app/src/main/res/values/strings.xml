@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">راتب السعادة</string>
-    <string name="subtitle">الطريقة السمانية · السجادة السليمانية</string>
+    <string name="app_name">أوراد الطريقة السمانية</string>
+    <string name="subtitle">السجادة السليمانية</string>
 
     <string name="open_menu">الفهرس</string>
     <string name="font_larger">تكبير الخط</string>
@@ -18,7 +18,8 @@
     <string name="settings">الإعدادات والتنبيهات</string>
     <string name="settings_title">التنبيهات والأوقات</string>
     <string name="enable_reminders">تفعيل التنبيهات</string>
-    <string name="rem_asas">الأساس — بعد كل صلاة</string>
+    <string name="rem_prayer">تنبيه الصلاة — أذان كامل</string>
+    <string name="rem_asas">الأساس — بعد كل صلاة بعشرين دقيقة</string>
     <string name="rem_morning">أوراد الصباح</string>
     <string name="rem_evening">أوراد المساء</string>
     <string name="rem_suhur">أوراد السحر</string>
@@ -38,6 +39,7 @@
 
     <!-- Alarm troubleshooting -->
     <string name="test_alarm">تجربة المنبّه الآن</string>
+    <string name="ward_channel">تنبيهات الورد</string>
     <string name="test_alarm_label">تجربة المنبّه</string>
     <string name="test_alarm_toast">سينطلق المنبّه بعد ٥ ثوانٍ… أغلق الشاشة للتجربة.</string>
     <string name="fix_restrictions">إصلاح قيود التشغيل في الخلفية</string>
@@ -46,7 +48,7 @@
     <string name="next_reminder">التنبيه القادم: %1$s</string>
     <string name="next_reminder_none">لا يوجد تنبيه مجدول — فعّل التنبيهات وحدّد موقعك.</string>
     <string name="troubleshoot_title">حل مشكلة عدم عمل المنبّه</string>
-    <string name="troubleshoot_hint">إذا لم ينطلق المنبّه: ١) جرّب زر «تجربة المنبّه الآن». ٢) اضغط «إصلاح قيود التشغيل» واسمح بكل شيء. ٣) في هواوي/شاومي: افتح إعدادات الهاتف ← البطارية ← تشغيل التطبيقات، واجعل «راتب السعادة» يدويًا مع تفعيل التشغيل التلقائي والعمل في الخلفية. ٤) ثبّت التطبيق في قائمة التطبيقات الأخيرة (اسحب لأسفل على بطاقة التطبيق).</string>
+    <string name="troubleshoot_hint">إذا لم ينطلق المنبّه: ١) جرّب زر «تجربة المنبّه الآن». ٢) اضغط «إصلاح قيود التشغيل» واسمح بكل شيء. ٣) في هواوي/شاومي: افتح إعدادات الهاتف ← البطارية ← تشغيل التطبيقات، واجعل «أوراد الطريقة السمانية» يدويًا مع تفعيل التشغيل التلقائي والعمل في الخلفية. ٤) ثبّت التطبيق في قائمة التطبيقات الأخيرة (اسحب لأسفل على بطاقة التطبيق).</string>
 
     <string-array name="methods_array">
         <item>رابطة العالم الإسلامي</item>

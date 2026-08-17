@@ -17,6 +17,13 @@ class CoverActivity : AppCompatActivity() {
 
         BackgroundLoader.apply(this, binding.coverImage)
 
+        // The reminders are on from the moment the app is installed: give them a
+        // location to work from if none has been captured yet, and arm the next
+        // one now. Nobody should have to open the settings and press save for
+        // the alarms to start.
+        ReminderPrefs.seedLocationIfMissing(this)
+        ReminderScheduler.rescheduleNext(this)
+
         binding.versionText.text = getString(R.string.version_label, BuildConfig.VERSION_NAME)
 
         binding.btnEnter.setOnClickListener {

@@ -38,6 +38,21 @@ jobs:
           -PverCode=${{ github.run_number }}
           -PverName=1.0.${{ github.run_number }}
 
+      # The Play Store takes an .aab, signed with the release key.
+      - name: Build release bundle for Google Play
+        working-directory: ratib-app
+        run: >
+          ./gradlew bundleRelease --no-daemon --stacktrace
+          -PverCode=${{ github.run_number }}
+          -PverName=1.0.${{ github.run_number }}
+
+      - name: Upload Play bundle as an artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: play-bundle-aab
+          path: ratib-app/app/build/outputs/bundle/release/app-release.aab
+          if-no-files-found: error
+
       - name: Upload APK as a downloadable artifact
         uses: actions/upload-artifact@v4
         with:
@@ -54,4 +69,6 @@ jobs:
             الإصدار: 1.0.${{ github.run_number }} (بناء ${{ github.run_number }}).
             نزّل **app-debug.apk** بالأسفل وثبّته فوق النسخة القديمة.
             تحقق من رقم الإصدار داخل التطبيق في شاشة الغلاف بالأسفل.
-          files: ratib-app/app/build/outputs/apk/debug/app-debug.apk
+          files: |
+            ratib-app/app/build/outputs/apk/debug/app-debug.apk
+            ratib-app/app/build/outputs/bundle/release/app-release.aab
