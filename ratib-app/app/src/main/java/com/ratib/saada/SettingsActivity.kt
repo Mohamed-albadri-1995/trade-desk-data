@@ -1,7 +1,6 @@
 package com.ratib.saada
 
 import android.Manifest
-import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -95,10 +94,9 @@ class SettingsActivity : AppCompatActivity() {
         }
     }
 
-    private val locationPerms = arrayOf(
-        Manifest.permission.ACCESS_FINE_LOCATION,
-        Manifest.permission.ACCESS_COARSE_LOCATION
-    )
+    // Coarse only: prayer times turn on which town you are in, not where in it,
+    // and fine location would mean a far heavier Play review for no gain.
+    private val locationPerms = arrayOf(Manifest.permission.ACCESS_COARSE_LOCATION)
 
     override fun onResume() {
         super.onResume()
@@ -117,24 +115,19 @@ class SettingsActivity : AppCompatActivity() {
         }
     }
 
-    /** Asks the system to exempt us from battery optimisation (kills alarms). */
-    @SuppressLint("BatteryLife")
+    /**
+     * Battery optimisation is what silences the alarms, so this opens the screen
+     * where it is turned off. It only opens the list — asking for the exemption
+     * directly needs a permission the Play Store treats as high risk, and this
+     * gets the user to the same setting.
+     */
     private fun requestIgnoreBattery() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return
         val pm = getSystemService(Context.POWER_SERVICE) as? PowerManager
         if (pm != null && pm.isIgnoringBatteryOptimizations(packageName)) {
             Toast.makeText(this, R.string.battery_ok, Toast.LENGTH_LONG).show()
-            openBatterySettings()
-            return
         }
-        try {
-            startActivity(
-                Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS)
-                    .setData(Uri.parse("package:$packageName"))
-            )
-        } catch (_: Throwable) {
-            openBatterySettings()
-        }
+        openBatterySettings()
     }
 
     private fun openBatterySettings() {
@@ -158,9 +151,7 @@ class SettingsActivity : AppCompatActivity() {
     }
 
     private fun hasLocationPermission(): Boolean =
-        ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) ==
-            PackageManager.PERMISSION_GRANTED ||
-            ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) ==
+        ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) ==
             PackageManager.PERMISSION_GRANTED
 
     private fun requestLocation() {

@@ -43,10 +43,9 @@ class MainActivity : AppCompatActivity() {
     private var needsAutoFit = false
     private val maxPages = 25
 
-    private val locationPerms = arrayOf(
-        Manifest.permission.ACCESS_FINE_LOCATION,
-        Manifest.permission.ACCESS_COARSE_LOCATION
-    )
+    // Coarse only: prayer times turn on which town you are in, not where in it,
+    // and fine location would mean a far heavier Play review for no gain.
+    private val locationPerms = arrayOf(Manifest.permission.ACCESS_COARSE_LOCATION)
 
     // After notifications are answered, move on to asking for location.
     private val notifPermission =
@@ -118,9 +117,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun hasLocationPermission(): Boolean =
-        ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) ==
-            PackageManager.PERMISSION_GRANTED ||
-            ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) ==
+        ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) ==
             PackageManager.PERMISSION_GRANTED
 
     /** Ask for location while we are still working off the timezone estimate. */
