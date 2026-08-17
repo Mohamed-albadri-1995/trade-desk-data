@@ -1,12 +1,12 @@
 {
   "version": "1",
-  "exportedAt": "2026-08-14T21:35:01.480Z",
+  "exportedAt": "2026-08-17T21:35:00.357Z",
   "files": {
     "risk.json": {
       "accountSize": 100000,
-      "riskPerTrade": 25,
+      "riskPerTrade": 250,
       "maxPositionPct": 16.66,
-      "updatedAt": 1786604037348
+      "updatedAt": 1786972713549
     },
     "setup-prefs.json": {
       "setups": {
@@ -16,9 +16,9 @@
         },
         "OR + VWAP 09:35@09:35": {
           "enabled": true,
-          "updatedAt": 1786715493491,
-          "topN": 6,
-          "maxTradesPerDay": 6,
+          "updatedAt": 1786972846169,
+          "topN": 2,
+          "maxTradesPerDay": 2,
           "rankMetric": "vwap_extension",
           "autoTrade": false
         },
@@ -28,7 +28,7 @@
           "enabled": false
         }
       },
-      "updatedAt": 1786716606127
+      "updatedAt": 1786972846169
     },
     "alert-rules.json": {
       "updatedAt": 1786368541736,
