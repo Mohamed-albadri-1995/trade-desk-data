@@ -1,9 +1,24 @@
+<!--
+  The rub el hizb (۞) — the eight-pointed star that heads every section of the
+  ratib. Two squares, one turned forty-five degrees over the other, which is how
+  the figure is constructed in manuscript. Drawn inside a 60dp circle so it stays
+  within the 72dp safe zone an adaptive icon may be masked to.
+-->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp" android:height="108dp"
     android:viewportWidth="108" android:viewportHeight="108">
-    <path android:fillColor="#FFFFFF"
-        android:pathData="M54,38 C48,33 40,32 34,33 L34,73 C40,72 48,73 54,78 C60,73 68,72 74,73 L74,33 C68,32 60,33 54,38 Z" />
-    <path android:fillColor="#C8E6C9"
-        android:pathData="M54,38 L54,78 C60,73 68,72 74,73 L74,33 C68,32 60,33 54,38 Z" />
-    <path android:fillColor="#2E7D32" android:pathData="M52,38 h4 v40 h-4 z" />
+
+    <!-- Square standing on its corners -->
+    <path android:fillColor="#D4A93C"
+        android:pathData="M54,24 L84,54 L54,84 L24,54 Z" />
+
+    <!-- Square square-on, the same circumradius -->
+    <path android:fillColor="#D4A93C"
+        android:pathData="M32.79,32.79 L75.21,32.79 L75.21,75.21 L32.79,75.21 Z" />
+
+    <!-- The eye at the centre, as the glyph has -->
+    <path android:fillColor="#1B5E20"
+        android:pathData="M54,46.6 a7.4,7.4 0 1,0 0,14.8 a7.4,7.4 0 1,0 0,-14.8 Z" />
+    <path android:fillColor="#F0DFA8"
+        android:pathData="M54,51.2 a2.8,2.8 0 1,0 0,5.6 a2.8,2.8 0 1,0 0,-5.6 Z" />
 </vector>
