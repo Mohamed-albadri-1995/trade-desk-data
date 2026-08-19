@@ -61,6 +61,13 @@ object Paginator {
      */
     private const val MIN_SPLIT_LINES = 2
 
+    /**
+     * How far the الأوراد المربوطة section may be shrunk to keep it on a single
+     * page. Below this it stops being readable, and running on to a second page
+     * is the better trade.
+     */
+    private const val TAIL_MIN_SCALE = 0.75f
+
     fun paginate(
         context: Context,
         blocks: List<Block>,
@@ -394,22 +401,58 @@ object Paginator {
         // and the type shrunk — by as much as half — until all of it fits. This
         // is the one place the text is not at the book's size.
         if (tailStart >= 0) {
-            var m = 1f
-            var tail: CharSequence = SpannableStringBuilder()
-            while (true) {
+            // Build the section at a given size, remembering where each block
+            // starts so a heading can be pointed at the page it lands on.
+            fun assemble(m: Float): Pair<SpannableStringBuilder, List<Int>> {
                 val sb = SpannableStringBuilder()
+                val starts = ArrayList<Int>()
                 for (i in tailStart until blocks.size) {
                     if (sb.isNotEmpty()) sb.append("\n")
+                    starts.add(sb.length)
                     sb.append(buildBlock(blocks[i], m))
                 }
-                tail = sb
-                if (measure(sb) <= limit || m <= 0.5f) break
+                return sb to starts
+            }
+
+            // Shrink to get the whole section onto one page, but only as far as
+            // it stays comfortably readable. Beyond that it is better to run on
+            // to a second page than to set it in type nobody can read — and far
+            // better than overflowing the page, which would drop the text off
+            // the bottom without a word.
+            var m = 1f
+            var built = assemble(m)
+            while (measure(built.first) > limit && m > TAIL_MIN_SCALE) {
                 m -= 0.05f
+                built = assemble(m)
             }
-            for (i in tailStart until blocks.size) {
-                if (blocks[i].isNav) headingPage[i] = pages.size
+
+            val (tail, starts) = built
+            val ranges = ArrayList<Pair<Int, Int>>()   // char range shown per page
+            if (measure(tail) <= limit) {
+                pages.add(tail); pageFns.add(null); pageStartBlock.add(tailStart)
+                ranges.add(0 to tail.length)
+            } else {
+                var from = 0
+                while (from < tail.length) {
+                    val rest = tail.subSequence(from, tail.length)
+                    val (cut, _, _) = splitPoint(rest, limit)
+                    val end = if (cut <= 0) tail.length else from + cut
+                    pages.add(tail.subSequence(from, end))
+                    pageFns.add(null)
+                    pageStartBlock.add(tailStart)
+                    ranges.add(from to end)
+                    from = end
+                }
             }
-            pages.add(tail); pageFns.add(null); pageStartBlock.add(tailStart)
+
+            // Point each heading at whichever of those pages holds it.
+            val firstTailPage = pages.size - ranges.size
+            for ((n, i) in (tailStart until blocks.size).withIndex()) {
+                if (!blocks[i].isNav) continue
+                val at = starts[n]
+                val page = ranges.indexOfFirst { at >= it.first && at < it.second }
+                headingPage[i] = firstTailPage + (if (page < 0) 0 else page)
+            }
         }
 
         if (pages.isEmpty()) {
