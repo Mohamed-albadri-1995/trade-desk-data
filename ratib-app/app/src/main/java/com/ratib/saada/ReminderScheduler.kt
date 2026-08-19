@@ -163,7 +163,11 @@ object ReminderScheduler {
             if (ReminderPrefs.suhur(context)) {
                 val next = Calendar.getInstance(); next.add(Calendar.DAY_OF_MONTH, dayOffset + 1)
                 val t2 = PrayerCalc.compute(next, lat, lng, method)
-                val lastThirdH = t.maghrib + (t2.fajr + 24.0 - t.maghrib) * 2.0 / 3.0
+                // The night runs from مغرب to the next فجر. Its last third begins
+                // two thirds of the way through, and the middle of that third —
+                // which is when the ward is wanted — is five sixths through.
+                val nightHours = t2.fajr + 24.0 - t.maghrib
+                val lastThirdH = t.maghrib + nightHours * 5.0 / 6.0
                 // Wakes you in the last third of the night, so it rings like the
                 // prayer alarm rather than sounding a tone you would sleep through.
                 raw.add(Fire(base + (lastThirdH * 3600000L).toLong(), "أوراد السحر", short = false))
