@@ -10,5 +10,6 @@
 
     <color name="marker_color">#E2C15C</color>
     <color name="subheading_text">#D2B36A</color>
+    <color name="refrain_text">#A9C8DA</color>
     <color name="footnote_text">#A6A6A6</color>
 </resources>

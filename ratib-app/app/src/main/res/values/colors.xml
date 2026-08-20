@@ -19,6 +19,13 @@
     <!-- Sub-section headings (e.g. الأساس, أوراد السحر). -->
     <color name="subheading_text">#8A6D3B</color>
 
+    <!--
+        The closing invocation after the قصيدة — يا ملجأ القاصد and محمد بشر —
+        which is recited apart from the poem. Set in a colour of its own, close
+        enough to the body not to shout, distinct enough to be seen at a glance.
+    -->
+    <color name="refrain_text">#2F4858</color>
+
     <!-- Footnotes / margin notes. -->
     <color name="footnote_text">#6E6E6E</color>
 </resources>

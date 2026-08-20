@@ -42,6 +42,7 @@ BROWN = HexColor("#8A6D3B")        # subheading_text
 GOLD_CUE = HexColor("#A9791A")     # marker_color
 GREY = HexColor("#6E6E6E")         # footnote_text
 GOLD = HexColor("#C9A227")         # gold
+SLATE = HexColor("#2F4858")        # refrain_text
 VEIL = HexColor("#FBFBF6")         # reading_scrim, drawn at its DC alpha
 VEIL_ALPHA = 0xDC / 255.0
 
@@ -246,32 +247,37 @@ class Book:
             self.draw_line(ln, SUB, BROWN, "center")
         self.y -= 2
 
-    def body(self, text):
-        if "\n" in text:
+    def body(self, text, ink=INK):
+        # The app's own test: verse, or a line too short to wrap, is centred;
+        # only a passage of running prose is justified.
+        if "\n" in text or len(text) <= 55:
             # Verse: a hemistich to a line, centred, couplets kept whole.
             parts = text.split("\n")
             self.need(min(len(parts), 2) * LEAD)
             for part in parts:
                 for ln in self.wrap(part, BODY):
                     self.need(LEAD)
-                    self.draw_line(ln, BODY, INK, "center", GOLD_CUE)
+                    self.draw_line(ln, BODY, ink, "center", GOLD_CUE)
             self.y -= 5
         else:
             lines = self.wrap(text, BODY)
             for i, ln in enumerate(lines):
                 self.need(LEAD)
                 last = i == len(lines) - 1
-                self.draw_line(ln, BODY, INK, "right" if last else "justify", GOLD_CUE)
+                self.draw_line(ln, BODY, ink, "right" if last else "justify", GOLD_CUE)
             self.y -= 6
 
 
 def parse(path):
     blocks, buf = [], []
+    refrain = False
 
     def flush():
+        nonlocal refrain
         if buf:
-            blocks.append(("body", "\n".join(buf)))
+            blocks.append(("refrain" if refrain else "body", "\n".join(buf)))
             buf.clear()
+        refrain = False
 
     for raw in open(path, encoding="utf-8"):
         line = raw.strip()
@@ -286,6 +292,11 @@ def parse(path):
         elif line.startswith("> "):
             flush()
             blocks.append(("note", line[2:].strip()))
+        elif line.startswith("* ") and not buf:
+            # Marks the block as recited apart from its surroundings, and gives
+            # the whole of it a colour of its own.
+            refrain = True
+            buf.append(line[2:].strip())
         else:
             buf.append(line)
     flush()
@@ -362,6 +373,8 @@ def build(total_hint=0):
             book.subheading(text)
         elif kind == "note":
             book.footnote = text
+        elif kind == "refrain":
+            book.body(text, SLATE)
         else:
             book.body(text)
     book.draw_footnote()

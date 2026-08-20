@@ -208,8 +208,16 @@ class MainActivity : AppCompatActivity() {
         val buffer = ArrayList<String>()
         fun flushBuffer() {
             if (buffer.isEmpty()) return
+            // A "* " on the block's first line marks it as recited apart from
+            // what surrounds it, and colours the whole block accordingly.
+            val refrain = buffer[0].startsWith("* ")
+            if (refrain) buffer[0] = buffer[0].removePrefix("* ").trim()
             val text = buffer.joinToString("\n")
             buffer.clear()
+            if (refrain) {
+                blocks.add(Block.Refrain(text))
+                return
+            }
             // Two prose passages in a row are one continuous recitation, so the
             // second carries on from the first instead of starting a new line —
             // ...ما أعظم الله runs straight into نعم المولى ونعم النصير. Verse

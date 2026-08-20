@@ -22,6 +22,13 @@ sealed class Block {
     data class Subheading(val text: String) : Block()
     data class Body(val text: String) : Block()
 
+    /**
+     * Verse that is recited apart from the passage it sits in — the invocation
+     * closing the قصيدة. Set like a stanza but in its own colour, so a reader
+     * can see where the poem ends and what follows it begins.
+     */
+    data class Refrain(val text: String) : Block()
+
     val isNav get() = this is Heading || this is Subheading
 }
 
@@ -86,6 +93,7 @@ object Paginator {
         val subheadingColor = ContextCompat.getColor(context, R.color.subheading_text)
         val footnoteColor = ContextCompat.getColor(context, R.color.footnote_text)
         val cueColor = ContextCompat.getColor(context, R.color.marker_color)
+        val refrainColor = ContextCompat.getColor(context, R.color.refrain_text)
 
         val amiri = runCatching { ResourcesCompat.getFont(context, R.font.amiri) }.getOrNull()
         val paint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
@@ -152,6 +160,23 @@ object Paginator {
             val hPx = (headingPx * m).toInt().coerceAtLeast(1)
             val sPx = (subheadingPx * m).toInt().coerceAtLeast(1)
             val sb = SpannableStringBuilder()
+
+            /** A stanza or passage, set in [ink] with its repetition cues gilded. */
+            fun stanza(text: String, ink: Int) {
+                sb.append(text)
+                sb.setSpan(AbsoluteSizeSpan(bPx), 0, sb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+                sb.setSpan(ForegroundColorSpan(ink), 0, sb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+                for (hit in cueRegex.findAll(text)) {
+                    val cs = hit.range.first
+                    val ce = hit.range.last + 1
+                    sb.setSpan(ForegroundColorSpan(cueColor), cs, ce, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+                    sb.setSpan(StyleSpan(Typeface.BOLD), cs, ce, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+                }
+                val isProse = !text.contains('\n') && text.length > 55
+                val align = if (isProse) Layout.Alignment.ALIGN_NORMAL else Layout.Alignment.ALIGN_CENTER
+                sb.setSpan(AlignmentSpan.Standard(align), 0, sb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+            }
+
             when (b) {
                 is Block.Heading -> {
                     val framed = "۞  ${b.text}  ۞"
@@ -169,20 +194,8 @@ object Paginator {
                     sb.setSpan(ForegroundColorSpan(subheadingColor), 0, sb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
                     center(sb)
                 }
-                is Block.Body -> {
-                    sb.append(b.text)
-                    sb.setSpan(AbsoluteSizeSpan(bPx), 0, sb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-                    sb.setSpan(ForegroundColorSpan(bodyColor), 0, sb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-                    for (hit in cueRegex.findAll(b.text)) {
-                        val cs = hit.range.first
-                        val ce = hit.range.last + 1
-                        sb.setSpan(ForegroundColorSpan(cueColor), cs, ce, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-                        sb.setSpan(StyleSpan(Typeface.BOLD), cs, ce, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-                    }
-                    val isProse = !b.text.contains('\n') && b.text.length > 55
-                    val align = if (isProse) Layout.Alignment.ALIGN_NORMAL else Layout.Alignment.ALIGN_CENTER
-                    sb.setSpan(AlignmentSpan.Standard(align), 0, sb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-                }
+                is Block.Body -> stanza(b.text, bodyColor)
+                is Block.Refrain -> stanza(b.text, refrainColor)
             }
             return sb
         }
