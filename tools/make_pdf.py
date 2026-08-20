@@ -247,10 +247,10 @@ class Book:
             self.draw_line(ln, SUB, BROWN, "center")
         self.y -= 2
 
-    def body(self, text, ink=INK):
+    def body(self, text, ink=INK, always_center=False):
         # The app's own test: verse, or a line too short to wrap, is centred;
         # only a passage of running prose is justified.
-        if "\n" in text or len(text) <= 55:
+        if always_center or "\n" in text or len(text) <= 55:
             # Verse: a hemistich to a line, centred, couplets kept whole.
             parts = text.split("\n")
             self.need(min(len(parts), 2) * LEAD)
@@ -374,7 +374,7 @@ def build(total_hint=0):
         elif kind == "note":
             book.footnote = text
         elif kind == "refrain":
-            book.body(text, SLATE)
+            book.body(text, SLATE, always_center=True)
         else:
             book.body(text)
     book.draw_footnote()

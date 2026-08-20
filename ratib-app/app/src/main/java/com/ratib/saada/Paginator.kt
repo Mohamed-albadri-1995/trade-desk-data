@@ -75,6 +75,13 @@ object Paginator {
      */
     private const val TAIL_MIN_SCALE = 0.75f
 
+    /**
+     * How far a one-line refrain may be shrunk to keep it on its single line.
+     * A tenth is all the longest of them needs on the narrowest phone; past
+     * that it would read as a different size from the text around it.
+     */
+    private const val REFRAIN_MIN_SCALE = 0.85f
+
     fun paginate(
         context: Context,
         blocks: List<Block>,
@@ -128,11 +135,11 @@ object Paginator {
         // draws with, and the caller already withholds 20dp of its own.
         val limit = heightPx.coerceAtLeast(1)
 
-        /** Whether [text] fits on a single line at [px], set bold as headings are. */
-        fun fitsOneLine(text: CharSequence, px: Int): Boolean {
+        /** Whether [text] fits on a single line at [px]. */
+        fun fitsOneLine(text: CharSequence, px: Int, bold: Boolean = true): Boolean {
             val tp = TextPaint(paint).apply {
                 textSize = px.toFloat()
-                typeface = Typeface.create(paint.typeface, Typeface.BOLD)
+                if (bold) typeface = Typeface.create(paint.typeface, Typeface.BOLD)
             }
             @Suppress("DEPRECATION")
             return StaticLayout(
@@ -161,10 +168,23 @@ object Paginator {
             val sPx = (subheadingPx * m).toInt().coerceAtLeast(1)
             val sb = SpannableStringBuilder()
 
-            /** A stanza or passage, set in [ink] with its repetition cues gilded. */
-            fun stanza(text: String, ink: Int) {
+            /**
+             * A stanza or passage, set in [ink] with its repetition cues gilded.
+             * [alwaysCenter] for verse that runs long enough to look like prose
+             * to the test below but must still be centred.
+             */
+            fun stanza(text: String, ink: Int, alwaysCenter: Boolean = false) {
                 sb.append(text)
-                sb.setSpan(AbsoluteSizeSpan(bPx), 0, sb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+                // A refrain is a بيت meant to sit on one line. On a narrow phone
+                // the longest of them overruns the column by a tenth, which would
+                // strand two words on a line of their own; a shade smaller holds
+                // it whole. Wide screens fit it as it is and are left alone.
+                var px = bPx
+                if (alwaysCenter && !text.contains('\n')) {
+                    val floor = (bPx * REFRAIN_MIN_SCALE).toInt().coerceAtLeast(1)
+                    while (px > floor && !fitsOneLine(text, px, bold = false)) px--
+                }
+                sb.setSpan(AbsoluteSizeSpan(px), 0, sb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
                 sb.setSpan(ForegroundColorSpan(ink), 0, sb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
                 for (hit in cueRegex.findAll(text)) {
                     val cs = hit.range.first
@@ -172,7 +192,7 @@ object Paginator {
                     sb.setSpan(ForegroundColorSpan(cueColor), cs, ce, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
                     sb.setSpan(StyleSpan(Typeface.BOLD), cs, ce, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
                 }
-                val isProse = !text.contains('\n') && text.length > 55
+                val isProse = !alwaysCenter && !text.contains('\n') && text.length > 55
                 val align = if (isProse) Layout.Alignment.ALIGN_NORMAL else Layout.Alignment.ALIGN_CENTER
                 sb.setSpan(AlignmentSpan.Standard(align), 0, sb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
             }
@@ -195,7 +215,7 @@ object Paginator {
                     center(sb)
                 }
                 is Block.Body -> stanza(b.text, bodyColor)
-                is Block.Refrain -> stanza(b.text, refrainColor)
+                is Block.Refrain -> stanza(b.text, refrainColor, alwaysCenter = true)
             }
             return sb
         }
