@@ -5,7 +5,7 @@ plugins {
 
 android {
     namespace 'com.ratib.saada'
-    compileSdk 35
+    compileSdk 36
 
     defaultConfig {
         // The app's permanent identity on Google Play, and what appears in its
@@ -13,7 +13,7 @@ android {
         // changed afterwards. The Kotlin package above is only internal.
         applicationId "com.sammaniyya.awrad"
         minSdk 21
-        targetSdk 35
+        targetSdk 36
         // Rises with each CI build so installing over the old app counts as an update.
         versionCode ((project.findProperty('verCode') ?: '1').toString().toInteger())
         versionName ((project.findProperty('verName') ?: '1.0').toString())

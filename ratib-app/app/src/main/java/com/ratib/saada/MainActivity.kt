@@ -13,6 +13,7 @@ import android.os.Bundle
 import android.os.Looper
 import android.view.Menu
 import android.view.MenuItem
+import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
@@ -102,6 +103,7 @@ class MainActivity : AppCompatActivity() {
         // the user declines, we simply try again on the next launch (nothing is
         // stored until permission is granted).
         setupRemindersOnLaunch()
+        handleBackWithDrawer()
     }
 
     /** Ask for notifications first (Android 13+), then chain into location. */
@@ -243,6 +245,10 @@ class MainActivity : AppCompatActivity() {
                     flushBuffer()
                     blocks.add(Block.Heading(line.removePrefix("# ").trim()))
                 }
+                line.startsWith("= ") -> {
+                    flushBuffer()
+                    blocks.add(Block.Title(line.removePrefix("= ").trim()))
+                }
                 line.startsWith("> ") -> {
                     flushBuffer()
                     if (blocks.isNotEmpty()) footnotes[blocks.lastIndex] = line.removePrefix("> ").trim()
@@ -351,10 +357,22 @@ class MainActivity : AppCompatActivity() {
         else -> super.onOptionsItemSelected(item)
     }
 
-    override fun onBackPressed() {
-        if (binding.drawerLayout.isDrawerOpen(GravityCompat.START))
-            binding.drawerLayout.closeDrawer(GravityCompat.START)
-        else
-            super.onBackPressed()
+    /**
+     * Back closes the drawer before it leaves the book. Registered on the
+     * dispatcher rather than by overriding onBackPressed, which an app
+     * targeting Android 16 is no longer called on: predictive back is on by
+     * default there, and the old override would simply stop running.
+     */
+    private fun handleBackWithDrawer() {
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                if (binding.drawerLayout.isDrawerOpen(GravityCompat.START)) {
+                    binding.drawerLayout.closeDrawer(GravityCompat.START)
+                } else {
+                    isEnabled = false
+                    onBackPressedDispatcher.onBackPressed()
+                }
+            }
+        })
     }
 }

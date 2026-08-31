@@ -18,6 +18,9 @@ import androidx.core.content.res.ResourcesCompat
 
 /** A renderable block: a section heading, a sub-heading, or a stanza. */
 sealed class Block {
+    /** The book's own name, set once above everything else. */
+    data class Title(val text: String) : Block()
+
     data class Heading(val text: String) : Block()
     data class Subheading(val text: String) : Block()
     data class Body(val text: String) : Block()
@@ -92,6 +95,7 @@ object Paginator {
     ): Pagination {
         val dm = context.resources.displayMetrics
         val bodyPx = (21f * scale * dm.scaledDensity).toInt().coerceAtLeast(1)
+        val titlePx = (30f * scale * dm.scaledDensity).toInt().coerceAtLeast(1)
         val headingPx = (24f * scale * dm.scaledDensity).toInt().coerceAtLeast(1)
         val subheadingPx = (20f * scale * dm.scaledDensity).toInt().coerceAtLeast(1)
         val footnotePx = (11f * scale * dm.scaledDensity).toInt().coerceAtLeast(1)
@@ -164,6 +168,7 @@ object Paginator {
          */
         fun buildBlock(b: Block, m: Float = 1f): CharSequence {
             val bPx = (bodyPx * m).toInt().coerceAtLeast(1)
+            val tPx = (titlePx * m).toInt().coerceAtLeast(1)
             val hPx = (headingPx * m).toInt().coerceAtLeast(1)
             val sPx = (subheadingPx * m).toInt().coerceAtLeast(1)
             val sb = SpannableStringBuilder()
@@ -198,6 +203,15 @@ object Paginator {
             }
 
             when (b) {
+                is Block.Title -> {
+                    // The book's name. Larger than a section heading and set
+                    // plain — no ۞ frame, which is what marks a section.
+                    sb.append(b.text)
+                    sb.setSpan(AbsoluteSizeSpan(tPx), 0, sb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+                    sb.setSpan(StyleSpan(Typeface.BOLD), 0, sb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+                    sb.setSpan(ForegroundColorSpan(headingColor), 0, sb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+                    center(sb)
+                }
                 is Block.Heading -> {
                     val framed = "۞  ${b.text}  ۞"
                     sb.append(if (fitsOneLine(framed, hPx)) framed else b.text)

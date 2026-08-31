@@ -54,6 +54,7 @@ COL_W = PAGE_W - 2 * MARGIN_X
 
 BODY, LEAD = 13.0, 22.0
 HEAD, HEAD_LEAD = 17.0, 29.0
+TITLE, TITLE_LEAD = 21.0, 36.0
 SUB, SUB_LEAD = 14.5, 25.0
 FOOT, FOOT_LEAD = 9.5, 15.0
 
@@ -176,7 +177,7 @@ class Book:
             self.c.setFillColor(cue_colour if (cue and cue_colour) else colour)
             self.c.drawString(x - ww, self.y - size, render(word))
             x -= ww + gap
-        self.y -= LEAD if size == BODY else (HEAD_LEAD if size == HEAD else SUB_LEAD)
+        self.y -= {BODY: LEAD, HEAD: HEAD_LEAD, TITLE: TITLE_LEAD}.get(size, SUB_LEAD)
 
     # ---- page furniture --------------------------------------------------
     def footnote_height(self):
@@ -231,6 +232,14 @@ class Book:
         self.c.drawString((PAGE_W - w) / 2, MARGIN_BOT - 24, text)
 
     # ---- blocks ----------------------------------------------------------
+    def title(self, text):
+        """The book's own name: larger than a section heading, and unframed."""
+        lines = self.wrap(text, TITLE)
+        self.need(len(lines) * TITLE_LEAD + 2 * LEAD)
+        for ln in lines:
+            self.draw_line(ln, TITLE, GREEN, "center")
+        self.y -= 6
+
     def heading(self, text):
         lines = self.wrap(f"۞  {text}  ۞", HEAD)
         self.need(len(lines) * HEAD_LEAD + 2 * LEAD)
@@ -289,6 +298,9 @@ def parse(path):
         elif line.startswith("# "):
             flush()
             blocks.append(("head", line[2:].strip()))
+        elif line.startswith("= "):
+            flush()
+            blocks.append(("title", line[2:].strip()))
         elif line.startswith("> "):
             flush()
             blocks.append(("note", line[2:].strip()))
@@ -367,7 +379,9 @@ def build(total_hint=0):
     book = Book(c)
     book.total = total_hint
     for kind, text in parse(SRC):
-        if kind == "head":
+        if kind == "title":
+            book.title(text)
+        elif kind == "head":
             book.heading(text)
         elif kind == "sub":
             book.subheading(text)
