@@ -32,7 +32,16 @@ sealed class Block {
      */
     data class Refrain(val text: String) : Block()
 
-    val isNav get() = this is Heading || this is Subheading
+    val isNav get() = this is Title || this is Heading || this is Subheading
+
+    /** The wording of a heading of any rank, or null for a stanza. */
+    val navText: String?
+        get() = when (this) {
+            is Title -> text
+            is Heading -> text
+            is Subheading -> text
+            else -> null
+        }
 }
 
 /**
@@ -96,7 +105,10 @@ object Paginator {
         val dm = context.resources.displayMetrics
         val bodyPx = (21f * scale * dm.scaledDensity).toInt().coerceAtLeast(1)
         val titlePx = (30f * scale * dm.scaledDensity).toInt().coerceAtLeast(1)
-        val headingPx = (24f * scale * dm.scaledDensity).toInt().coerceAtLeast(1)
+        // Section headings sit below the two book titles — راتب السعادة and
+        // الأوراد المربوطة — so they are set smaller than those, and all at the
+        // one size. The saving also buys back the room the titles cost.
+        val headingPx = (22f * scale * dm.scaledDensity).toInt().coerceAtLeast(1)
         val subheadingPx = (20f * scale * dm.scaledDensity).toInt().coerceAtLeast(1)
         val footnotePx = (11f * scale * dm.scaledDensity).toInt().coerceAtLeast(1)
         val bodyColor = ContextCompat.getColor(context, R.color.reading_text)
@@ -290,7 +302,7 @@ object Paginator {
         // الأوراد المربوطة and everything after it is held back and set as a
         // single page of its own below, shrunk if that is what it takes.
         val tailStart = blocks.indexOfFirst {
-            it is Block.Heading && it.text.contains("الأوراد المربوطة")
+            it.navText?.contains("الأوراد المربوطة") == true
         }
         val mainEnd = if (tailStart >= 0) tailStart else blocks.size
 

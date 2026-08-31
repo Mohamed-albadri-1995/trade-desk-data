@@ -320,6 +320,7 @@ class MainActivity : AppCompatActivity() {
         menu.clear()
         blocks.forEachIndexed { i, b ->
             when (b) {
+                is Block.Title -> menu.add(Menu.NONE, i, i, b.text)
                 is Block.Heading -> menu.add(Menu.NONE, i, i, b.text)
                 is Block.Subheading -> menu.add(Menu.NONE, i, i, "—  ${b.text}")
                 else -> {}
