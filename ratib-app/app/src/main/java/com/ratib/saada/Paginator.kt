@@ -247,6 +247,16 @@ object Paginator {
                 }
                 is Block.Body -> stanza(b.text, bodyColor)
                 is Block.Refrain -> stanza(b.text, refrainColor, alwaysCenter = true)
+                // Never reached: the closing line is held out of the flow and
+                // pinned to the foot of the last page instead of being built
+                // into it. Set here as it is set there, so it cannot go astray.
+                is Block.Colophon -> {
+                    sb.append(b.text)
+                    sb.setSpan(AbsoluteSizeSpan(tPx), 0, sb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+                    sb.setSpan(StyleSpan(Typeface.BOLD), 0, sb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+                    sb.setSpan(ForegroundColorSpan(headingColor), 0, sb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+                    center(sb)
+                }
             }
             return sb
         }
