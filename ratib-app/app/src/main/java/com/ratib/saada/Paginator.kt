@@ -505,9 +505,16 @@ object Paginator {
                 return sb to starts
             }
 
-            // The closing line stands at the foot of this page, so the section
-            // has that much less room to fit in.
-            val tailLimit = (limit - colophonReserve).coerceAtLeast(1)
+            // Notes belonging to this section are pinned to the foot of the page
+            // their text lands on, exactly as they are in the rest of the book.
+            val tailFns = (tailStart until blocks.size).mapNotNull { i ->
+                footnotes[i]?.let { i to buildFootnote(it) }
+            }
+
+            // The closing line and those notes stand at the foot of the page, so
+            // the section has that much less room to fit in.
+            val tailFnReserve = tailFns.sumOf { measureFootnote(it.second) + footnoteChrome }
+            val tailLimit = (limit - colophonReserve - tailFnReserve).coerceAtLeast(1)
 
             // Shrink to get the whole section onto one page, but only as far as
             // it stays comfortably readable. Beyond that it is better to run on
@@ -540,8 +547,22 @@ object Paginator {
                 }
             }
 
-            // Point each heading at whichever of those pages holds it.
             val firstTailPage = pages.size - ranges.size
+
+            /** Which of the section's pages holds the block at index [i]. */
+            fun pageOf(i: Int): Int {
+                val at = starts[i - tailStart]
+                val r = ranges.indexOfFirst { at >= it.first && at < it.second }
+                return firstTailPage + (if (r < 0) ranges.size - 1 else r)
+            }
+
+            // Put each note on the page its own text ended up on.
+            for ((i, fn) in tailFns) {
+                val p = pageOf(i)
+                if (pageFns[p] == null) pageFns[p] = fn
+            }
+
+            // Point each heading at whichever of those pages holds it.
             for ((n, i) in (tailStart until blocks.size).withIndex()) {
                 if (!blocks[i].isNav) continue
                 val at = starts[n]
