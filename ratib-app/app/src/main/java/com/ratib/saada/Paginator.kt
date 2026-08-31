@@ -32,6 +32,9 @@ sealed class Block {
      */
     data class Refrain(val text: String) : Block()
 
+    /** The book's closing line, set large at the foot of its last page. */
+    data class Colophon(val text: String) : Block()
+
     val isNav get() = this is Title || this is Heading || this is Subheading
 
     /** The wording of a heading of any rank, or null for a stanza. */
@@ -47,12 +50,14 @@ sealed class Block {
 /**
  * @param pages          main text for each page
  * @param footnotes      footnote text pinned to the bottom of each page (null if none)
+ * @param colophons      closing line pinned to the bottom of a page (null if none)
  * @param pageStartBlock  block index that begins each page
  * @param headingPage     heading block-index -> the page it lands on
  */
 data class Pagination(
     val pages: List<CharSequence>,
     val footnotes: List<CharSequence?>,
+    val colophons: List<CharSequence?>,
     val pageStartBlock: List<Int>,
     val headingPage: Map<Int, Int>
 )
@@ -263,6 +268,21 @@ object Paginator {
             return sb
         }
 
+        // The closing line is not part of the flow: it is held out and pinned to
+        // the foot of the last page, with room kept for it there.
+        val colophonIdx = blocks.indexOfFirst { it is Block.Colophon }
+        val colophon: CharSequence? = (blocks.getOrNull(colophonIdx) as? Block.Colophon)?.let {
+            SpannableStringBuilder(it.text).apply {
+                setSpan(AbsoluteSizeSpan(titlePx), 0, length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+                setSpan(StyleSpan(Typeface.BOLD), 0, length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+                setSpan(ForegroundColorSpan(headingColor), 0, length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+                center(this)
+            }
+        }
+        // Its own height plus the margin item_page leaves above it.
+        val colophonReserve =
+            if (colophon != null) measure(colophon) + (10f * dm.density).toInt() else 0
+
         val pages = ArrayList<CharSequence>()
         val pageFns = ArrayList<CharSequence?>()
         val pageStartBlock = ArrayList<Int>()
@@ -376,6 +396,7 @@ object Paginator {
 
         (0 until mainEnd).forEach { i ->
             val b = blocks[i]
+            if (b is Block.Colophon) return@forEach
             // A heading left alone at the foot of a page, with its text starting
             // overleaf, reads as a mistake. If it and a couple of its lines will
             // not fit in what is left, start it on the next page instead. Not
@@ -466,12 +487,17 @@ object Paginator {
                 val sb = SpannableStringBuilder()
                 val starts = ArrayList<Int>()
                 for (i in tailStart until blocks.size) {
+                    if (blocks[i] is Block.Colophon) { starts.add(sb.length); continue }
                     if (sb.isNotEmpty()) sb.append("\n")
                     starts.add(sb.length)
                     sb.append(buildBlock(blocks[i], m))
                 }
                 return sb to starts
             }
+
+            // The closing line stands at the foot of this page, so the section
+            // has that much less room to fit in.
+            val tailLimit = (limit - colophonReserve).coerceAtLeast(1)
 
             // Shrink to get the whole section onto one page, but only as far as
             // it stays comfortably readable. Beyond that it is better to run on
@@ -480,21 +506,21 @@ object Paginator {
             // the bottom without a word.
             var m = 1f
             var built = assemble(m)
-            while (measure(built.first) > limit && m > TAIL_MIN_SCALE) {
+            while (measure(built.first) > tailLimit && m > TAIL_MIN_SCALE) {
                 m -= 0.05f
                 built = assemble(m)
             }
 
             val (tail, starts) = built
             val ranges = ArrayList<Pair<Int, Int>>()   // char range shown per page
-            if (measure(tail) <= limit) {
+            if (measure(tail) <= tailLimit) {
                 pages.add(tail); pageFns.add(null); pageStartBlock.add(tailStart)
                 ranges.add(0 to tail.length)
             } else {
                 var from = 0
                 while (from < tail.length) {
                     val rest = tail.subSequence(from, tail.length)
-                    val (cut, _, _) = splitPoint(rest, limit)
+                    val (cut, _, _) = splitPoint(rest, tailLimit)
                     val end = if (cut <= 0) tail.length else from + cut
                     pages.add(tail.subSequence(from, end))
                     pageFns.add(null)
@@ -517,6 +543,9 @@ object Paginator {
         if (pages.isEmpty()) {
             pages.add(""); pageFns.add(null); pageStartBlock.add(0)
         }
-        return Pagination(pages, pageFns, pageStartBlock, headingPage)
+        // The closing line belongs to the last page, whichever that turned out.
+        val pageColophons = arrayOfNulls<CharSequence>(pages.size)
+        if (colophon != null) pageColophons[pages.size - 1] = colophon
+        return Pagination(pages, pageFns, pageColophons.toList(), pageStartBlock, headingPage)
     }
 }

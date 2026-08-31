@@ -6,14 +6,19 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 
-/** Renders each page: main text on top, and a footnote pinned at the bottom if any. */
+/**
+ * Renders each page: main text on top, then anything pinned to the foot of the
+ * page — the book's closing line, and a footnote — in that order.
+ */
 class PagerAdapter(
     private var pages: List<CharSequence>,
-    private var footnotes: List<CharSequence?>
+    private var footnotes: List<CharSequence?>,
+    private var colophons: List<CharSequence?> = emptyList()
 ) : RecyclerView.Adapter<PagerAdapter.PageVH>() {
 
     class PageVH(root: View) : RecyclerView.ViewHolder(root) {
         val tv: TextView = root.findViewById(R.id.pageText)
+        val colophon: TextView = root.findViewById(R.id.colophonText)
         val rule: View = root.findViewById(R.id.footnoteRule)
         val fn: TextView = root.findViewById(R.id.footnoteText)
     }
@@ -27,6 +32,9 @@ class PagerAdapter(
 
     override fun onBindViewHolder(holder: PageVH, position: Int) {
         holder.tv.text = pages[position]
+        val end = colophons.getOrNull(position)
+        holder.colophon.text = end ?: ""
+        holder.colophon.visibility = if (end != null) View.VISIBLE else View.GONE
         val note = footnotes.getOrNull(position)
         if (note != null) {
             holder.fn.text = note
@@ -38,9 +46,14 @@ class PagerAdapter(
         }
     }
 
-    fun submit(newPages: List<CharSequence>, newFootnotes: List<CharSequence?>) {
+    fun submit(
+        newPages: List<CharSequence>,
+        newFootnotes: List<CharSequence?>,
+        newColophons: List<CharSequence?>
+    ) {
         pages = newPages
         footnotes = newFootnotes
+        colophons = newColophons
         notifyDataSetChanged()
     }
 }

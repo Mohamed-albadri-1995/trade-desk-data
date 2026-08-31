@@ -119,6 +119,7 @@ class Book:
         self.y = PAGE_H - MARGIN_TOP
         self.page = 1
         self.footnote = None
+        self.colophon = None
         self.total = 0
         self.background()
 
@@ -193,6 +194,7 @@ class Book:
             self.new_page()
 
     def new_page(self):
+        self.draw_colophon()
         self.draw_footnote()
         self.draw_folio()
         self.c.showPage()
@@ -200,6 +202,24 @@ class Book:
         self.y = PAGE_H - MARGIN_TOP
         self.footnote = None
         self.background()
+
+    def close_with(self, text):
+        """Stand the book's closing line at the foot of the page it ends on."""
+        # Asked for before it is set, so room() still measures the page as it
+        # was: if the line will not fit under the text, it opens a page of its
+        # own rather than being crushed into it.
+        self.need(TITLE_LEAD)
+        self.colophon = text
+
+    def draw_colophon(self):
+        if not self.colophon:
+            return
+        lines = self.wrap(self.colophon, TITLE)
+        saved = self.y
+        self.y = MARGIN_BOT + self.footnote_height() + len(lines) * TITLE_LEAD
+        for ln in lines:
+            self.draw_line(ln, TITLE, GREEN, "center")
+        self.y = saved
 
     def draw_footnote(self):
         if not self.footnote:
@@ -298,6 +318,9 @@ def parse(path):
         elif line.startswith("# "):
             flush()
             blocks.append(("head", line[2:].strip()))
+        elif line.startswith("~ "):
+            flush()
+            blocks.append(("colophon", line[2:].strip()))
         elif line.startswith("= "):
             flush()
             blocks.append(("title", line[2:].strip()))
@@ -387,10 +410,13 @@ def build(total_hint=0):
             book.subheading(text)
         elif kind == "note":
             book.footnote = text
+        elif kind == "colophon":
+            book.close_with(text)
         elif kind == "refrain":
             book.body(text, SLATE, always_center=True)
         else:
             book.body(text)
+    book.draw_colophon()
     book.draw_footnote()
     book.draw_folio()
     c.showPage()

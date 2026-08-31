@@ -21,6 +21,18 @@
         android:hyphenationFrequency="none"
         tools:targetApi="26" />
 
+    <!-- The book's closing line, standing at the foot of its last page. -->
+    <TextView
+        android:id="@+id/colophonText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:layout_marginTop="10dp"
+        android:fontFamily="@font/amiri"
+        android:lineSpacingMultiplier="1.3"
+        android:textColor="@color/heading_text"
+        android:visibility="gone" />
+
     <!-- Footnote pinned to the bottom (shown only on pages that have one). -->
     <View
         android:id="@+id/footnoteRule"

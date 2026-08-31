@@ -78,7 +78,7 @@ class MainActivity : AppCompatActivity() {
         scale = 1f
         parseContent()
 
-        pagerAdapter = PagerAdapter(emptyList(), emptyList())
+        pagerAdapter = PagerAdapter(emptyList(), emptyList(), emptyList())
         binding.pager.adapter = pagerAdapter
         binding.pager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
             override fun onPageSelected(position: Int) {
@@ -245,6 +245,10 @@ class MainActivity : AppCompatActivity() {
                     flushBuffer()
                     blocks.add(Block.Heading(line.removePrefix("# ").trim()))
                 }
+                line.startsWith("~ ") -> {
+                    flushBuffer()
+                    blocks.add(Block.Colophon(line.removePrefix("~ ").trim()))
+                }
                 line.startsWith("= ") -> {
                     flushBuffer()
                     blocks.add(Block.Title(line.removePrefix("= ").trim()))
@@ -297,7 +301,7 @@ class MainActivity : AppCompatActivity() {
         }
         val result = Paginator.paginate(this, blocks, footnotes, w, h, scale)
         pagination = result
-        pagerAdapter.submit(result.pages, result.footnotes)
+        pagerAdapter.submit(result.pages, result.footnotes, result.colophons)
         buildDrawerMenu(result)
         val target = restorePage.coerceIn(0, result.pages.size - 1)
         binding.pager.setCurrentItem(target, false)
