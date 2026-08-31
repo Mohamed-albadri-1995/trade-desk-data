@@ -136,15 +136,21 @@ class MainActivity : AppCompatActivity() {
         try {
             val lm = getSystemService(Context.LOCATION_SERVICE) as? LocationManager ?: return
             var best: Location? = null
+            // Network first: it is the one that answers indoors, and it is what
+            // coarse permission is really for. Each provider is asked on its own
+            // so that one refusing does not cost us the others.
             for (p in listOf(
-                LocationManager.GPS_PROVIDER,
                 LocationManager.NETWORK_PROVIDER,
+                LocationManager.GPS_PROVIDER,
                 LocationManager.PASSIVE_PROVIDER
             )) {
-                if (!lm.isProviderEnabled(p)) continue
-                @Suppress("MissingPermission")
-                val l = lm.getLastKnownLocation(p)
-                if (l != null && (best == null || l.time > best!!.time)) best = l
+                try {
+                    if (!lm.isProviderEnabled(p)) continue
+                    @Suppress("MissingPermission")
+                    val l = lm.getLastKnownLocation(p)
+                    if (l != null && (best == null || l.time > best!!.time)) best = l
+                } catch (_: Throwable) {
+                }
             }
             if (best != null) { saveLocation(best!!); return }
             requestSingleFix(lm)

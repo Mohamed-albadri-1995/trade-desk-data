@@ -26,7 +26,7 @@ object ReminderPrefs {
     fun setLocation(c: Context, lat: Double, lng: Double) =
         sp(c).edit().putString("lat", lat.toString()).putString("lng", lng.toString()).apply()
 
-    fun method(c: Context) = sp(c).getInt("method", 1)
+    fun method(c: Context) = sp(c).getInt("method", DEFAULT_METHOD)
     fun setMethod(c: Context, m: Int) = sp(c).edit().putInt("method", m).apply()
 
     fun hasLocation(c: Context) = lat(c) != null && lng(c) != null
@@ -46,9 +46,15 @@ object ReminderPrefs {
      */
     fun seedLocationIfMissing(c: Context) {
         if (hasLocation(c)) return
-        val offsetHours = TimeZone.getDefault().getOffset(System.currentTimeMillis()) / 3600000.0
-        val lng = (offsetHours * 15.0).coerceIn(-180.0, 180.0)
-        setLocation(c, DEFAULT_LATITUDE, lng)
+        val tz = TimeZone.getDefault()
+        val home = HOME_BY_TIMEZONE[tz.id]
+        if (home != null) {
+            setLocation(c, home.first, home.second)
+        } else {
+            val offsetHours = tz.getOffset(System.currentTimeMillis()) / 3600000.0
+            val lng = (offsetHours * 15.0).coerceIn(-180.0, 180.0)
+            setLocation(c, DEFAULT_LATITUDE, lng)
+        }
         sp(c).edit().putBoolean("approx", true).apply()
     }
 
@@ -60,4 +66,23 @@ object ReminderPrefs {
 
     /** Khartoum, the home of the السجادة السليمانية. */
     private const val DEFAULT_LATITUDE = 15.5
+
+    /**
+     * The Egyptian General Authority's angles (فجر ١٩٫٥°, عشاء ١٧٫٥°), which is
+     * what Sudanese timetables are drawn on. Not أم القرى: its عشاء is a flat
+     * ninety minutes after مغرب, which at this latitude — where twilight is
+     * short — falls a good deal later than the timetables here show.
+     */
+    private const val DEFAULT_METHOD = 2
+
+    /**
+     * True coordinates for the towns most of the tariqa's readers are in, used
+     * in place of the estimate below. Deriving longitude from the UTC offset
+     * puts Khartoum on 30° when it stands on 32.5°, and those two and a half
+     * degrees are ten minutes in every time the app works out.
+     */
+    private val HOME_BY_TIMEZONE = mapOf(
+        "Africa/Khartoum" to (15.55 to 32.53),   // الخرطوم
+        "Africa/Juba" to (4.85 to 31.58)         // جوبا
+    )
 }
