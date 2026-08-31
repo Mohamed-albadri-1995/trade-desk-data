@@ -27,10 +27,14 @@ class AlarmReceiver : BroadcastReceiver() {
 
         val label = intent.getStringExtra(ReminderScheduler.EXTRA_LABEL)
             ?: context.getString(R.string.app_name)
-        val short = intent.getBooleanExtra(ReminderScheduler.EXTRA_SHORT, false)
+        val kind = runCatching {
+            ReminderScheduler.Kind.valueOf(
+                intent.getStringExtra(ReminderScheduler.EXTRA_KIND) ?: ""
+            )
+        }.getOrDefault(ReminderScheduler.Kind.ADHAN)
 
         ensureChannels(context)
-        if (short) postWard(context, label) else postAlarm(context, label)
+        if (kind.isFullAlarm) postAlarm(context, label, kind) else postWard(context, label)
 
         // Arm the following reminder.
         ReminderScheduler.rescheduleNext(context)
@@ -44,9 +48,22 @@ class AlarmReceiver : BroadcastReceiver() {
             .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
             .build()
 
+        // The adhan has a channel of its own, carrying the recitation, and it is
+        // only created once a recording is actually bundled — a channel's sound
+        // cannot be changed after the fact, so it must not be made before then.
+        val adhan = AlarmSounds.adhan(context)
+        if (adhan != null && nm.getNotificationChannel(CHANNEL_ADHAN) == null) {
+            val ch = NotificationChannel(
+                CHANNEL_ADHAN, context.getString(R.string.adhan_channel),
+                NotificationManager.IMPORTANCE_HIGH
+            )
+            ch.setSound(adhan, alarmAudio)
+            ch.enableVibration(true)
+            nm.createNotificationChannel(ch)
+        }
+
         if (nm.getNotificationChannel(CHANNEL) == null) {
-            val alarmUri = RingtoneManager.getActualDefaultRingtoneUri(context, RingtoneManager.TYPE_ALARM)
-                ?: RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
+            val alarmUri = AlarmSounds.systemAlarm(context)
             val ch = NotificationChannel(
                 CHANNEL, context.getString(R.string.reminders_channel),
                 NotificationManager.IMPORTANCE_HIGH
@@ -96,11 +113,12 @@ class AlarmReceiver : BroadcastReceiver() {
         }
     }
 
-    private fun postAlarm(context: Context, label: String) {
+    private fun postAlarm(context: Context, label: String, kind: ReminderScheduler.Kind) {
         val fullScreen = PendingIntent.getActivity(
             context, 1,
             Intent(context, AlarmActivity::class.java)
                 .putExtra(ReminderScheduler.EXTRA_LABEL, label)
+                .putExtra(ReminderScheduler.EXTRA_KIND, kind.name)
                 .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK),
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )
@@ -110,7 +128,15 @@ class AlarmReceiver : BroadcastReceiver() {
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )
 
-        val n = NotificationCompat.Builder(context, CHANNEL)
+        // A prayer time is announced by the adhan where one is bundled; anything
+        // whose purpose is to wake you keeps the plain alarm.
+        val channel =
+            if (kind == ReminderScheduler.Kind.ADHAN && AlarmSounds.adhan(context) != null)
+                CHANNEL_ADHAN
+            else
+                CHANNEL
+
+        val n = NotificationCompat.Builder(context, channel)
             .setSmallIcon(R.drawable.ic_notification)
             .setContentTitle(context.getString(R.string.app_name))
             .setContentText(label)
@@ -131,6 +157,7 @@ class AlarmReceiver : BroadcastReceiver() {
 
     companion object {
         const val CHANNEL = "ratib_reminders"
+        const val CHANNEL_ADHAN = "ratib_adhan"
         const val CHANNEL_WARD = "ratib_ward"
         const val NOTIF_ID = 7701
         const val NOTIF_WARD_ID = 7702

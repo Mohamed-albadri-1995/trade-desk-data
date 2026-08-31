@@ -17,18 +17,28 @@ object ReminderScheduler {
     const val ACTION_FIRE = "com.ratib.saada.ALARM_FIRE"
     const val ACTION_STOP = "com.ratib.saada.ALARM_STOP"
     const val EXTRA_LABEL = "label"
-    const val EXTRA_SHORT = "short"
+    const val EXTRA_KIND = "kind"
 
     /** Minutes after the adhan at which the الأساس ward is read. */
     const val WARD_DELAY_MINUTES = 20
     private const val REQ_ALARM = 4201
     private const val REQ_TEST = 4202
 
-    /**
-     * @param short a ward reminder, which sounds for a few seconds; otherwise a
-     *              prayer alarm, which rings until it is stopped.
-     */
-    data class Fire(val timeMillis: Long, val label: String, val short: Boolean)
+    /** How a reminder announces itself. */
+    enum class Kind {
+        /** A prayer time: calls the adhan, and keeps calling until it is stopped. */
+        ADHAN,
+
+        /** Meant to wake you — أوراد السحر. Rings like any alarm clock. */
+        ALARM,
+
+        /** A ward that follows a prayer you are already awake for: a short tone. */
+        WARD;
+
+        val isFullAlarm get() = this != WARD
+    }
+
+    data class Fire(val timeMillis: Long, val label: String, val kind: Kind)
 
     fun rescheduleNext(context: Context) {
         // Never let a scheduling problem crash the app.
@@ -51,7 +61,7 @@ object ReminderScheduler {
                 Intent(context, MainActivity::class.java),
                 PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
             )
-            val op = firePendingIntent(context, next.label, next.short)
+            val op = firePendingIntent(context, next.label, next.kind)
             try {
                 am.setAlarmClock(AlarmManager.AlarmClockInfo(next.timeMillis, show), op)
             } catch (_: Throwable) {
@@ -82,7 +92,7 @@ object ReminderScheduler {
             Intent(context, AlarmReceiver::class.java)
                 .setAction(ACTION_FIRE)
                 .putExtra(EXTRA_LABEL, context.getString(R.string.test_alarm_label))
-                .putExtra(EXTRA_SHORT, false),
+                .putExtra(EXTRA_KIND, Kind.ADHAN.name),
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )
         val show = PendingIntent.getActivity(
@@ -108,11 +118,11 @@ object ReminderScheduler {
     private fun firePendingIntent(
         context: Context,
         label: String?,
-        short: Boolean = false
+        kind: Kind = Kind.ADHAN
     ): PendingIntent {
         val i = Intent(context, AlarmReceiver::class.java).setAction(ACTION_FIRE)
         if (label != null) i.putExtra(EXTRA_LABEL, label)
-        i.putExtra(EXTRA_SHORT, short)
+        i.putExtra(EXTRA_KIND, kind.name)
         return PendingIntent.getBroadcast(
             context, REQ_ALARM, i,
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
@@ -142,23 +152,23 @@ object ReminderScheduler {
                 t.fajr to "الفجر", t.dhuhr to "الظهر", t.asr to "العصر",
                 t.maghrib to "المغرب", t.isha to "العشاء"
             )
-            // The adhan itself: a full alarm that rings until it is stopped.
+            // The adhan itself, called until it is stopped.
             if (ReminderPrefs.prayer(context)) {
-                for ((h, name) in prayers) raw.add(Fire(at(h), "أذان $name", short = false))
+                for ((h, name) in prayers) raw.add(Fire(at(h), "أذان $name", Kind.ADHAN))
             }
             // The ward is read after the prayer, not at the adhan, so it sounds
             // its own short tone twenty minutes later.
             if (ReminderPrefs.asas(context)) {
                 val delay = WARD_DELAY_MINUTES * 60000L
                 for ((h, name) in prayers) {
-                    raw.add(Fire(at(h) + delay, "الأساس — بعد $name", short = true))
+                    raw.add(Fire(at(h) + delay, "الأساس — بعد $name", Kind.WARD))
                 }
             }
             if (ReminderPrefs.morning(context)) {
-                raw.add(Fire(at(t.fajr) + WARD_DELAY_MINUTES * 60000L, "أوراد الصباح", short = true))
+                raw.add(Fire(at(t.fajr) + WARD_DELAY_MINUTES * 60000L, "أوراد الصباح", Kind.WARD))
             }
             if (ReminderPrefs.evening(context)) {
-                raw.add(Fire(at(t.maghrib) + WARD_DELAY_MINUTES * 60000L, "أوراد المساء", short = true))
+                raw.add(Fire(at(t.maghrib) + WARD_DELAY_MINUTES * 60000L, "أوراد المساء", Kind.WARD))
             }
             if (ReminderPrefs.suhur(context)) {
                 val next = Calendar.getInstance(); next.add(Calendar.DAY_OF_MONTH, dayOffset + 1)
@@ -168,14 +178,14 @@ object ReminderScheduler {
                 // which is when the ward is wanted — is five sixths through.
                 val nightHours = t2.fajr + 24.0 - t.maghrib
                 val lastThirdH = t.maghrib + nightHours * 5.0 / 6.0
-                // Wakes you in the last third of the night, so it rings like the
-                // prayer alarm rather than sounding a tone you would sleep through.
-                raw.add(Fire(base + (lastThirdH * 3600000L).toLong(), "أوراد السحر", short = false))
+                // Its whole purpose is to wake you, so it rings like an alarm
+                // clock — not the adhan, which announces a time you are up for.
+                raw.add(Fire(base + (lastThirdH * 3600000L).toLong(), "أوراد السحر", Kind.ALARM))
             }
         }
 
         // Merge reminders that fall in the same minute into one alarm.
-        return raw.groupBy { (it.timeMillis / 60000L) to it.short }
+        return raw.groupBy { (it.timeMillis / 60000L) to it.kind }
             .map { (key, group) ->
                 Fire(
                     group.minOf { it.timeMillis },

@@ -4,7 +4,6 @@ import android.content.Context
 import android.content.Intent
 import android.media.AudioAttributes
 import android.media.MediaPlayer
-import android.media.RingtoneManager
 import android.os.Build
 import android.os.Bundle
 import android.os.VibrationEffect
@@ -57,19 +56,32 @@ class AlarmActivity : AppCompatActivity() {
     }
 
     private fun startRinging() {
+        // A prayer time calls the adhan, once through, as an adhan is called;
+        // anything meant to wake you rings on until it is stopped. Where no
+        // recitation is bundled the adhan falls back to the ringing alarm, so
+        // the prayer is never announced by silence.
+        val kind = runCatching {
+            ReminderScheduler.Kind.valueOf(intent?.getStringExtra(ReminderScheduler.EXTRA_KIND) ?: "")
+        }.getOrDefault(ReminderScheduler.Kind.ADHAN)
+        val adhan = if (kind == ReminderScheduler.Kind.ADHAN) AlarmSounds.adhan(this) else null
+        val uri = adhan ?: AlarmSounds.systemAlarm(this)
+
         try {
-            val uri = RingtoneManager.getActualDefaultRingtoneUri(this, RingtoneManager.TYPE_ALARM)
-                ?: RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
-                ?: RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
             player = MediaPlayer().apply {
-                setDataSource(this@AlarmActivity, uri)
+                setDataSource(this@AlarmActivity, uri!!)
                 setAudioAttributes(
                     AudioAttributes.Builder()
                         .setUsage(AudioAttributes.USAGE_ALARM)
-                        .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                        .setContentType(
+                            if (adhan != null) AudioAttributes.CONTENT_TYPE_SPEECH
+                            else AudioAttributes.CONTENT_TYPE_SONIFICATION
+                        )
                         .build()
                 )
-                isLooping = true
+                isLooping = adhan == null
+                // The screen stays up after the adhan ends, so it is still there
+                // to be dismissed rather than vanishing on its own.
+                setOnCompletionListener { vibrator?.cancel() }
                 prepare()
                 start()
             }
@@ -77,12 +89,14 @@ class AlarmActivity : AppCompatActivity() {
         }
 
         vibrator = getSystemService(Context.VIBRATOR_SERVICE) as? Vibrator
-        val pattern = longArrayOf(0, 700, 700)
+        // A short shake to announce the adhan; a persistent one to wake a sleeper.
+        val pattern = if (adhan != null) longArrayOf(0, 500, 400, 500) else longArrayOf(0, 700, 700)
+        val repeat = if (adhan != null) -1 else 0
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            vibrator?.vibrate(VibrationEffect.createWaveform(pattern, 0))
+            vibrator?.vibrate(VibrationEffect.createWaveform(pattern, repeat))
         } else {
             @Suppress("DEPRECATION")
-            vibrator?.vibrate(pattern, 0)
+            vibrator?.vibrate(pattern, repeat)
         }
     }
 
