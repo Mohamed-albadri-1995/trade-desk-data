@@ -13,7 +13,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   inspect:
@@ -85,9 +85,20 @@ jobs:
           path: _out
           if-no-files-found: warn
 
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: dalail-pages
-          path: _pages
-          if-no-files-found: warn
+      # Artifact storage is not reachable from the session that has to read
+      # these, so they are published on a branch of their own — off the main
+      # line, and deletable once the book has been typed out.
+      - name: Publish the pages on a branch of their own
+        run: |
+          set -e
+          cd _pages
+          git init -q
+          git config user.email "noreply@anthropic.com"
+          git config user.name "Claude"
+          git checkout -q -b book-pages
+          git add -A
+          git commit -q -m "Pages of دلائل الرحمات, rendered for transcription"
+          git push -q --force \
+            "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" \
+            book-pages
+          echo "published $(ls | wc -l) pages on the book-pages branch"
