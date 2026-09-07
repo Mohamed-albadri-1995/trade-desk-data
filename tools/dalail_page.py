@@ -1,55 +1,44 @@
 #!/usr/bin/env python3
 """
-Lays a passage of دلائل الرحمات into the book's own page design.
+Lays دلائل الرحمات out page by page, in the book's own hand.
 
-Everything ornamental is the book's own, lifted from a scanned page and reused
-unchanged: the frame, the title cartouche, the paper tone, and the gold rosette
-that separates the phrases. Only the body is cleared and reset. The type is
-sized so the passage fills its pages exactly, and every line is justified to the
-full column, so the lines come out even rather than ragged.
+The page is a leaf of parchment inside a thin ruled border, with an ornamental
+band across its head carrying the section's name — the band, its cartouche and
+its rosettes all cut from the book's own printed page, so nothing here is
+borrowed from anywhere else. A section's first page wears the band; the pages
+that carry it on wear a slim rule naming the section and the leaf you are on.
+
+Every page holds the same number of lines, and every line but the last of a
+passage is justified to the full column, so the pages come out even.
 """
 import sys
 from PIL import Image, ImageDraw, ImageFont
 
-TEMPLATE = "android-app/design/page-design.jpg"
+BAND_IMG = "android-app/design/header-band.png"
 ORNAMENT_IMG = "android-app/design/ornament.png"
 FONT = "ratib-app/app/src/main/res/font/amiri.ttf"
 
-# Measured off the template: the frame's inner edge, and the cartouche that sits
-# inside its top. The body owns everything below the cartouche.
-X0, X1 = 78, 776
-BODY_TOP, BODY_BOT = 192, 1212
-CLEAR = (72, 186, 782, 1218)   # wiped back to blank paper
-#: The plain panel inside the cartouche, where the section's name goes.
-TITLE_PANEL = (320, 86, 536, 164)
+PAGE_W, PAGE_H = 1000, 1720
+MARGIN = 16          # from the leaf's edge to the ruled border
+PAD_X = 34           # from the border to the column
+LINES_PER_PAGE = 15
+
+PAPER = (252, 247, 231)
 INK = (36, 26, 11)
-#: The book marks its pauses with a heart and the printed edition with a
-#: rosette; both stand for the same thing, and both are drawn with the
-#: rosette lifted from the printed page. Amiri has no heart glyph at all,
-#: so leaving it as type would print an empty box.
+RULE = (150, 118, 46)
+FAINT = (120, 96, 44)
+
+#: Where the cartouche sits inside the band, in the band image's own pixels.
+BAND_PANEL = (302, 70, 518, 148)
+
 ORNAMENTS = ("۞", "♡", "♥", "❤")
-LINE_RATIO = 1.62      # line pitch as a multiple of the type size
-ORNAMENT_RATIO = 0.74  # rosette size as a multiple of the type size
+LINE_RATIO = 1.62
+ORNAMENT_RATIO = 0.74
+ARABIC_DIGITS = "٠١٢٣٤٥٦٧٨٩"
 
 
-def paper_tone(im):
-    """
-    The paper's colour row by row.
-
-    Wiping the body with one flat cream leaves a visible panel, because the
-    scan's tone drifts down the page. Taking each row's own paper colour — the
-    median of its unwritten pixels — puts the drift back.
-    """
-    px = im.load()
-    tones, last = {}, (252, 247, 231)
-    for y in range(CLEAR[1], CLEAR[3]):
-        bright = [px[x, y] for x in range(X0, X1, 3)
-                  if sum(px[x, y]) / 3 > 205]
-        if len(bright) > 20:
-            bright.sort(key=lambda p: sum(p))
-            last = bright[len(bright) // 2]
-        tones[y] = last
-    return tones
+def arabic(n):
+    return "".join(ARABIC_DIGITS[int(d)] for d in str(n))
 
 
 def load_ornament():
@@ -65,36 +54,67 @@ def load_ornament():
     return out
 
 
-def draw_title(im, title):
-    """
-    The section's name, inside the cartouche the book already draws.
+class Layout:
+    """The leaf's furniture, and where the column of text may go."""
 
-    The panel is a fixed width, so the type is stepped down until the name
-    fits it rather than being allowed to run over the ornament.
-    """
-    x0, y0, x1, y1 = TITLE_PANEL
-    d = ImageDraw.Draw(im)
-    d.rectangle([x0, y0, x1, y1], fill=(253, 249, 235))
-    size = y1 - y0 - 22
-    while size > 8:
-        font = ImageFont.truetype(FONT, size)
-        w = d.textlength(title, font=font, direction="rtl")
-        if w <= (x1 - x0) - 16:
-            break
-        size -= 1
-    d.text(((x0 + x1) / 2 - w / 2, y0 + (y1 - y0 - size * 1.45) / 2),
-           title, font=font, fill=INK, direction="rtl")
+    def __init__(self):
+        band = Image.open(BAND_IMG).convert("RGB")
+        self.band_w = PAGE_W - 2 * MARGIN
+        self.scale = self.band_w / band.width
+        self.band = band.resize(
+            (self.band_w, round(band.height * self.scale)), Image.LANCZOS)
+        self.x0 = MARGIN + PAD_X
+        self.x1 = PAGE_W - MARGIN - PAD_X
+        self.head_top = MARGIN + self.band.height + 34
+        self.slim_top = MARGIN + 96
+        self.bottom = PAGE_H - MARGIN - 40
 
+    def column(self):
+        return self.x1 - self.x0
 
-def blank_page(tones, template, title=None):
-    """The page with its frame and title, and nothing in the body."""
-    im = template.copy()
-    d = ImageDraw.Draw(im)
-    for y in range(CLEAR[1], CLEAR[3]):
-        d.line([(CLEAR[0], y), (CLEAR[2], y)], fill=tones[y])
-    if title:
-        draw_title(im, title)
-    return im
+    def body_top(self, first):
+        return self.head_top if first else self.slim_top
+
+    def pitch(self, first):
+        return (self.bottom - self.body_top(first)) // LINES_PER_PAGE
+
+    def leaf(self):
+        """Blank parchment inside its ruled border."""
+        im = Image.new("RGB", (PAGE_W, PAGE_H), PAPER)
+        d = ImageDraw.Draw(im)
+        d.rectangle([MARGIN - 8, MARGIN - 8, PAGE_W - MARGIN + 7,
+                     PAGE_H - MARGIN + 7], outline=RULE, width=3)
+        d.rectangle([MARGIN - 3, MARGIN - 3, PAGE_W - MARGIN + 2,
+                     PAGE_H - MARGIN + 2], outline=RULE, width=1)
+        return im
+
+    def head(self, im, title):
+        """The ornamental band, with the section's name in its cartouche."""
+        im.paste(self.band, (MARGIN, MARGIN))
+        x0, y0, x1, y1 = [round(v * self.scale) for v in BAND_PANEL]
+        x0 += MARGIN; x1 += MARGIN; y0 += MARGIN; y1 += MARGIN
+        d = ImageDraw.Draw(im)
+        d.rectangle([x0, y0, x1, y1], fill=(253, 249, 235))
+        size = y1 - y0 - 24
+        while size > 8:
+            font = ImageFont.truetype(FONT, size)
+            w = d.textlength(title, font=font, direction="rtl")
+            if w <= (x1 - x0) - 18:
+                break
+            size -= 1
+        d.text(((x0 + x1) / 2 - w / 2, y0 + (y1 - y0 - size * 1.45) / 2),
+               title, font=font, fill=INK, direction="rtl")
+
+    def slim(self, im, title, leaf, leaves):
+        """The running head: the section, and which of its leaves this is."""
+        d = ImageDraw.Draw(im)
+        text = f"{title}  |  {arabic(leaf)}  |  {arabic(leaves)}"
+        font = ImageFont.truetype(FONT, 30)
+        w = d.textlength(text, font=font, direction="rtl")
+        y = MARGIN + 14
+        d.rectangle([self.x1 - w - 20, y - 6, self.x1 + 6, y + 46],
+                    outline=RULE, width=2)
+        d.text((self.x1 - w - 7, y), text, font=font, fill=FAINT, direction="rtl")
 
 
 def token_width(w, font, draw, orn_px):
@@ -104,7 +124,6 @@ def token_width(w, font, draw, orn_px):
 
 
 def wrap(words, font, draw, width, orn_px):
-    """Break into lines, each as wide as the column allows."""
     space = draw.textlength(" ", font=font)
     lines, cur, cur_w = [], [], 0.0
     for w in words:
@@ -121,69 +140,67 @@ def wrap(words, font, draw, width, orn_px):
     return lines
 
 
-def render(text, pages, out_prefix, title=None):
-    words = text.split()
-    template = Image.open(TEMPLATE).convert("RGB")
-    tones = paper_tone(template)
+def render(text, out_prefix, title="", start_page=1):
+    lay = Layout()
     rosette = load_ornament()
     probe = ImageDraw.Draw(Image.new("RGB", (8, 8)))
-    column = X1 - X0
+    words = text.split()
 
-    # Largest type that still fits the passage into the pages asked for, so the
-    # pages come out full rather than with a hole at the foot of the last one.
-    best = None
-    for size in range(20, 121):
-        font = ImageFont.truetype(FONT, size)
-        orn = int(size * ORNAMENT_RATIO)
-        lines = wrap(words, font, probe, column, orn)
-        pitch = int(size * LINE_RATIO)
-        per_page = max(1, (BODY_BOT - BODY_TOP) // pitch)
-        if len(lines) <= per_page * pages:
-            best = (size, font, lines, pitch, per_page, orn)
-        else:
-            break
-    if best is None:
-        raise SystemExit("even the smallest type will not fit that many pages")
-    size, font, lines, pitch, per_page, orn_px = best
+    # The number of lines to a page is fixed, so the type size follows from it
+    # rather than the other way about.
+    pitch = lay.pitch(first=True)
+    size = max(8, int(pitch / LINE_RATIO))
+    font = ImageFont.truetype(FONT, size)
+    orn_px = int(size * ORNAMENT_RATIO)
     rose = rosette.resize((orn_px, orn_px), Image.LANCZOS)
+    lines = wrap(words, font, probe, lay.column(), orn_px)
+
+    # The first leaf gives room to the band, so it holds fewer lines than the
+    # rest; count the leaves before drawing any, so the running head can say
+    # how many there are.
+    first_capacity = LINES_PER_PAGE
+    rest_capacity = max(1, (lay.bottom - lay.slim_top) // pitch)
+    leaves, i = [], 0
+    while i < len(lines):
+        cap = first_capacity if not leaves else rest_capacity
+        leaves.append(lines[i:i + cap])
+        i += cap
 
     made = []
-    for p in range(pages):
-        chunk = lines[p * per_page:(p + 1) * per_page]
-        if not chunk:
-            break
-        im = blank_page(tones, template, title)
+    for n, chunk in enumerate(leaves):
+        first = n == 0
+        im = lay.leaf()
+        if first:
+            lay.head(im, title)
+        else:
+            lay.slim(im, title, n + 1, len(leaves))
         d = ImageDraw.Draw(im)
-        # Spread the page's lines over the whole column, so the last one sits on
-        # the last line of the page instead of leaving the foot empty.
-        spare = (BODY_BOT - BODY_TOP) - len(chunk) * pitch
-        step = pitch + (spare / (len(chunk) - 1) if len(chunk) > 1 else 0)
+        top = lay.body_top(first)
         for i, ln in enumerate(chunk):
-            y = BODY_TOP + int(i * step)
+            y = top + i * pitch
             widths = [token_width(w, font, d, orn_px) for w in ln]
             space = d.textlength(" ", font=font)
-            n = len(ln)
-            last_line = (i == len(chunk) - 1 and p == pages - 1)
-            if n > 1 and not last_line:
-                gap = (column - sum(widths)) / (n - 1)
-                x = X1
+            k = len(ln)
+            last = (i == len(chunk) - 1 and n == len(leaves) - 1)
+            if k > 1 and not last:
+                gap = (lay.column() - sum(widths)) / (k - 1)
+                x = lay.x1
             else:
                 gap = space
-                x = X1 - (column - (sum(widths) + space * (n - 1))) / 2
+                x = lay.x1 - (lay.column() - (sum(widths) + space * (k - 1))) / 2
             for w, ww in zip(ln, widths):
                 if w in ORNAMENTS:
                     im.paste(rose, (int(x - ww), y + int(size * 0.30)), rose)
                 else:
                     d.text((x - ww, y), w, font=font, fill=INK, direction="rtl")
                 x -= ww + gap
-        path = f"{out_prefix}_{p + 1}.png"
+        path = f"{out_prefix}_{start_page + n}.png"
         im.save(path)
         made.append(path)
-    print(f"type size {size}px, {len(lines)} lines over {len(made)} pages")
+    print(f"{size}px type, {len(lines)} lines over {len(made)} leaves")
     return made
 
 
 if __name__ == "__main__":
     body = open(sys.argv[1], encoding="utf-8").read()
-    render(body, int(sys.argv[2]), sys.argv[3],
-           sys.argv[4] if len(sys.argv) > 4 else None)
+    render(body, sys.argv[2], sys.argv[3] if len(sys.argv) > 3 else "")
