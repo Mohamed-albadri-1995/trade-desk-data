@@ -20,8 +20,14 @@ FONT = "ratib-app/app/src/main/res/font/amiri.ttf"
 X0, X1 = 78, 776
 BODY_TOP, BODY_BOT = 192, 1212
 CLEAR = (72, 186, 782, 1218)   # wiped back to blank paper
+#: The plain panel inside the cartouche, where the section's name goes.
+TITLE_PANEL = (320, 86, 536, 164)
 INK = (36, 26, 11)
-ORNAMENT = "۞"
+#: The book marks its pauses with a heart and the printed edition with a
+#: rosette; both stand for the same thing, and both are drawn with the
+#: rosette lifted from the printed page. Amiri has no heart glyph at all,
+#: so leaving it as type would print an empty box.
+ORNAMENTS = ("۞", "♡", "♥", "❤")
 LINE_RATIO = 1.62      # line pitch as a multiple of the type size
 ORNAMENT_RATIO = 0.74  # rosette size as a multiple of the type size
 
@@ -59,17 +65,40 @@ def load_ornament():
     return out
 
 
-def blank_page(tones, template):
+def draw_title(im, title):
+    """
+    The section's name, inside the cartouche the book already draws.
+
+    The panel is a fixed width, so the type is stepped down until the name
+    fits it rather than being allowed to run over the ornament.
+    """
+    x0, y0, x1, y1 = TITLE_PANEL
+    d = ImageDraw.Draw(im)
+    d.rectangle([x0, y0, x1, y1], fill=(253, 249, 235))
+    size = y1 - y0 - 22
+    while size > 8:
+        font = ImageFont.truetype(FONT, size)
+        w = d.textlength(title, font=font, direction="rtl")
+        if w <= (x1 - x0) - 16:
+            break
+        size -= 1
+    d.text(((x0 + x1) / 2 - w / 2, y0 + (y1 - y0 - size * 1.45) / 2),
+           title, font=font, fill=INK, direction="rtl")
+
+
+def blank_page(tones, template, title=None):
     """The page with its frame and title, and nothing in the body."""
     im = template.copy()
     d = ImageDraw.Draw(im)
     for y in range(CLEAR[1], CLEAR[3]):
         d.line([(CLEAR[0], y), (CLEAR[2], y)], fill=tones[y])
+    if title:
+        draw_title(im, title)
     return im
 
 
 def token_width(w, font, draw, orn_px):
-    if w == ORNAMENT:
+    if w in ORNAMENTS:
         return float(orn_px)
     return draw.textlength(w, font=font, direction="rtl")
 
@@ -92,7 +121,7 @@ def wrap(words, font, draw, width, orn_px):
     return lines
 
 
-def render(text, pages, out_prefix):
+def render(text, pages, out_prefix, title=None):
     words = text.split()
     template = Image.open(TEMPLATE).convert("RGB")
     tones = paper_tone(template)
@@ -123,7 +152,7 @@ def render(text, pages, out_prefix):
         chunk = lines[p * per_page:(p + 1) * per_page]
         if not chunk:
             break
-        im = blank_page(tones, template)
+        im = blank_page(tones, template, title)
         d = ImageDraw.Draw(im)
         # Spread the page's lines over the whole column, so the last one sits on
         # the last line of the page instead of leaving the foot empty.
@@ -142,7 +171,7 @@ def render(text, pages, out_prefix):
                 gap = space
                 x = X1 - (column - (sum(widths) + space * (n - 1))) / 2
             for w, ww in zip(ln, widths):
-                if w == ORNAMENT:
+                if w in ORNAMENTS:
                     im.paste(rose, (int(x - ww), y + int(size * 0.30)), rose)
                 else:
                     d.text((x - ww, y), w, font=font, fill=INK, direction="rtl")
@@ -156,4 +185,5 @@ def render(text, pages, out_prefix):
 
 if __name__ == "__main__":
     body = open(sys.argv[1], encoding="utf-8").read()
-    render(body, int(sys.argv[2]), sys.argv[3])
+    render(body, int(sys.argv[2]), sys.argv[3],
+           sys.argv[4] if len(sys.argv) > 4 else None)
