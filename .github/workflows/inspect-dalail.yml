@@ -65,11 +65,17 @@ jobs:
                   print("VERDICT: scanned images only — no text can be extracted.")
               name = os.path.basename(path).replace(".pdf", "")
               (out / f"{name}.txt").write_text("".join(whole), encoding="utf-8")
-              # A couple of pages as pictures, to see what the scan looks like.
-              for i in (0, 6, 12):
-                  if i < len(doc):
-                      doc[i].get_pixmap(dpi=110).save(out / f"{name}_page{i + 1}.png")
               doc.close()
+
+          # Every page as a picture. The book has to be typed out by hand, and
+          # it is fully vocalised, so the pages are rendered large enough to
+          # read a shadda from a fatha rather than merely large enough to see.
+          doc = pymupdf.open(pdfs[0])
+          pages = pathlib.Path("_pages"); pages.mkdir(exist_ok=True)
+          for i, page in enumerate(doc):
+              pix = page.get_pixmap(dpi=180)
+              pix.save(pages / f"p{i + 1:02d}.jpg", jpg_quality=88)
+          print(f"rendered {len(doc)} pages at 180 dpi ({pix.width}x{pix.height})")
           PY
 
       - uses: actions/upload-artifact@v4
@@ -77,4 +83,11 @@ jobs:
         with:
           name: dalail-inspection
           path: _out
+          if-no-files-found: warn
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dalail-pages
+          path: _pages
           if-no-files-found: warn
