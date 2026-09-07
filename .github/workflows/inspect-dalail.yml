@@ -1,0 +1,80 @@
+name: Inspect the دلائل الرحمات book
+
+# A diagnostic, not a build. Fetches the book from the Drive folder named in
+# android-app/BOOK_PDF_URL.txt and reports what is actually inside it — above
+# all, whether its pages carry real text or are only scanned pictures, which
+# decides whether the book can be re-typeset or has to be typed out.
+
+on:
+  push:
+    branches: [ "claude/android-pdf-book-app-tz6hcp" ]
+    paths:
+      - ".github/workflows/inspect-dalail.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download everything in the Drive folder
+        run: |
+          set -e
+          URL="$(head -n1 android-app/BOOK_PDF_URL.txt | tr -d '[:space:]')"
+          echo "Link: $URL"
+          pip install --quiet --upgrade gdown
+          mkdir -p _dl
+          gdown --folder "$URL" -O _dl || echo "::warning::folder download reported a problem"
+          echo "===== WHAT THE FOLDER HOLDS ====="
+          find _dl -type f -printf '%10s  %p\n' | sort -k2
+
+      - name: Report whether the pages carry text
+        run: |
+          pip install --quiet pymupdf
+          python3 - <<'PY'
+          import glob, os, pathlib, pymupdf
+
+          pdfs = sorted(glob.glob("_dl/**/*.pdf", recursive=True))
+          if not pdfs:
+              print("NO PDF FOUND")
+              raise SystemExit(0)
+
+          out = pathlib.Path("_out"); out.mkdir(exist_ok=True)
+          for path in pdfs:
+              doc = pymupdf.open(path)
+              print("=" * 70)
+              print(f"{path}  —  {len(doc)} pages")
+              lengths = []
+              whole = []
+              for i, page in enumerate(doc):
+                  t = page.get_text().strip()
+                  lengths.append(len(t))
+                  whole.append(f"\n\n===== PAGE {i + 1} =====\n{t}")
+              withtext = sum(1 for n in lengths if n > 40)
+              print(f"pages with real text: {withtext} / {len(doc)}")
+              print(f"characters per page (first 12): {lengths[:12]}")
+              if withtext:
+                  print("----- SAMPLE FROM THE FIRST PAGE THAT HAS TEXT -----")
+                  first = next(i for i, n in enumerate(lengths) if n > 40)
+                  print(doc[first].get_text()[:1200])
+              else:
+                  print("VERDICT: scanned images only — no text can be extracted.")
+              name = os.path.basename(path).replace(".pdf", "")
+              (out / f"{name}.txt").write_text("".join(whole), encoding="utf-8")
+              # A couple of pages as pictures, to see what the scan looks like.
+              for i in (0, 6, 12):
+                  if i < len(doc):
+                      doc[i].get_pixmap(dpi=110).save(out / f"{name}_page{i + 1}.png")
+              doc.close()
+          PY
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dalail-inspection
+          path: _out
+          if-no-files-found: warn
