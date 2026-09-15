@@ -144,7 +144,6 @@ def render(text, out_prefix, title="", start_page=1):
     lay = Layout()
     rosette = load_ornament()
     probe = ImageDraw.Draw(Image.new("RGB", (8, 8)))
-    words = text.split()
 
     # The number of lines to a page is fixed, so the type size follows from it
     # rather than the other way about.
@@ -153,7 +152,18 @@ def render(text, out_prefix, title="", start_page=1):
     font = ImageFont.truetype(FONT, size)
     orn_px = int(size * ORNAMENT_RATIO)
     rose = rosette.resize((orn_px, orn_px), Image.LANCZOS)
-    lines = wrap(words, font, probe, lay.column(), orn_px)
+
+    # Each line of the source is a passage of its own, and begins a line of its
+    # own. A passage's lines are justified to the column — all but its last,
+    # which is centred. So a passage that is one line long, البسملة among them,
+    # stands centred and alone, as the book sets it.
+    lines = []
+    for passage in text.splitlines():
+        if not passage.strip():
+            continue
+        got = wrap(passage.split(), font, probe, lay.column(), orn_px)
+        for i, ln in enumerate(got):
+            lines.append((ln, i < len(got) - 1))
 
     # The first leaf gives room to the band, so it holds fewer lines than the
     # rest; count the leaves before drawing any, so the running head can say
@@ -178,11 +188,11 @@ def render(text, out_prefix, title="", start_page=1):
         top = lay.body_top(first)
         for i, ln in enumerate(chunk):
             y = top + i * pitch
+            ln, justify = ln
             widths = [token_width(w, font, d, orn_px) for w in ln]
             space = d.textlength(" ", font=font)
             k = len(ln)
-            last = (i == len(chunk) - 1 and n == len(leaves) - 1)
-            if k > 1 and not last:
+            if k > 1 and justify:
                 gap = (lay.column() - sum(widths)) / (k - 1)
                 x = lay.x1
             else:
