@@ -17,6 +17,11 @@ from PIL import Image, ImageDraw, ImageFont
 BAND_IMG = "android-app/design/header-band.png"
 ORNAMENT_IMG = "android-app/design/ornament.png"
 FONT = "ratib-app/app/src/main/res/font/amiri.ttf"
+#: A second face, for the repetition counts. The book says how often a
+#: passage is read with a figure; spelt out in words it would read as part
+#: of the prayer, so it is set in a slanted naskh instead — plainly an
+#: instruction to the reader rather than something to be recited.
+ASIDE_FONT = "ratib-app/app/src/main/res/font/amiri_italic.ttf"
 
 PAGE_W, PAGE_H = 1000, 1720
 MARGIN = 16          # from the leaf's edge to the ruled border
@@ -32,6 +37,8 @@ FAINT = (120, 96, 44)
 BAND_PANEL = (302, 70, 518, 148)
 
 ORNAMENTS = ("۞", "♡", "♥", "❤")
+#: Marks a run set in the aside face. Stripped before drawing.
+ASIDE_OPEN, ASIDE_CLOSE = "⟨", "⟩"
 LINE_RATIO = 1.62
 ORNAMENT_RATIO = 0.74
 ARABIC_DIGITS = "٠١٢٣٤٥٦٧٨٩"
@@ -117,24 +124,44 @@ class Layout:
         d.text((self.x1 - w - 7, y), text, font=font, fill=FAINT, direction="rtl")
 
 
-def token_width(w, font, draw, orn_px):
+def tokenise(passage):
+    """
+    The passage's words, each marked for which face it is set in.
+
+    A run between ⟨ and ⟩ belongs to the aside face; the markers themselves are
+    not printed.
+    """
+    out, aside = [], False
+    for w in passage.split():
+        opens = w.startswith(ASIDE_OPEN)
+        closes = w.endswith(ASIDE_CLOSE)
+        w = w.strip(ASIDE_OPEN + ASIDE_CLOSE)
+        out.append((w, aside or opens))
+        if opens and not closes:
+            aside = True
+        elif closes:
+            aside = False
+    return out
+
+
+def token_width(w, italic, fonts, draw, orn_px):
     if w in ORNAMENTS:
         return float(orn_px)
-    return draw.textlength(w, font=font, direction="rtl")
+    return draw.textlength(w, font=fonts[italic], direction="rtl")
 
 
-def wrap(words, font, draw, width, orn_px):
-    space = draw.textlength(" ", font=font)
+def wrap(words, fonts, draw, width, orn_px):
+    space = draw.textlength(" ", font=fonts[False])
     lines, cur, cur_w = [], [], 0.0
-    for w in words:
-        ww = token_width(w, font, draw, orn_px)
+    for w, italic in words:
+        ww = token_width(w, italic, fonts, draw, orn_px)
         trial = cur_w + ww + (space if cur else 0)
         if trial <= width or not cur:
-            cur.append(w)
+            cur.append((w, italic))
             cur_w = trial
         else:
             lines.append(cur)
-            cur, cur_w = [w], ww
+            cur, cur_w = [(w, italic)], ww
     if cur:
         lines.append(cur)
     return lines
@@ -149,7 +176,8 @@ def render(text, out_prefix, title="", start_page=1):
     # rather than the other way about.
     pitch = lay.pitch(first=True)
     size = max(8, int(pitch / LINE_RATIO))
-    font = ImageFont.truetype(FONT, size)
+    fonts = {False: ImageFont.truetype(FONT, size),
+             True: ImageFont.truetype(ASIDE_FONT, size)}
     orn_px = int(size * ORNAMENT_RATIO)
     rose = rosette.resize((orn_px, orn_px), Image.LANCZOS)
 
@@ -161,7 +189,7 @@ def render(text, out_prefix, title="", start_page=1):
     for passage in text.splitlines():
         if not passage.strip():
             continue
-        got = wrap(passage.split(), font, probe, lay.column(), orn_px)
+        got = wrap(tokenise(passage), fonts, probe, lay.column(), orn_px)
         for i, ln in enumerate(got):
             lines.append((ln, i < len(got) - 1))
 
@@ -189,8 +217,8 @@ def render(text, out_prefix, title="", start_page=1):
         for i, ln in enumerate(chunk):
             y = top + i * pitch
             ln, justify = ln
-            widths = [token_width(w, font, d, orn_px) for w in ln]
-            space = d.textlength(" ", font=font)
+            widths = [token_width(w, it, fonts, d, orn_px) for w, it in ln]
+            space = d.textlength(" ", font=fonts[False])
             k = len(ln)
             if k > 1 and justify:
                 gap = (lay.column() - sum(widths)) / (k - 1)
@@ -198,11 +226,12 @@ def render(text, out_prefix, title="", start_page=1):
             else:
                 gap = space
                 x = lay.x1 - (lay.column() - (sum(widths) + space * (k - 1))) / 2
-            for w, ww in zip(ln, widths):
+            for (w, italic), ww in zip(ln, widths):
                 if w in ORNAMENTS:
                     im.paste(rose, (int(x - ww), y + int(size * 0.30)), rose)
                 else:
-                    d.text((x - ww, y), w, font=font, fill=INK, direction="rtl")
+                    d.text((x - ww, y), w, font=fonts[italic],
+                           fill=RULE if italic else INK, direction="rtl")
                 x -= ww + gap
         path = f"{out_prefix}_{start_page + n}.png"
         im.save(path)
