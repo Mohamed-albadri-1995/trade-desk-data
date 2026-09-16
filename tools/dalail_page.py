@@ -31,6 +31,11 @@ LINES_PER_PAGE = 15
 PAPER = (252, 247, 231)
 INK = (36, 26, 11)
 RULE = (150, 118, 46)
+#: The book sets the Qur'anic verses and the sura names in a turquoise of
+#: its own. Its exact value, sampled off the scan, is (45, 230, 205) — true
+#: on the white it was printed on, but too pale to read on parchment, so it
+#: is deepened while keeping the hue.
+TEAL = (17, 138, 124)
 FAINT = (120, 96, 44)
 
 #: Where the cartouche sits inside the band, in the band image's own pixels.
@@ -39,6 +44,9 @@ BAND_PANEL = (302, 70, 518, 148)
 ORNAMENTS = ("۞", "♡", "♥", "❤")
 #: Marks a run set in the aside face. Stripped before drawing.
 ASIDE_OPEN, ASIDE_CLOSE = "⟨", "⟩"
+#: Marks a Qur'anic verse or a sura's name. Stripped before drawing — the
+#: book sets these off by colour, not by brackets.
+QURAN_OPEN, QURAN_CLOSE = "﴿", "﴾"
 LINE_RATIO = 1.62
 ORNAMENT_RATIO = 0.74
 ARABIC_DIGITS = "٠١٢٣٤٥٦٧٨٩"
@@ -124,44 +132,58 @@ class Layout:
         d.text((self.x1 - w - 7, y), text, font=font, fill=FAINT, direction="rtl")
 
 
+#: How a word is set: the book's own ink, the aside face for an instruction to
+#: the reader, or the turquoise it gives revelation.
+PLAIN, ASIDE, QURAN = 0, 1, 2
+
+
 def tokenise(passage):
     """
-    The passage's words, each marked for which face it is set in.
+    The passage's words, each marked for how it is set.
 
-    A run between ⟨ and ⟩ belongs to the aside face; the markers themselves are
-    not printed.
+    A run between ⟨ and ⟩ is an instruction to the reader; a run between ﴿ and ﴾
+    is Qur'an or a sura's name. Neither pair of markers is printed.
     """
-    out, aside = [], False
+    out, mode = [], PLAIN
     for w in passage.split():
-        opens = w.startswith(ASIDE_OPEN)
-        closes = w.endswith(ASIDE_CLOSE)
-        w = w.strip(ASIDE_OPEN + ASIDE_CLOSE)
-        out.append((w, aside or opens))
-        if opens and not closes:
-            aside = True
-        elif closes:
-            aside = False
+        opened = mode
+        if w.startswith(ASIDE_OPEN):
+            opened = ASIDE
+        elif w.startswith(QURAN_OPEN):
+            opened = QURAN
+        closes = w.endswith(ASIDE_CLOSE) or w.endswith(QURAN_CLOSE)
+        w = w.strip(ASIDE_OPEN + ASIDE_CLOSE + QURAN_OPEN + QURAN_CLOSE)
+        out.append((w, opened))
+        mode = PLAIN if closes else opened
     return out
 
 
-def token_width(w, italic, fonts, draw, orn_px):
+def face(fonts, mode):
+    return fonts[True] if mode == ASIDE else fonts[False]
+
+
+def colour(mode):
+    return {ASIDE: RULE, QURAN: TEAL}.get(mode, INK)
+
+
+def token_width(w, mode, fonts, draw, orn_px):
     if w in ORNAMENTS:
         return float(orn_px)
-    return draw.textlength(w, font=fonts[italic], direction="rtl")
+    return draw.textlength(w, font=face(fonts, mode), direction="rtl")
 
 
 def wrap(words, fonts, draw, width, orn_px):
     space = draw.textlength(" ", font=fonts[False])
     lines, cur, cur_w = [], [], 0.0
-    for w, italic in words:
-        ww = token_width(w, italic, fonts, draw, orn_px)
+    for w, mode in words:
+        ww = token_width(w, mode, fonts, draw, orn_px)
         trial = cur_w + ww + (space if cur else 0)
         if trial <= width or not cur:
-            cur.append((w, italic))
+            cur.append((w, mode))
             cur_w = trial
         else:
             lines.append(cur)
-            cur, cur_w = [(w, italic)], ww
+            cur, cur_w = [(w, mode)], ww
     if cur:
         lines.append(cur)
     return lines
@@ -217,7 +239,7 @@ def render(text, out_prefix, title="", start_page=1):
         for i, ln in enumerate(chunk):
             y = top + i * pitch
             ln, justify = ln
-            widths = [token_width(w, it, fonts, d, orn_px) for w, it in ln]
+            widths = [token_width(w, m, fonts, d, orn_px) for w, m in ln]
             space = d.textlength(" ", font=fonts[False])
             k = len(ln)
             if k > 1 and justify:
@@ -226,12 +248,12 @@ def render(text, out_prefix, title="", start_page=1):
             else:
                 gap = space
                 x = lay.x1 - (lay.column() - (sum(widths) + space * (k - 1))) / 2
-            for (w, italic), ww in zip(ln, widths):
+            for (w, mode), ww in zip(ln, widths):
                 if w in ORNAMENTS:
                     im.paste(rose, (int(x - ww), y + int(size * 0.30)), rose)
                 else:
-                    d.text((x - ww, y), w, font=fonts[italic],
-                           fill=RULE if italic else INK, direction="rtl")
+                    d.text((x - ww, y), w, font=face(fonts, mode),
+                           fill=colour(mode), direction="rtl")
                 x -= ww + gap
         path = f"{out_prefix}_{start_page + n}.png"
         im.save(path)
