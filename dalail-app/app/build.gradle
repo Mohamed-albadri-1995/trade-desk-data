@@ -19,6 +19,14 @@ android {
         targetSdk 36
         versionCode buildCode
         versionName buildName
+
+        ndk {
+            // The PDF renderer is native, and ships a copy for four processors.
+            // Only the two ARM ones are in any phone, and the package is handed
+            // round as a file rather than through Play, so it carries just
+            // those — a third of the download saved for no phone's loss.
+            abiFilters 'armeabi-v7a', 'arm64-v8a'
+        }
     }
 
     buildTypes {
