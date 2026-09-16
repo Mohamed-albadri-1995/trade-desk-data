@@ -158,6 +158,20 @@ def tokenise(passage):
     return out
 
 
+#: The transcription marks a heading with «# » or «## » and the book's closing
+#: line with «~ », the way the reader itself reads them. Both stand alone on
+#: their line, so here the marker is dropped and the line comes out centred of
+#: its own accord.
+MARKERS = ("## ", "# ", "~ ", "* ")
+
+
+def strip_marker(passage):
+    for m in MARKERS:
+        if passage.startswith(m):
+            return passage[len(m):]
+    return passage
+
+
 def face(fonts, mode):
     return fonts[True] if mode == ASIDE else fonts[False]
 
@@ -209,6 +223,7 @@ def render(text, out_prefix, title="", start_page=1):
     # stands centred and alone, as the book sets it.
     lines = []
     for passage in text.splitlines():
+        passage = strip_marker(passage)
         if not passage.strip():
             continue
         got = wrap(tokenise(passage), fonts, probe, lay.column(), orn_px)
