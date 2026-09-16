@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    One leaf of the book: parchment inside its gold ruled border, the
+    ornamental band at the head of a section's first leaf and a slim running
+    head on the ones that carry it on, then the column of text.
+
+    The measurements here are the ones Paginator is told about, so any change to
+    the padding below has to be matched in MainActivity's column() and room().
+-->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/page_frame">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:padding="12dp">
+
+        <!-- The band, on the leaf a section opens on. -->
+        <com.dalail.rahamat.BandView
+            android:id="@+id/band"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="gone" />
+
+        <!-- The running head, on every other leaf of that section. -->
+        <TextView
+            android:id="@+id/runningHead"
+            android:layout_width="wrap_content"
+            android:layout_height="26dp"
+            android:layout_gravity="end"
+            android:background="@drawable/running_head"
+            android:fontFamily="@font/amiri"
+            android:gravity="center"
+            android:paddingHorizontal="10dp"
+            android:textColor="@color/rule_faint"
+            android:textSize="13sp"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/pageText"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginTop="6dp"
+            android:layout_weight="1"
+            android:fontFamily="@font/amiri"
+            android:gravity="top"
+            android:hyphenationFrequency="none"
+            android:justificationMode="inter_word"
+            android:lineSpacingMultiplier="1.32"
+            android:paddingHorizontal="10dp"
+            android:textColor="@color/reading_text"
+            android:textSize="10sp"
+            tools:ignore="SmallSp"
+            tools:targetApi="26" />
+
+        <!-- The book's closing line, at the foot of its last leaf. -->
+        <TextView
+            android:id="@+id/colophonText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:fontFamily="@font/amiri"
+            android:gravity="center"
+            android:lineSpacingMultiplier="1.32"
+            android:textColor="@color/quran_text"
+            android:visibility="gone" />
+    </LinearLayout>
+</FrameLayout>

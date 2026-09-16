@@ -23,7 +23,7 @@ import pdf_out
 
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "dalail")
 COVER = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..",
-                     "android-app", "design", "cover.jpg")
+                     "dalail-app", "design", "cover.jpg")
 
 #: How wide the printed leaf is meant to be, in dots to the inch. The design is
 #: 1000 × 1720 dots, so at this resolution the leaf comes out 127 × 218 mm —

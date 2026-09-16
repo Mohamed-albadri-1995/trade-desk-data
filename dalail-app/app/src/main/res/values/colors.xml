@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    The palette is the printed book's own, sampled off its pages: parchment,
+    a dark brown ink, the gold of its rules and ornaments, and the turquoise it
+    gives revelation. Dark variants live in values-night.
+-->
+<resources>
+    <color name="white">#FFFFFFFF</color>
+
+    <!-- The boards of the bound book, for the bars and the drawer's head. -->
+    <color name="board">#3F2914</color>
+    <color name="board_dark">#2A1B0D</color>
+
+    <!-- Parchment, and the ink on it. -->
+    <color name="reading_bg">#FCF7E7</color>
+    <color name="reading_text">#241A0B</color>
+
+    <!-- The gold of the ruled border, the ornaments, and the running head. -->
+    <color name="rule">#96762E</color>
+    <color name="rule_faint">#78602C</color>
+
+    <!-- A section's name, and the book's own title. -->
+    <color name="heading_text">#241A0B</color>
+
+    <!--
+        The book sets the Qur'anic verses and the sura names in a turquoise of
+        its own. Its exact value, sampled off the page, is #2DE6CD — true on the
+        white it was printed on, but too pale to read on parchment, so it is
+        deepened while keeping the hue.
+    -->
+    <color name="quran_text">#118A7C</color>
+
+    <!--
+        How often a passage is said. The book gives it as a figure; spelt out in
+        words it would read as part of the prayer, so it is set apart — slanted,
+        and in the gold of the margins — plainly an instruction to the reader.
+    -->
+    <color name="aside_text">#8A6A1E</color>
+</resources>

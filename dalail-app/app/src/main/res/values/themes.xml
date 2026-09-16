@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="Theme.Dalail" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/board</item>
+        <item name="colorPrimaryDark">@color/board_dark</item>
+        <item name="colorAccent">@color/rule</item>
+        <item name="android:statusBarColor">@color/board_dark</item>
+        <item name="android:navigationBarColor">@color/board</item>
+        <item name="android:windowBackground">@color/reading_bg</item>
+        <item name="android:textColorPrimary">@color/reading_text</item>
+    </style>
+
+    <!-- The overflow menu, kept on the boards' brown with light text. -->
+    <style name="Dalail.PopupOverlay" parent="ThemeOverlay.MaterialComponents.Dark" />
+
+    <!-- The index, in the book's own hand. -->
+    <style name="Dalail.Nav" parent="Widget.MaterialComponents.NavigationView">
+        <item name="android:fontFamily">@font/amiri</item>
+        <item name="itemTextAppearance">@style/Dalail.Nav.Item</item>
+    </style>
+
+    <style name="Dalail.Nav.Item" parent="TextAppearance.MaterialComponents.Body2">
+        <item name="android:fontFamily">@font/amiri</item>
+        <item name="android:textSize">17sp</item>
+    </style>
+</resources>

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    At night the parchment goes out and the ink comes up, but the golds and the
+    turquoise keep their hue so the page still reads as the same book.
+-->
+<resources>
+    <color name="reading_bg">#15110B</color>
+    <color name="reading_text">#EDE4D2</color>
+
+    <color name="rule">#B08A2E</color>
+    <color name="rule_faint">#9A7C2C</color>
+
+    <color name="heading_text">#F2E9D6</color>
+    <color name="quran_text">#49D3BE</color>
+    <color name="aside_text">#D9B45C</color>
+</resources>

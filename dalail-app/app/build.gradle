@@ -1,0 +1,50 @@
+plugins {
+    id 'com.android.application'
+    id 'org.jetbrains.kotlin.android'
+}
+
+// The build number comes from CI, so every build carries a version of its own;
+// building by hand falls back to 1 / 1.0.
+def buildCode = (project.findProperty('verCode') ?: '1') as Integer
+def buildName = (project.findProperty('verName') ?: '1.0') as String
+
+android {
+    namespace 'com.dalail.rahamat'
+    // Android 16. Google Play requires new apps and updates to target it.
+    compileSdk 36
+
+    defaultConfig {
+        applicationId "com.dalail.rahamat"
+        minSdk 21
+        targetSdk 36
+        versionCode buildCode
+        versionName buildName
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    buildFeatures {
+        viewBinding true
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+    kotlinOptions {
+        jvmTarget = '17'
+    }
+}
+
+dependencies {
+    implementation 'androidx.core:core-ktx:1.13.1'
+    implementation 'androidx.appcompat:appcompat:1.7.0'
+    implementation 'com.google.android.material:material:1.12.0'
+    implementation 'androidx.drawerlayout:drawerlayout:1.2.0'
+    implementation 'androidx.viewpager2:viewpager2:1.1.0'
+}

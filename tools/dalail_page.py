@@ -14,8 +14,8 @@ passage is justified to the full column, so the pages come out even.
 import sys
 from PIL import Image, ImageDraw, ImageFont
 
-BAND_IMG = "android-app/design/header-band.png"
-ORNAMENT_IMG = "android-app/design/ornament.png"
+BAND_IMG = "dalail-app/design/header-band.png"
+ORNAMENT_IMG = "dalail-app/design/ornament.png"
 FONT = "ratib-app/app/src/main/res/font/amiri.ttf"
 #: A second face, for the repetition counts. The book says how often a
 #: passage is read with a figure; spelt out in words it would read as part
