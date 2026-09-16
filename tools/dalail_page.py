@@ -8,8 +8,9 @@ its rosettes all cut from the book's own printed page, so nothing here is
 borrowed from anywhere else. A section's first page wears the band; the pages
 that carry it on wear a slim rule naming the section and the leaf you are on.
 
-Every page holds the same number of lines, and every line but the last of a
-passage is justified to the full column, so the pages come out even.
+The lines stand the same distance apart on every page, wide enough that the
+harakat of one never meet the letters of the line above, and every line but the
+last of a passage is justified to the full column, so the pages come out even.
 """
 import sys
 from PIL import Image, ImageDraw, ImageFont
@@ -26,7 +27,9 @@ ASIDE_FONT = "ratib-app/app/src/main/res/font/amiri_italic.ttf"
 PAGE_W, PAGE_H = 1000, 1720
 MARGIN = 16          # from the leaf's edge to the ruled border
 PAD_X = 34           # from the border to the column
-LINES_PER_PAGE = 15
+#: Lines on an ordinary leaf. A leaf that opens a section gives the ornamental
+#: band its room and so holds fewer; the pitch is the same on both.
+LINES_PER_PAGE = 14
 
 PAPER = (252, 247, 231)
 INK = (36, 26, 11)
@@ -47,7 +50,11 @@ ASIDE_OPEN, ASIDE_CLOSE = "⟨", "⟩"
 #: Marks a Qur'anic verse or a sura's name. Stripped before drawing — the
 #: book sets these off by colour, not by brackets.
 QURAN_OPEN, QURAN_CLOSE = "﴿", "﴾"
-LINE_RATIO = 1.62
+#: How far apart the lines stand, as a multiple of the type size. Arabic set
+#: with full harakat needs the room: a fatha or a damma rides well above the
+#: letter it belongs to, and a kasra hangs below, so at a tighter leading than
+#: this the marks of one line come up against the letters of the line over it.
+LINE_RATIO = 1.90
 ORNAMENT_RATIO = 0.74
 #: Lines of the column the closing line takes up, so it is never crowded.
 CLOSING_LINES = 3
@@ -96,8 +103,20 @@ class Layout:
     def body_top(self, first):
         return self.head_top if first else self.slim_top
 
-    def pitch(self, first):
-        return (self.bottom - self.body_top(first)) // LINES_PER_PAGE
+    def pitch(self):
+        """
+        How far apart the lines stand, the same on every leaf.
+
+        Set by the ordinary leaf, since that is nearly every leaf in the book
+        and the one the reader has in front of them; the leaf that opens a
+        section pays for its band by holding fewer lines at the same pitch,
+        rather than by setting them closer together.
+        """
+        return (self.bottom - self.slim_top) // LINES_PER_PAGE
+
+    def capacity(self, first):
+        """How many lines a leaf holds — fewer where the band stands."""
+        return (self.bottom - self.body_top(first)) // self.pitch()
 
     def border(self, im):
         """The leaf's ruled border: a stout rule with a fine one inside it."""
@@ -281,8 +300,8 @@ def deal(lines, lay, pitch, closing):
     than those after it, and the closing line — where there is one — keeps a
     few lines' room of its own at the foot of the last leaf.
     """
-    first_cap = LINES_PER_PAGE
-    rest_cap = max(1, (lay.bottom - lay.slim_top) // pitch)
+    first_cap = max(1, lay.capacity(first=True))
+    rest_cap = max(1, lay.capacity(first=False))
     leaves, i = [], 0
     while i < len(lines):
         cap = first_cap if not leaves else rest_cap
@@ -337,7 +356,7 @@ def locate(text, closing=None):
     """
     lay = Layout()
     probe = ImageDraw.Draw(Image.new("RGB", (8, 8)))
-    pitch = lay.pitch(first=True)
+    pitch = lay.pitch()
     size = fit(text, lay, pitch, closing, probe)
     lines, _, _, starts = break_lines(text, size, lay, probe)
     leaves, _, _ = deal(lines, lay, pitch, closing)
@@ -372,7 +391,7 @@ def compose(text, title="", folio=None, closing=None):
     # The number of lines to a page is fixed, so the type size follows from it
     # rather than the other way about — and is then nudged, within a hair, to
     # fill the section's last leaf.
-    pitch = lay.pitch(first=True)
+    pitch = lay.pitch()
     size = fit(text, lay, pitch, closing, probe)
     lines, fonts, orn_px, _ = break_lines(text, size, lay, probe)
     rose = rosette.resize((orn_px, orn_px), Image.LANCZOS)
