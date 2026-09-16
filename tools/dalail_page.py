@@ -178,17 +178,25 @@ def tokenise(passage):
 
     A run between ⟨ and ⟩ is an instruction to the reader; a run between ﴿ and ﴾
     is Qur'an or a sura's name. Neither pair of markers is printed.
+
+    A mark is looked for inside the word's punctuation, not only at its ends.
+    The book closes صلاة ٢٣ with «… وَ زَانَتِ الدُّنَا (ثلاثًا)», bracket and
+    all, so the token reads ⟨ثلاثًا⟩) — and while the closing mark was only
+    ever sought at the very end of a word, the gold of the count ran on to
+    everything after it, which is exactly what it must not do: the colour marks
+    the count, never the صلاة.
     """
     out, mode = [], PLAIN
     for w in passage.split():
+        bare = w.strip("()[]{}،؛,.!؟?")
         opened = mode
-        if w.startswith(ASIDE_OPEN):
+        if bare.startswith(ASIDE_OPEN):
             opened = ASIDE
-        elif w.startswith(QURAN_OPEN):
+        elif bare.startswith(QURAN_OPEN):
             opened = QURAN
-        closes = w.endswith(ASIDE_CLOSE) or w.endswith(QURAN_CLOSE)
-        w = w.strip(ASIDE_OPEN + ASIDE_CLOSE + QURAN_OPEN + QURAN_CLOSE)
-        out.append((w, opened))
+        closes = bare.endswith(ASIDE_CLOSE) or bare.endswith(QURAN_CLOSE)
+        out.append((w.replace(ASIDE_OPEN, "").replace(ASIDE_CLOSE, "")
+                     .replace(QURAN_OPEN, "").replace(QURAN_CLOSE, ""), opened))
         mode = PLAIN if closes else opened
     return out
 
@@ -246,19 +254,23 @@ def break_lines(text, size, lay, probe):
     own. A passage's lines are justified to the column — all but its last,
     which is centred. So a passage that is one line long, البسملة among them,
     stands centred and alone, as the book sets it.
+
+    Also hands back where each passage begins, so an index can say which leaf
+    a صلاة is on.
     """
     fonts = {False: ImageFont.truetype(FONT, size),
              True: ImageFont.truetype(ASIDE_FONT, size)}
     orn_px = int(size * ORNAMENT_RATIO)
-    lines = []
+    lines, starts = [], []
     for passage in text.splitlines():
         passage = strip_marker(passage)
         if not passage.strip():
             continue
+        starts.append(len(lines))
         got = wrap(tokenise(passage), fonts, probe, lay.column(), orn_px)
         for i, ln in enumerate(got):
             lines.append((ln, i < len(got) - 1))
-    return lines, fonts, orn_px
+    return lines, fonts, orn_px, starts
 
 
 def deal(lines, lay, pitch, closing):
@@ -304,7 +316,7 @@ def fit(text, lay, pitch, closing, probe):
     for size in range(nominal + FIT_RANGE[0], nominal + FIT_RANGE[1] + 1):
         if size < 8:
             continue
-        lines, _, _ = break_lines(text, size, lay, probe)
+        lines, _, _, _ = break_lines(text, size, lay, probe)
         leaves, first_cap, rest_cap = deal(lines, lay, pitch, closing)
         cap = (rest_cap if len(leaves) > 1 else first_cap) \
             - (CLOSING_LINES if closing else 0)
@@ -313,6 +325,36 @@ def fit(text, lay, pitch, closing, probe):
         if best is None or score > best[0]:
             best = (score, size)
     return best[1]
+
+
+def locate(text, closing=None):
+    """
+    Which leaf of the section each of its passages begins on, from zero.
+
+    The type size and the dealing out into leaves are chosen exactly as
+    compose() chooses them, so an index built from this points at the leaf the
+    reader will actually turn to.
+    """
+    lay = Layout()
+    probe = ImageDraw.Draw(Image.new("RGB", (8, 8)))
+    pitch = lay.pitch(first=True)
+    size = fit(text, lay, pitch, closing, probe)
+    lines, _, _, starts = break_lines(text, size, lay, probe)
+    leaves, _, _ = deal(lines, lay, pitch, closing)
+
+    first_line, at = [], 0
+    for leaf in leaves:
+        first_line.append(at)
+        at += len(leaf)
+
+    def leaf_of(line):
+        found = 0
+        for n, begins in enumerate(first_line):
+            if line >= begins:
+                found = n
+        return found
+
+    return [leaf_of(s) for s in starts], len(leaves)
 
 
 def compose(text, title="", folio=None, closing=None):
@@ -332,7 +374,7 @@ def compose(text, title="", folio=None, closing=None):
     # fill the section's last leaf.
     pitch = lay.pitch(first=True)
     size = fit(text, lay, pitch, closing, probe)
-    lines, fonts, orn_px = break_lines(text, size, lay, probe)
+    lines, fonts, orn_px, _ = break_lines(text, size, lay, probe)
     rose = rosette.resize((orn_px, orn_px), Image.LANCZOS)
     leaves, _, _ = deal(lines, lay, pitch, closing)
 

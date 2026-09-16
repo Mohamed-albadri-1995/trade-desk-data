@@ -1,48 +1,39 @@
 package com.dalail.rahamat
 
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.view.GravityCompat
-import androidx.viewpager2.widget.ViewPager2
 import com.dalail.rahamat.databinding.ActivityMainBinding
-import java.util.concurrent.Executors
+import com.github.barteksc.pdfviewer.scroll.DefaultScrollHandle
 
 /**
- * Book-style reader for دلائل الرحمات: the text is laid out and cut into
- * screen-sized leaves you flip through, right to left. An index of the sections
- * and of all ninety صلوات, a page counter, flip arrows, an adjustable size,
- * day and night, and it opens where it was left.
+ * Reader for دلائل الرحمات.
+ *
+ * The book is carried as the printed PDF itself — the same file the press
+ * would take — so what is on the screen is exactly the page, ornamental band,
+ * gold border and all. On top of it the app adds what a PDF on its own cannot:
+ * an index of the twelve sections and all ninety صلوات, each pointing at the
+ * page it begins on; a page counter; and it opens where it was left.
  */
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
-    private val adapter = PagerAdapter()
 
     private val prefsName = "dalail_prefs"
     private val pageKey = "page_index"
     private val nightKey = "night_mode"
-    private val scaleKey = "text_scale"
 
-    private val blocks = ArrayList<Block>()
-    private var pagination: Pagination? = null
-    private var scale = 1f
+    /** An entry in the index: the page it points at, and how it reads. */
+    private data class Entry(val page: Int, val depth: Int, val label: String)
 
-    /** Laying the whole book out takes a moment, so it is not done on the UI thread. */
-    private val worker = Executors.newSingleThreadExecutor()
-    private val ui = Handler(Looper.getMainLooper())
-    private var job = 0
+    private val entries = ArrayList<Entry>()
+    private var pages = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        AppCompatDelegate.setDefaultNightMode(
-            prefs().getInt(nightKey, AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
-        )
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
@@ -51,35 +42,95 @@ class MainActivity : AppCompatActivity() {
         supportActionBar?.title = getString(R.string.app_name)
         binding.toolbar.setNavigationOnClickListener { toggleDrawer() }
 
-        scale = prefs().getFloat(scaleKey, 1f).coerceIn(MIN_SCALE, MAX_SCALE)
-        readBook()
+        readIndex()
+        buildIndexMenu()
+        openBook(prefs().getInt(pageKey, 0))
 
-        binding.pager.adapter = adapter
-        binding.pager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
-            override fun onPageSelected(position: Int) {
-                showCounter(position)
-                prefs().edit().putInt(pageKey, position).apply()
-            }
-        })
+        binding.btnPrev.setOnClickListener { goTo(binding.pdf.currentPage - 1) }
+        binding.btnNext.setOnClickListener { goTo(binding.pdf.currentPage + 1) }
 
-        binding.btnPrev.setOnClickListener {
-            binding.pager.currentItem = (binding.pager.currentItem - 1).coerceAtLeast(0)
-        }
-        binding.btnNext.setOnClickListener {
-            val last = (pagination?.pages?.size ?: 1) - 1
-            binding.pager.currentItem = (binding.pager.currentItem + 1).coerceAtMost(last)
-        }
-
-        binding.pager.post { repaginate(prefs().getInt(pageKey, 0)) }
         handleBackWithDrawer()
     }
 
-    override fun onDestroy() {
-        worker.shutdownNow()
-        super.onDestroy()
+    private fun prefs() = getSharedPreferences(prefsName, MODE_PRIVATE)
+
+    private fun isNight() = prefs().getBoolean(nightKey, false)
+
+    /**
+     * Loads the book, opening at [page].
+     *
+     * Called again when the reader turns the lamp on or off, since the night
+     * rendering is chosen as the file is opened, not after.
+     */
+    private fun openBook(page: Int) {
+        binding.opening.visibility = View.VISIBLE
+        binding.pdf.fromAsset(ASSET)
+            .defaultPage(page)
+            .swipeHorizontal(false)
+            .pageSnap(true)
+            .pageFling(true)
+            .autoSpacing(true)
+            .fitEachPage(true)
+            .spacing(8)
+            .nightMode(isNight())
+            .scrollHandle(DefaultScrollHandle(this))
+            .onLoad { count ->
+                pages = count
+                binding.opening.visibility = View.GONE
+                showCounter(binding.pdf.currentPage)
+            }
+            .onPageChange { current, _ ->
+                showCounter(current)
+                prefs().edit().putInt(pageKey, current).apply()
+            }
+            .load()
     }
 
-    private fun prefs() = getSharedPreferences(prefsName, MODE_PRIVATE)
+    private fun goTo(page: Int) {
+        if (pages == 0) return
+        binding.pdf.jumpTo(page.coerceIn(0, pages - 1), true)
+    }
+
+    private fun showCounter(current: Int) {
+        val total = if (pages > 0) pages else 1
+        binding.pageIndicator.text =
+            getString(R.string.page_of, arabic(current + 1), arabic(total))
+    }
+
+    private fun arabic(n: Int): String {
+        val d = charArrayOf('٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩')
+        return buildString { for (c in n.toString()) append(if (c in '0'..'9') d[c - '0'] else c) }
+    }
+
+    /**
+     * Reads the index built beside the book: one line per entry, as
+     * `page|depth|label`, the page counting the cover as one.
+     */
+    private fun readIndex() {
+        runCatching {
+            assets.open(INDEX).bufferedReader().forEachLine { raw ->
+                val parts = raw.trim().split('|', limit = 3)
+                if (parts.size < 3) return@forEachLine
+                val page = parts[0].toIntOrNull() ?: return@forEachLine
+                val depth = parts[1].toIntOrNull() ?: 0
+                entries.add(Entry(page, depth, parts[2]))
+            }
+        }
+    }
+
+    private fun buildIndexMenu() {
+        val menu = binding.navView.menu
+        menu.clear()
+        entries.forEachIndexed { i, e ->
+            // A صلاة is set in from its حزب, so the index reads as one.
+            menu.add(Menu.NONE, i, i, if (e.depth > 0) " ${e.label}" else e.label)
+        }
+        binding.navView.setNavigationItemSelectedListener { item ->
+            entries.getOrNull(item.itemId)?.let { goTo(it.page - 1) }
+            binding.drawerLayout.closeDrawer(GravityCompat.START)
+            true
+        }
+    }
 
     private fun toggleDrawer() {
         if (binding.drawerLayout.isDrawerOpen(GravityCompat.START))
@@ -88,161 +139,11 @@ class MainActivity : AppCompatActivity() {
             binding.drawerLayout.openDrawer(GravityCompat.START)
     }
 
-    /**
-     * Reads the book off the asset, which carries the reader's own marks:
-     *
-     *     = …   the book's name        ## n\tsuras   a صلاة and what it is on
-     *     # …   a section             ~ …           the closing line
-     *
-     * Everything else is a passage, one to a line.
-     */
-    private fun readBook() {
-        assets.open(ASSET).bufferedReader().forEachLine { raw ->
-            val line = raw.trim()
-            when {
-                line.isEmpty() -> Unit
-                line.startsWith("## ") -> {
-                    val parts = line.removePrefix("## ").split('\t', limit = 2)
-                    blocks.add(Block.Salat(parts[0].trim(), parts.getOrElse(1) { "" }.trim()))
-                }
-                line.startsWith("# ") -> blocks.add(Block.Section(line.removePrefix("# ").trim()))
-                line.startsWith("= ") -> blocks.add(Block.Title(line.removePrefix("= ").trim()))
-                line.startsWith("~ ") -> blocks.add(Block.Colophon(line.removePrefix("~ ").trim()))
-                else -> blocks.add(Block.Body(line))
-            }
-        }
-    }
-
-    private val density get() = resources.displayMetrics.density
-    private fun dp(v: Float) = (v * density).toInt()
-
-    /**
-     * The column the text is set in: the leaf less item_page's own padding —
-     * 12dp inside the ruled border, and 10dp more to the column.
-     */
-    private fun column(width: Int) = width - 2 * dp(12f + 10f)
-
-    /**
-     * The room a leaf has for text: the leaf less the same 12dp top and bottom,
-     * the running head's line, and the margin above the column.
-     */
-    private fun room(height: Int) = height - 2 * dp(12f) - dp(26f) - dp(6f)
-
-    /**
-     * What the ornamental band costs a leaf over the running head it replaces.
-     * The band keeps the artwork's proportions, so its height follows the width
-     * it is given — the leaf less the 12dp inside the border.
-     */
-    private fun bandExtra(width: Int): Int {
-        val bandWidth = width - 2 * dp(12f)
-        return (bandWidth * 172f / 817f).toInt() - dp(26f)
-    }
-
-    /**
-     * Lays the book out for the room there is now, and opens it at [anchor] —
-     * a block, so that the reader keeps their place across a change of size,
-     * where the leaf numbering does not survive — or else at [page].
-     */
-    private fun repaginate(page: Int = 0, anchor: Int? = null) {
-        val w = column(binding.pager.width)
-        val h = room(binding.pager.height)
-        if (w <= 0 || h <= 0) {
-            binding.pager.post { repaginate(page, anchor) }
-            return
-        }
-        val extra = bandExtra(binding.pager.width)
-        val mine = ++job
-        binding.layingOut.visibility = View.VISIBLE
-        worker.execute {
-            val result = runCatching {
-                Paginator.paginate(this, blocks, w, h, extra, scale)
-            }.getOrNull()
-            ui.post {
-                // A later run has started — or the activity is gone — so this
-                // result is stale and must not be shown.
-                if (mine != job || result == null || isFinishing) return@post
-                pagination = result
-                adapter.submit(result)
-                buildIndex()
-                binding.layingOut.visibility = View.GONE
-                val at = anchor?.let { result.navPage[it] } ?: page
-                val target = at.coerceIn(0, result.pages.size - 1)
-                binding.pager.setCurrentItem(target, false)
-                showCounter(target)
-            }
-        }
-    }
-
-    private fun showCounter(position: Int) {
-        val total = pagination?.pages?.size ?: 1
-        binding.pageIndicator.text =
-            getString(R.string.page_of, arabic(position + 1), arabic(total))
-    }
-
-    private fun arabic(n: Int): String {
-        val d = charArrayOf('٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩')
-        return buildString { for (c in n.toString()) append(if (c in '0'..'9') d[c - '0'] else c) }
-    }
-
-    /** The sections, and under each of them its صلوات by number and sura. */
-    private fun buildIndex() {
-        val menu = binding.navView.menu
-        menu.clear()
-        blocks.forEachIndexed { i, b ->
-            when (b) {
-                is Block.Section -> menu.add(Menu.NONE, i, i, b.text)
-                is Block.Salat -> menu.add(
-                    Menu.NONE, i, i,
-                    if (b.suras.isEmpty()) b.number
-                    else getString(R.string.salat_entry, b.number, b.suras)
-                )
-                else -> Unit
-            }
-        }
-        binding.navView.setNavigationItemSelectedListener { item ->
-            pagination?.navPage?.get(item.itemId)?.let {
-                binding.pager.setCurrentItem(it, false)
-            }
-            binding.drawerLayout.closeDrawer(GravityCompat.START)
-            true
-        }
-    }
-
-    /**
-     * Re-sets the book at a new size, keeping the reader where they were: the
-     * leaf they are on is remembered by the block it begins with, not by its
-     * number, since the numbering changes with the size.
-     */
-    private fun resize(by: Float) {
-        val next = (scale + by).coerceIn(MIN_SCALE, MAX_SCALE)
-        if (next == scale) return
-        val anchor = anchorBlock()
-        scale = next
-        prefs().edit().putFloat(scaleKey, scale).apply()
-        repaginate(anchor = anchor)
-    }
-
-    /**
-     * The last indexed block to have begun on or before the leaf now open —
-     * the section or صلاة the reader is in, which is the thing worth keeping
-     * hold of when the leaves are recut at a new size.
-     */
-    private fun anchorBlock(): Int? {
-        val page = binding.pager.currentItem
-        return pagination?.navPage?.entries
-            ?.filter { it.value <= page }
-            ?.maxByOrNull { it.key }
-            ?.key
-    }
-
-    private fun toggleTheme() {
-        val next =
-            if (AppCompatDelegate.getDefaultNightMode() == AppCompatDelegate.MODE_NIGHT_YES)
-                AppCompatDelegate.MODE_NIGHT_NO
-            else
-                AppCompatDelegate.MODE_NIGHT_YES
-        prefs().edit().putInt(nightKey, next).apply()
-        AppCompatDelegate.setDefaultNightMode(next)
+    /** The lamp: the page is rendered dark for reading at night. */
+    private fun toggleNight() {
+        val next = !isNight()
+        prefs().edit().putBoolean(nightKey, next).apply()
+        openBook(binding.pdf.currentPage)
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -251,9 +152,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean = when (item.itemId) {
-        R.id.action_bigger -> { resize(+STEP); true }
-        R.id.action_smaller -> { resize(-STEP); true }
-        R.id.action_theme -> { toggleTheme(); true }
+        R.id.action_theme -> { toggleNight(); true }
         else -> super.onOptionsItemSelected(item)
     }
 
@@ -277,9 +176,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private companion object {
-        const val ASSET = "dalail.txt"
-        const val MIN_SCALE = 0.7f
-        const val MAX_SCALE = 1.6f
-        const val STEP = 0.1f
+        const val ASSET = "book.pdf"
+        const val INDEX = "index.txt"
     }
 }

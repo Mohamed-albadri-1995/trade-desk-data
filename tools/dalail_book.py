@@ -12,6 +12,7 @@ the book, the cover apart.
     python3 tools/dalail_book.py دلائل-الرحمات.pdf
 """
 import glob
+import re
 import os
 import sys
 
@@ -121,6 +122,58 @@ def cover():
     return im
 
 
+#: Where the app keeps its copy of the book, and the index into it.
+APP = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "dalail-app",
+                   "app", "src", "main", "assets")
+
+#: A صلاة's number, as hizb() writes it into the text — its own passage, in the
+#: face the instructions to the reader wear.
+SALAT = re.compile(r"^⟨([٠-٩]+)⟩$")
+
+
+def index():
+    """
+    Every section and every صلاة, with the PDF page it begins on.
+
+    One line per entry: `page|depth|label`, the page counting the cover as 1,
+    the depth 0 for a section and 1 for a صلاة under it.
+    """
+    out = []
+    page_no = 2          # the cover is page 1
+    for title, text, closing in sections():
+        out.append(f"{page_no}|0|{bare(title)}")
+        where, leaves = page.locate(text, closing)
+        passages = [ln for ln in text.splitlines() if page.strip_marker(ln).strip()]
+        for n, passage in enumerate(passages):
+            hit = SALAT.match(passage.strip())
+            if hit:
+                suras = "، ".join(sura_names(passages[n + 1])) if n + 1 < len(passages) else ""
+                label = f"{hit.group(1)}  ·  {suras}" if suras else hit.group(1)
+                out.append(f"{page_no + where[n]}|1|{label}")
+        page_no += leaves
+    return out
+
+
+#: Harakat, stripped so an index entry reads as plainly as a table of contents.
+HARAKAT = re.compile(r"[ً-ْٰـ]")
+SURA = re.compile(r"﴿\s*سُورَةِ?َ?\s+([^﴾]+?)\s*﴾")
+
+
+def bare(text):
+    return HARAKAT.sub("", text).strip()
+
+
+def sura_names(body):
+    """The suras a صلاة names, bare, in the order it names them."""
+    seen, out = set(), []
+    for name in SURA.findall(body):
+        one = bare(name)
+        if one and one not in seen:
+            seen.add(one)
+            out.append(one)
+    return out
+
+
 def build(out_path):
     leaves = [cover()]
     folio = 1
@@ -133,6 +186,16 @@ def build(out_path):
     pdf_out.save(leaves, out_path, dpi=DPI)
     mb = os.path.getsize(out_path) / 1e6
     print(f"\n{len(leaves)} صفحة (الغلاف منها) — {mb:.1f} م.ب — {out_path}")
+
+    # The app reads the same PDF and an index into it, so the two can never
+    # disagree about which page a صلاة is on.
+    os.makedirs(APP, exist_ok=True)
+    with open(os.path.join(APP, "book.pdf"), "wb") as f:
+        f.write(open(out_path, "rb").read())
+    entries = index()
+    with open(os.path.join(APP, "index.txt"), "w", encoding="utf-8") as f:
+        f.write("\n".join(entries) + "\n")
+    print(f"{len(entries)} مدخلًا في الفهرس — {os.path.relpath(APP)}")
 
 
 if __name__ == "__main__":

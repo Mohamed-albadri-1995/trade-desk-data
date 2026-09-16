@@ -20,6 +20,7 @@
             android:theme="@style/ThemeOverlay.MaterialComponents.Dark.ActionBar"
             app:navigationIcon="@drawable/ic_menu"
             app:popupTheme="@style/Dalail.PopupOverlay"
+            app:subtitleTextColor="@color/rule"
             app:titleTextColor="@color/white" />
 
         <FrameLayout
@@ -28,23 +29,20 @@
             android:layout_weight="1"
             android:background="@color/reading_bg">
 
-            <androidx.viewpager2.widget.ViewPager2
-                android:id="@+id/pager"
+            <com.github.barteksc.pdfviewer.PDFView
+                android:id="@+id/pdf"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent" />
 
-            <!--
-                The book is long enough that laying it out takes a moment, and
-                it is laid out off the main thread; this says so while it does.
-            -->
+            <!-- Shown while the book is being opened, then hidden. -->
             <TextView
-                android:id="@+id/layingOut"
+                android:id="@+id/opening"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:background="@color/reading_bg"
                 android:fontFamily="@font/amiri"
                 android:gravity="center"
-                android:text="@string/laying_out"
+                android:text="@string/opening"
                 android:textColor="@color/rule_faint"
                 android:textSize="20sp" />
         </FrameLayout>

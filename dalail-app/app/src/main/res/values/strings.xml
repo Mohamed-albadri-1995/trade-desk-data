@@ -6,13 +6,6 @@
     <string name="page_of">%1$s / %2$s</string>
     <string name="next_page">الصفحة التالية</string>
     <string name="prev_page">الصفحة السابقة</string>
-    <string name="menu">الفهرس</string>
-    <string name="laying_out">جارٍ ترتيب الصفحات…</string>
-
+    <string name="opening">جارٍ فتح الكتاب…</string>
     <string name="toggle_theme">ليل / نهار</string>
-    <string name="bigger_font">تكبير الخط</string>
-    <string name="smaller_font">تصغير الخط</string>
-
-    <!-- An entry in the index: the صلاة's number, then the suras it is built on. -->
-    <string name="salat_entry">%1$s  ·  %2$s</string>
 </resources>
