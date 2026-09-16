@@ -51,6 +51,10 @@ LINE_RATIO = 1.62
 ORNAMENT_RATIO = 0.74
 #: Lines of the column the closing line takes up, so it is never crowded.
 CLOSING_LINES = 3
+#: How far from the nominal the type may be nudged to fill a section's last
+#: leaf, in dots. Kept tight — a stouter squeeze would show when the reader
+#: turns from one حزب to the next.
+FIT_RANGE = (-4, 3)
 ARABIC_DIGITS = "٠١٢٣٤٥٦٧٨٩"
 
 
@@ -234,6 +238,83 @@ def wrap(words, fonts, draw, width, orn_px):
     return lines
 
 
+def break_lines(text, size, lay, probe):
+    """
+    The section's lines at the given type size, each marked for justification.
+
+    Each line of the source is a passage of its own, and begins a line of its
+    own. A passage's lines are justified to the column — all but its last,
+    which is centred. So a passage that is one line long, البسملة among them,
+    stands centred and alone, as the book sets it.
+    """
+    fonts = {False: ImageFont.truetype(FONT, size),
+             True: ImageFont.truetype(ASIDE_FONT, size)}
+    orn_px = int(size * ORNAMENT_RATIO)
+    lines = []
+    for passage in text.splitlines():
+        passage = strip_marker(passage)
+        if not passage.strip():
+            continue
+        got = wrap(tokenise(passage), fonts, probe, lay.column(), orn_px)
+        for i, ln in enumerate(got):
+            lines.append((ln, i < len(got) - 1))
+    return lines, fonts, orn_px
+
+
+def deal(lines, lay, pitch, closing):
+    """
+    The lines dealt out into leaves.
+
+    The first leaf gives room to the ornamental band, so it holds fewer lines
+    than those after it, and the closing line — where there is one — keeps a
+    few lines' room of its own at the foot of the last leaf.
+    """
+    first_cap = LINES_PER_PAGE
+    rest_cap = max(1, (lay.bottom - lay.slim_top) // pitch)
+    leaves, i = [], 0
+    while i < len(lines):
+        cap = first_cap if not leaves else rest_cap
+        leaves.append(lines[i:i + cap])
+        i += cap
+    if not leaves:
+        leaves = [[]]
+
+    if closing:
+        room = max(1, (rest_cap if len(leaves) > 1 else first_cap)
+                   - CLOSING_LINES)
+        if len(leaves[-1]) > room:
+            leaves.append(leaves[-1][room:])
+            leaves[-2] = leaves[-2][:room]
+    return leaves, first_cap, rest_cap
+
+
+def fit(text, lay, pitch, closing, probe):
+    """
+    The type size that leaves the section's last leaf as full as it can be.
+
+    A section always opens on a leaf of its own, so whatever its last leaf
+    cannot fill is left blank — and at one size or another that came out as a
+    single line stranded on an empty page. The size is therefore chosen for the
+    section rather than fixed for the book: within a hair's breadth of the
+    nominal, the one that fills the last leaf best wins, and the nominal wins
+    any tie, so the type stays even to the eye throughout.
+    """
+    nominal = max(8, int(pitch / LINE_RATIO))
+    best = None
+    for size in range(nominal + FIT_RANGE[0], nominal + FIT_RANGE[1] + 1):
+        if size < 8:
+            continue
+        lines, _, _ = break_lines(text, size, lay, probe)
+        leaves, first_cap, rest_cap = deal(lines, lay, pitch, closing)
+        cap = (rest_cap if len(leaves) > 1 else first_cap) \
+            - (CLOSING_LINES if closing else 0)
+        fill = 1.0 if len(leaves) == 1 else len(leaves[-1]) / max(1, cap)
+        score = (round(fill, 3), -abs(size - nominal))
+        if best is None or score > best[0]:
+            best = (score, size)
+    return best[1]
+
+
 def compose(text, title="", folio=None, closing=None):
     """
     The section's leaves, drawn and returned as images.
@@ -247,49 +328,13 @@ def compose(text, title="", folio=None, closing=None):
     probe = ImageDraw.Draw(Image.new("RGB", (8, 8)))
 
     # The number of lines to a page is fixed, so the type size follows from it
-    # rather than the other way about.
+    # rather than the other way about — and is then nudged, within a hair, to
+    # fill the section's last leaf.
     pitch = lay.pitch(first=True)
-    size = max(8, int(pitch / LINE_RATIO))
-    fonts = {False: ImageFont.truetype(FONT, size),
-             True: ImageFont.truetype(ASIDE_FONT, size)}
-    orn_px = int(size * ORNAMENT_RATIO)
+    size = fit(text, lay, pitch, closing, probe)
+    lines, fonts, orn_px = break_lines(text, size, lay, probe)
     rose = rosette.resize((orn_px, orn_px), Image.LANCZOS)
-
-    # Each line of the source is a passage of its own, and begins a line of its
-    # own. A passage's lines are justified to the column — all but its last,
-    # which is centred. So a passage that is one line long, البسملة among them,
-    # stands centred and alone, as the book sets it.
-    lines = []
-    for passage in text.splitlines():
-        passage = strip_marker(passage)
-        if not passage.strip():
-            continue
-        got = wrap(tokenise(passage), fonts, probe, lay.column(), orn_px)
-        for i, ln in enumerate(got):
-            lines.append((ln, i < len(got) - 1))
-
-    # The first leaf gives room to the band, so it holds fewer lines than the
-    # rest; count the leaves before drawing any, so the running head can say
-    # how many there are.
-    first_capacity = LINES_PER_PAGE
-    rest_capacity = max(1, (lay.bottom - lay.slim_top) // pitch)
-    leaves, i = [], 0
-    while i < len(lines):
-        cap = first_capacity if not leaves else rest_capacity
-        leaves.append(lines[i:i + cap])
-        i += cap
-    if not leaves:
-        leaves = [[]]
-
-    # The closing line needs room of its own, so anything the last leaf cannot
-    # hold beside it moves on to a leaf of its own.
-    if closing:
-        room = max(1, (leaves and len(leaves) > 1 and rest_capacity
-                       or first_capacity) - CLOSING_LINES)
-        if len(leaves[-1]) > room:
-            spill = leaves[-1][room:]
-            leaves[-1] = leaves[-1][:room]
-            leaves.append(spill)
+    leaves, _, _ = deal(lines, lay, pitch, closing)
 
     made = []
     for n, chunk in enumerate(leaves):
