@@ -49,6 +49,8 @@ ASIDE_OPEN, ASIDE_CLOSE = "⟨", "⟩"
 QURAN_OPEN, QURAN_CLOSE = "﴿", "﴾"
 LINE_RATIO = 1.62
 ORNAMENT_RATIO = 0.74
+#: Lines of the column the closing line takes up, so it is never crowded.
+CLOSING_LINES = 3
 ARABIC_DIGITS = "٠١٢٣٤٥٦٧٨٩"
 
 
@@ -93,15 +95,18 @@ class Layout:
     def pitch(self, first):
         return (self.bottom - self.body_top(first)) // LINES_PER_PAGE
 
-    def leaf(self):
-        """Blank parchment inside its ruled border."""
-        im = Image.new("RGB", (PAGE_W, PAGE_H), PAPER)
+    def border(self, im):
+        """The leaf's ruled border: a stout rule with a fine one inside it."""
         d = ImageDraw.Draw(im)
         d.rectangle([MARGIN - 8, MARGIN - 8, PAGE_W - MARGIN + 7,
                      PAGE_H - MARGIN + 7], outline=RULE, width=3)
         d.rectangle([MARGIN - 3, MARGIN - 3, PAGE_W - MARGIN + 2,
                      PAGE_H - MARGIN + 2], outline=RULE, width=1)
         return im
+
+    def leaf(self):
+        """Blank parchment inside its ruled border."""
+        return self.border(Image.new("RGB", (PAGE_W, PAGE_H), PAPER))
 
     def head(self, im, title):
         """The ornamental band, with the section's name in its cartouche."""
@@ -130,6 +135,32 @@ class Layout:
         d.rectangle([self.x1 - w - 20, y - 6, self.x1 + 6, y + 46],
                     outline=RULE, width=2)
         d.text((self.x1 - w - 7, y), text, font=font, fill=FAINT, direction="rtl")
+
+    def folio(self, im, number):
+        """The leaf's number, small and centred at its foot."""
+        d = ImageDraw.Draw(im)
+        font = ImageFont.truetype(FONT, 26)
+        text = arabic(number)
+        w = d.textlength(text, font=font, direction="rtl")
+        d.text((PAGE_W / 2 - w / 2, self.bottom + 5), text,
+               font=font, fill=FAINT, direction="rtl")
+
+    def closing(self, im, text):
+        """
+        The book's last line, standing alone at the foot of its last leaf.
+
+        Set large and in the book's turquoise, the way the printed book ends.
+        """
+        d = ImageDraw.Draw(im)
+        size = 64
+        while size > 12:
+            font = ImageFont.truetype(FONT, size)
+            w = d.textlength(text, font=font, direction="rtl")
+            if w <= self.column():
+                break
+            size -= 2
+        d.text((PAGE_W / 2 - w / 2, self.bottom - size * 2.0), text,
+               font=font, fill=TEAL, direction="rtl")
 
 
 #: How a word is set: the book's own ink, the aside face for an instruction to
@@ -203,7 +234,14 @@ def wrap(words, fonts, draw, width, orn_px):
     return lines
 
 
-def render(text, out_prefix, title="", start_page=1):
+def compose(text, title="", folio=None, closing=None):
+    """
+    The section's leaves, drawn and returned as images.
+
+    `folio`, when given, is the number to print at the foot of the first leaf;
+    the leaves after it count on from there. `closing` is a last line to stand
+    alone at the foot of the final leaf — the book's own خاتمة.
+    """
     lay = Layout()
     rosette = load_ornament()
     probe = ImageDraw.Draw(Image.new("RGB", (8, 8)))
@@ -240,6 +278,18 @@ def render(text, out_prefix, title="", start_page=1):
         cap = first_capacity if not leaves else rest_capacity
         leaves.append(lines[i:i + cap])
         i += cap
+    if not leaves:
+        leaves = [[]]
+
+    # The closing line needs room of its own, so anything the last leaf cannot
+    # hold beside it moves on to a leaf of its own.
+    if closing:
+        room = max(1, (leaves and len(leaves) > 1 and rest_capacity
+                       or first_capacity) - CLOSING_LINES)
+        if len(leaves[-1]) > room:
+            spill = leaves[-1][room:]
+            leaves[-1] = leaves[-1][:room]
+            leaves.append(spill)
 
     made = []
     for n, chunk in enumerate(leaves):
@@ -249,6 +299,10 @@ def render(text, out_prefix, title="", start_page=1):
             lay.head(im, title)
         else:
             lay.slim(im, title, n + 1, len(leaves))
+        if folio is not None:
+            lay.folio(im, folio + n)
+        if closing and n == len(leaves) - 1:
+            lay.closing(im, closing)
         d = ImageDraw.Draw(im)
         top = lay.body_top(first)
         for i, ln in enumerate(chunk):
@@ -270,10 +324,18 @@ def render(text, out_prefix, title="", start_page=1):
                     d.text((x - ww, y), w, font=face(fonts, mode),
                            fill=colour(mode), direction="rtl")
                 x -= ww + gap
+        made.append(im)
+    return made
+
+
+def render(text, out_prefix, title="", start_page=1):
+    """Lays a section out and writes its leaves beside one another as PNGs."""
+    made = []
+    for n, im in enumerate(compose(text, title)):
         path = f"{out_prefix}_{start_page + n}.png"
         im.save(path)
         made.append(path)
-    print(f"{size}px type, {len(lines)} lines over {len(made)} leaves")
+    print(f"{len(made)} leaves")
     return made
 
 
