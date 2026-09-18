@@ -4,8 +4,26 @@
     <string name="subtitle">الصلوات العلية بأسماء السور القرآنية\nخواطر العبد الفقير إلى مولاه القدير — أبو إدريس</string>
 
     <string name="page_of">%1$s / %2$s</string>
-    <string name="next_page">الصفحة التالية</string>
-    <string name="prev_page">الصفحة السابقة</string>
-    <string name="opening">جارٍ فتح الكتاب…</string>
-    <string name="toggle_theme">ليل / نهار</string>
+    <string name="a_leaf">صفحة من الكتاب</string>
+
+    <!-- The book is read a حزب a day, so the day's own حزب is what it opens on. -->
+    <string name="ward_today">وِرد يوم %1$s</string>
+    <string name="ward_of_today">ورد اليوم</string>
+    <string name="open_ward">افتح الورد</string>
+    <string name="carry_on">أكمل من حيث وقفت</string>
+
+    <string name="reminder">تنبيه الورد</string>
+    <string name="reminder_off">أوقف التنبيه</string>
+    <string name="channel_ward">تنبيه الورد</string>
+    <string name="channel_ward_about">تنبيهٌ يوميٌّ بحزب اليوم</string>
+
+    <string-array name="week_days">
+        <item>الأحد</item>
+        <item>الاثنين</item>
+        <item>الثلاثاء</item>
+        <item>الأربعاء</item>
+        <item>الخميس</item>
+        <item>الجمعة</item>
+        <item>السبت</item>
+    </string-array>
 </resources>

@@ -7,84 +7,118 @@
     android:layout_height="match_parent"
     android:layoutDirection="rtl">
 
-    <LinearLayout
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical">
+        android:background="@color/board_dark">
+
+        <!--
+            The leaves. layoutDirection is what makes them turn right to left,
+            the way the book is turned; the pager needs nothing else for it.
+        -->
+        <androidx.viewpager2.widget.ViewPager2
+            android:id="@+id/pager"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layoutDirection="rtl" />
 
         <androidx.appcompat.widget.Toolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            android:background="@color/board"
+            android:layout_gravity="top"
+            android:background="@color/board_veil"
             android:theme="@style/ThemeOverlay.MaterialComponents.Dark.ActionBar"
             app:navigationIcon="@drawable/ic_menu"
             app:popupTheme="@style/Dalail.PopupOverlay"
             app:subtitleTextColor="@color/rule"
             app:titleTextColor="@color/white" />
 
-        <FrameLayout
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            android:background="@color/reading_bg">
-
-            <com.github.barteksc.pdfviewer.PDFView
-                android:id="@+id/pdf"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent" />
-
-            <!-- Shown while the book is being opened, then hidden. -->
-            <TextView
-                android:id="@+id/opening"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:background="@color/reading_bg"
-                android:fontFamily="@font/amiri"
-                android:gravity="center"
-                android:text="@string/opening"
-                android:textColor="@color/rule_faint"
-                android:textSize="20sp" />
-        </FrameLayout>
-
-        <!-- Page-flip bar: next (left) | counter | previous (right), RTL -->
+        <!-- The leaf's number, small and out of the way at the foot. -->
         <LinearLayout
+            android:id="@+id/folioBar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@color/board"
-            android:gravity="center_vertical"
-            android:layoutDirection="rtl"
+            android:layout_gravity="bottom"
+            android:background="@color/board_veil"
+            android:gravity="center"
             android:orientation="horizontal"
-            android:paddingHorizontal="4dp">
-
-            <ImageButton
-                android:id="@+id/btnPrev"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:contentDescription="@string/prev_page"
-                android:src="@drawable/ic_chevron_right" />
+            android:paddingVertical="6dp">
 
             <TextView
-                android:id="@+id/pageIndicator"
-                android:layout_width="0dp"
+                android:id="@+id/folio"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:gravity="center"
-                android:textColor="@color/white"
+                android:fontFamily="@font/amiri"
+                android:textColor="@color/rule"
                 android:textDirection="ltr"
-                android:textSize="16sp"
+                android:textSize="15sp" />
+        </LinearLayout>
+
+        <!--
+            The day's حزب, offered on opening. The book is read a حزب a day, so
+            this is the one thing the reader almost always wants.
+        -->
+        <LinearLayout
+            android:id="@+id/today"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:layout_margin="16dp"
+            android:background="@drawable/card"
+            android:orientation="vertical"
+            android:paddingHorizontal="20dp"
+            android:paddingVertical="18dp">
+
+            <TextView
+                android:id="@+id/todayDay"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/amiri"
+                android:gravity="center"
+                android:textColor="@color/rule_faint"
+                android:textSize="15sp" />
+
+            <TextView
+                android:id="@+id/todayHizb"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:fontFamily="@font/amiri"
+                android:gravity="center"
+                android:textColor="@color/reading_text"
+                android:textSize="23sp"
                 android:textStyle="bold" />
 
-            <ImageButton
-                android:id="@+id/btnNext"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:contentDescription="@string/next_page"
-                android:src="@drawable/ic_chevron_left" />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:gravity="center"
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/todayOpen"
+                    style="@style/Widget.MaterialComponents.Button"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:fontFamily="@font/amiri"
+                    android:text="@string/open_ward"
+                    android:textSize="16sp" />
+
+                <Button
+                    android:id="@+id/todayDismiss"
+                    style="@style/Widget.MaterialComponents.Button.TextButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:fontFamily="@font/amiri"
+                    android:text="@string/carry_on"
+                    android:textSize="16sp" />
+            </LinearLayout>
         </LinearLayout>
-    </LinearLayout>
+    </FrameLayout>
 
     <com.google.android.material.navigation.NavigationView
         android:id="@+id/navView"

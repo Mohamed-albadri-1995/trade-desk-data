@@ -10,6 +10,12 @@
     <!-- The boards of the bound book, for the bars and the drawer's head. -->
     <color name="board">#3F2914</color>
     <color name="board_dark">#2A1B0D</color>
+    <!--
+        The bars float over the leaf rather than beside it, so they are the
+        boards' brown at three quarters — enough to read the gold on, little
+        enough that the parchment shows through.
+    -->
+    <color name="board_veil">#C02A1B0D</color>
 
     <!-- Parchment, and the ink on it. -->
     <color name="reading_bg">#FCF7E7</color>

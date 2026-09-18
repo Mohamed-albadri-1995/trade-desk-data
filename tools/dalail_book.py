@@ -174,6 +174,12 @@ def sura_names(body):
     return out
 
 
+#: How the app stores a leaf. The leaf is drawn a thousand dots wide, which is
+#: about what a phone shows it at, and WebP holds the parchment and the gold at
+#: this quality without a mark on the type.
+LEAF_QUALITY = 85
+
+
 def build(out_path):
     leaves = [cover()]
     folio = 1
@@ -187,11 +193,21 @@ def build(out_path):
     mb = os.path.getsize(out_path) / 1e6
     print(f"\n{len(leaves)} صفحة (الغلاف منها) — {mb:.1f} م.ب — {out_path}")
 
-    # The app reads the same PDF and an index into it, so the two can never
-    # disagree about which page a صلاة is on.
-    os.makedirs(APP, exist_ok=True)
-    with open(os.path.join(APP, "book.pdf"), "wb") as f:
-        f.write(open(out_path, "rb").read())
+    # The app reads the very leaves the PDF is made of, one image each, rather
+    # than the PDF itself: it can then turn them right to left the way the book
+    # is turned, and it carries no PDF engine to do it.
+    pages = os.path.join(APP, "pages")
+    if os.path.isdir(pages):
+        for old in glob.glob(os.path.join(pages, "*")):
+            os.remove(old)
+    os.makedirs(pages, exist_ok=True)
+    total = 0
+    for n, im in enumerate(leaves, start=1):
+        path = os.path.join(pages, f"p{n:03d}.webp")
+        im.save(path, "WEBP", quality=LEAF_QUALITY, method=6)
+        total += os.path.getsize(path)
+    print(f"{len(leaves)} ورقة صورةً — {total/1e6:.1f} م.ب — {os.path.relpath(pages)}")
+
     entries = index()
     with open(os.path.join(APP, "index.txt"), "w", encoding="utf-8") as f:
         f.write("\n".join(entries) + "\n")

@@ -41,6 +41,23 @@ jobs:
             -PverCode=${{ github.run_number }} \
             -PverName=1.0.${{ github.run_number }} 2>&1 | tee ../build-debug.log
 
+      # The previous package would not install — «There was a problem parsing
+      # the package» — and nothing could be seen wrong in it by hand, so the
+      # real tools are asked here and their answer kept with the build.
+      - name: Check the package is sound
+        run: |
+          set -o pipefail
+          APK=dalail-app/app/build/outputs/apk/debug/app-debug.apk
+          TOOLS="$ANDROID_HOME/build-tools/36.0.0"
+          ls -la "$APK"
+          echo "=== badging ==="
+          "$TOOLS/aapt2" dump badging "$APK" | head -30
+          echo "=== signatures ==="
+          "$TOOLS/apksigner" verify --verbose --print-certs "$APK"
+          echo "=== alignment ==="
+          "$TOOLS/zipalign" -c -v -P 16 4 "$APK" | tail -5 || \
+            "$TOOLS/zipalign" -c 4 "$APK"
+
       - name: Keep the build output when something fails
         if: failure()
         uses: actions/upload-artifact@v4

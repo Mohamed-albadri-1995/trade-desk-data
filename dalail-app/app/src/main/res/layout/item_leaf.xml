@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- One leaf, filling the screen, which the reader may bring closer. -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/board_dark">
+
+    <com.dalail.rahamat.ZoomImageView
+        android:id="@+id/leaf"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:contentDescription="@string/a_leaf" />
+</FrameLayout>

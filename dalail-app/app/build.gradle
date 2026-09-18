@@ -20,13 +20,6 @@ android {
         versionCode buildCode
         versionName buildName
 
-        ndk {
-            // The PDF renderer is native, and ships a copy for four processors.
-            // Only the two ARM ones are in any phone, and the package is handed
-            // round as a file rather than through Play, so it carries just
-            // those — a third of the download saved for no phone's loss.
-            abiFilters 'armeabi-v7a', 'arm64-v8a'
-        }
     }
 
     buildTypes {
@@ -38,6 +31,12 @@ android {
 
     buildFeatures {
         viewBinding true
+    }
+
+    androidResources {
+        // The leaves are WebP already; zipping them again only slows the build
+        // and the first read of each page.
+        noCompress.add('webp')
     }
 
     compileOptions {
@@ -54,8 +53,7 @@ dependencies {
     implementation 'androidx.appcompat:appcompat:1.7.0'
     implementation 'com.google.android.material:material:1.12.0'
     implementation 'androidx.drawerlayout:drawerlayout:1.2.0'
-
-    // Renders the book: continuous scroll, pinch and double-tap zoom, and a
-    // drag handle. A maintained fork of the classic barteksc/AndroidPdfViewer.
-    implementation 'com.github.mhiew:android-pdf-viewer:3.2.0-beta.3'
+    // The leaves are turned in a pager, which is what gives them their
+    // right-to-left order without a line of code asking for it.
+    implementation 'androidx.viewpager2:viewpager2:1.1.0'
 }
