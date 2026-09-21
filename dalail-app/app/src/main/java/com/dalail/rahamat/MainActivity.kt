@@ -74,12 +74,12 @@ class MainActivity : AppCompatActivity() {
      * dismissed — so opening the book puts today's reading one tap away.
      */
     private fun greet() {
-        val hizb = Book.hizbOfToday()
+        val hizb = Book.hizbOfWard()
         if (hizb == null) {
             binding.today.visibility = View.GONE
             return
         }
-        binding.todayDay.text = getString(R.string.ward_today, Book.todayName(this))
+        binding.todayDay.text = Book.wardTitle(this)
         binding.todayHizb.text = hizb.label
         binding.todayOpen.setOnClickListener {
             binding.pager.setCurrentItem(hizb.page - 1, false)
@@ -158,7 +158,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean = when (item.itemId) {
         R.id.action_today -> {
-            Book.hizbOfToday()?.let { binding.pager.setCurrentItem(it.page - 1, false) }
+            Book.hizbOfWard()?.let { binding.pager.setCurrentItem(it.page - 1, false) }
             true
         }
         R.id.action_reminder -> { chooseReminder(); true }

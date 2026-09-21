@@ -16,10 +16,15 @@ import java.util.Calendar
 /**
  * The daily call to the ward.
  *
- * The book is read a حزب a day, one for each day of the week, so the reminder
- * is a daily one and it names the day's own حزب — «حزب الخميس» on a Thursday —
- * and opens the book at it when tapped. Nothing else about it is clever: one
- * alarm, re-armed each time it fires and again after the phone restarts.
+ * The book is read a حزب a day, of an evening, and the Islamic day turns at
+ * sunset — so the call that comes on a Sunday evening names «ورد ليلة
+ * الاثنين» and opens Monday's حزب, not Sunday's. See Book.wardDay.
+ *
+ * It is set with setAlarmClock rather than a window, which is the one exact
+ * alarm the system grants without asking the reader for a permission and which
+ * Doze does not hold back, and it is posted on a channel of high importance so
+ * it arrives with its sound instead of waiting in the shade. One alarm, armed
+ * again each time it fires and after the phone restarts.
  */
 object Reminder {
 
@@ -27,8 +32,9 @@ object Reminder {
     const val ON = "remind_on"
     const val HOUR = "remind_hour"
     const val MINUTE = "remind_minute"
-    const val DEFAULT_HOUR = 5
-    const val DEFAULT_MINUTE = 30
+    // The ward is read of an evening, after the day has turned.
+    const val DEFAULT_HOUR = 19
+    const val DEFAULT_MINUTE = 0
 
     private const val CHANNEL = "ward"
     private const val NOTE_ID = 1
@@ -48,6 +54,14 @@ object Reminder {
             .putBoolean(ON, on).putInt(HOUR, hour).putInt(MINUTE, minute).apply()
         schedule(context)
     }
+
+    /** Where the system sends the reader when it shows the standing alarm. */
+    private fun showBook(context: Context): PendingIntent = PendingIntent.getActivity(
+        context, REQUEST + 1, Intent(context, MainActivity::class.java),
+        PendingIntent.FLAG_UPDATE_CURRENT or
+            (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
+                PendingIntent.FLAG_IMMUTABLE else 0)
+    )
 
     /** Arms the next call, or takes it down if the reminder is off. */
     fun schedule(context: Context) {
@@ -70,25 +84,32 @@ object Reminder {
             set(Calendar.MILLISECOND, 0)
             if (timeInMillis <= System.currentTimeMillis()) add(Calendar.DAY_OF_YEAR, 1)
         }
-        // Inexact on purpose: the ward has a time, not an instant, and an exact
-        // alarm would ask the reader for a permission it does not need.
-        alarms.setWindow(
-            AlarmManager.RTC_WAKEUP, at.timeInMillis,
-            AlarmManager.INTERVAL_HALF_HOUR, pending
+        // setAlarmClock, rather than a window: the ward has an hour and the
+        // call should come at it. This is the one exact alarm the system grants
+        // without asking the reader for a permission, and Doze does not hold it
+        // back — which is what «a reminder at the level of the system» means.
+        alarms.setAlarmClock(
+            AlarmManager.AlarmClockInfo(at.timeInMillis, showBook(context)), pending
         )
     }
 
     /** Shows the call, and arms tomorrow's. */
     fun fire(context: Context) {
         Book.load(context)
-        val hizb = Book.hizbOfToday()
+        val hizb = Book.hizbOfWard()
         val manager = ContextCompat.getSystemService(context, NotificationManager::class.java)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             manager?.createNotificationChannel(
                 NotificationChannel(
                     CHANNEL, context.getString(R.string.channel_ward),
-                    NotificationManager.IMPORTANCE_DEFAULT
-                ).apply { description = context.getString(R.string.channel_ward_about) }
+                    // High, so the call arrives with its sound and shows itself
+                    // over whatever is on the screen rather than waiting in the
+                    // shade to be found.
+                    NotificationManager.IMPORTANCE_HIGH
+                ).apply {
+                    description = context.getString(R.string.channel_ward_about)
+                    enableVibration(true)
+                }
             )
         }
         val open = Intent(context, MainActivity::class.java).apply {
@@ -103,8 +124,11 @@ object Reminder {
         )
         val note: Notification = NotificationCompat.Builder(context, CHANNEL)
             .setSmallIcon(R.drawable.ic_notification)
-            .setContentTitle(context.getString(R.string.ward_today, Book.todayName(context)))
+            .setContentTitle(Book.wardTitle(context))
             .setContentText(hizb?.label ?: context.getString(R.string.app_name))
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setCategory(NotificationCompat.CATEGORY_REMINDER)
+            .setDefaults(NotificationCompat.DEFAULT_ALL)
             .setAutoCancel(true)
             .setContentIntent(tap)
             .build()

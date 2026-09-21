@@ -58,8 +58,31 @@ object Book {
         return if (at in hizbs.indices) hizbs[at] else null
     }
 
-    fun hizbOfToday(): Entry? =
-        hizbOfDay(Calendar.getInstance().get(Calendar.DAY_OF_WEEK))
+    /**
+     * When the day of the ward turns over.
+     *
+     * The Islamic day begins at sunset, not at midnight: Sunday evening is
+     * ليلة الاثنين, and what is read then is Monday's حزب, not Sunday's. So
+     * from this hour onward the ward belongs to tomorrow by the civil
+     * calendar. Sunset moves through the year and this does not — it is a
+     * plain hour, chosen to sit after maghrib the year round rather than to
+     * track it.
+     */
+    const val EVENING_TURN = 18
+
+    /** Whether the ward being read now is the coming night's. */
+    fun isNightWard(now: Calendar = Calendar.getInstance()) =
+        now.get(Calendar.HOUR_OF_DAY) >= EVENING_TURN
+
+    /** The weekday the ward belongs to, which after sunset is tomorrow's. */
+    fun wardDay(now: Calendar = Calendar.getInstance()): Int {
+        val c = now.clone() as Calendar
+        if (isNightWard(c)) c.add(Calendar.DAY_OF_YEAR, 1)
+        return c.get(Calendar.DAY_OF_WEEK)
+    }
+
+    /** The حزب to be read now. */
+    fun hizbOfWard(): Entry? = hizbOfDay(wardDay())
 
     /** Today's name, for the greeting and the reminder. */
     fun dayName(context: Context, day: Int): String {
@@ -72,8 +95,17 @@ object Book {
         return names.getOrElse(at) { "" }
     }
 
-    fun todayName(context: Context): String =
-        dayName(context, Calendar.getInstance().get(Calendar.DAY_OF_WEEK))
+    /** The name of the day the ward belongs to. */
+    fun wardDayName(context: Context): String = dayName(context, wardDay())
+
+    /**
+     * How the ward is named now: «ورد ليلة الاثنين» after sunset on Sunday,
+     * «ورد يوم الاثنين» during Monday itself.
+     */
+    fun wardTitle(context: Context): String = context.getString(
+        if (isNightWard()) R.string.ward_night else R.string.ward_day,
+        wardDayName(context)
+    )
 
     /** The section a leaf belongs to, for the running title. */
     fun sectionOf(leaf: Int): String {
