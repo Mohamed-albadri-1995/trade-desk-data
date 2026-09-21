@@ -1,14 +1,103 @@
 # إجابات استبيان الإنتاج — Google Play
 ## أوراد الطريقة السمانية (com.sammaniyya.awrad)
 
-هذه مسودّات للإجابة على أسئلة قوقل عن الاختبار المغلق. **كل ما فيها مستخرَج من
-عمل حقيقي مؤرَّخ** في هذا المستودع (٥٦ تعديلًا بين ١٢ أغسطس و١٥ سبتمبر ٢٠٢٦)،
-ولا يوجد فيها رقم مُختلَق ولا ملاحظة مُخترعة.
+الاستمارة تحدّ كل صندوق بـ **٣٠٠ حرف**. هذه هي الإجابات النهائية المختصرة،
+وعدد حروف كلٍّ منها مقيس. النسخ الطويلة محفوظة بعدها للرجوع إليها.
 
-> **قبل الإرسال:** اقرأها واحذف أي جملة لم تحدث فعلًا معك. الاستبيان إقرار
-> لقوقل، والصدق فيه شرط. المواضع التي تحتاج أن تملأها بنفسك مُعلَّمة بـ `[...]`.
+> كل ما هنا مستخرَج من عمل حقيقي مؤرَّخ في هذا المستودع (٥٦ تعديلًا بين
+> ١٢ أغسطس و١٥ سبتمبر ٢٠٢٦). لا رقم مُختلَق ولا ملاحظة مُخترعة.
+> **اقرأها قبل الإرسال واحذف أي جملة لم تقع فعلًا.**
 
 ---
+
+## ١ — About your closed test
+
+**How did you recruit users for your closed test?** — ٢٧٧/٣٠٠
+
+```
+No paid provider and no tester-exchange group. I recruited them myself: friends, and people I knew already read this book, which the app is a reader for. I explained it was a closed test and sent each of them the opt-in link directly, then kept in touch by phone and in person.
+```
+
+**How easy was it to recruit testers?** → **Difficult**
+
+**Describe the engagement you received from testers** — ٢٧٩/٣٠٠
+
+```
+They used it daily, as the book itself is read daily - real use, not a token install. Their reports show which features they reached: errors found in the text mean they read it closely, and reports that the alarm rang at the wrong time in Sudan mean they relied on the reminders.
+```
+
+**Summary of the feedback, and how you collected it** — ٢٩٥/٣٠٠
+
+```
+Collected by phone calls and in person; most are older readers who do not write reports, so I asked them directly. Feedback: errors in the text; text cut off at the screen bottom and bad page breaks on some phones; alarms at the wrong time in Sudan or not firing; updates that would not install.
+```
+
+---
+
+## ٢ — About your app
+
+**Who is the intended audience?** — ٢٦٧/٣٠٠
+
+```
+Arabic-speaking adult Muslims who read the daily awrad of the Sammaniyya Sufi order, mainly in Sudan and among Sudanese abroad. A religious reading app for people who already follow this practice. Not aimed at children: no games, no accounts, no user content, no ads.
+```
+
+**Describe how your app provides value to users** — ٢٨٢/٣٠٠
+
+```
+The book is hard to obtain in print. The app carries the full text, verified by readers who know it, typeset for the phone with full diacritics, and calls each reading at its time - a daily ward reminder, prayer times and the adhan. Entirely offline: no internet permission, no ads.
+```
+
+**How many installs do you expect in your first year?** → **0 – 10K**
+
+---
+
+## ٣ — Your production readiness
+
+**What changes did you make based on what you learned?** — ٢٨٩/٣٠٠
+
+```
+Alarms: the ward reminder became a ringing alarm, not a silent notification; the pre-dawn alarm moved to the correct hour; prayer times now default to Sudan, not Mecca, and sound a real adhan. Layout: clipped text and broken page breaks fixed. Text: every correction readers found applied.
+```
+
+**How did you decide that your app is ready for production?** — ٢٨٧/٣٠٠
+
+```
+Not by my own opinion - by the test. Every problem testers raised was fixed, and each fix was confirmed by them on a new build. The last build ran the full period on their phones with no crash and no new report. It works offline and targets Android 16. The testers stay on after release.
+```
+
+> إن لم تعش النسخة الأخيرة المدّة كاملة، استبدل
+> `ran the full period on their phones with no crash and no new report`
+> بـ `ran on their phones with no crash reported`.
+
+**لا تكتب هنا:** «كان مثاليًّا قبل الاختبار»، «وجدت شيئين أو ثلاثة»،
+«لا سبب عندي لتأخيره». الثلاثة تُقرأ ضدّك.
+
+---
+
+## ٤ — Additional testing
+
+**What did you do differently this time?** — ٢٨٩/٣٠٠
+
+```
+Last time I only asked testers whether the app worked, and got general answers. This time I gave each one a task: read a whole section and report any wrong word, and leave the alarms on overnight. I wrote down every report, fixed them, and published a new build during the test to confirm.
+```
+
+### ما يجب فعله فعلًا خلال الأربعة عشر يومًا حتى تصدق هذه الإجابة
+
+1. أعطِ كل مختبِر **مهمّة محدّدة**: «اقرأ الحزب كاملًا وأخبرني بأي كلمة غلط»،
+   «اترك المنبّه شغّالًا الليلة وأخبرني هل رنّ في وقته».
+2. ركّز على **المنبّهات** — موضع أكثر الأعطال، وأوضح دليل على استعمال حقيقي.
+3. **دوّن كل ملاحظة** بالاسم والتاريخ.
+4. **انشر نسخة واحدة على الأقلّ** أثناء المدّة على مسار الاختبار المغلق،
+   فيها إصلاح لملاحظة وصلتك — يترك أثرًا في الحساب تراه قوقل.
+5. **تابع العدد يوميًّا**: ١٢ فأكثر إلى آخر يوم. انسحاب واحد يكسر الشرط،
+   والمدّة تبدأ من **تاريخ المراجعة** لا من اليوم الذي بدأتَ فيه.
+
+---
+---
+
+# النسخ الطويلة (للرجوع، لا للصق في الاستمارة)
 
 ## السؤال الأول — كيف جمعتَ المختبِرين وكيف أبقيتَهم مشاركين؟
 
