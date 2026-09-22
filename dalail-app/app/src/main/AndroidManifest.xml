@@ -4,6 +4,15 @@
     <!-- For the daily call to the ward. Asked for on Android 13 and later. -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <!--
+        The ward is read at an hour, so the call is set to the minute. Android
+        12 made that a permission; Android 12 and 13 granted it on
+        installation, and Android 14 stopped doing so — which is why the book
+        was being killed by a SecurityException at every launch. It is asked
+        for now when the reader sets the hour, and when it is not given the
+        call is set in a window instead, which needs no leave from anyone.
+    -->
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
 
     <application
         android:allowBackup="true"

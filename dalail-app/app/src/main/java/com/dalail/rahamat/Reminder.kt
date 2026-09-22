@@ -63,6 +63,34 @@ object Reminder {
                 PendingIntent.FLAG_IMMUTABLE else 0)
     )
 
+    /**
+     * Whether the system will let the call be set to its minute.
+     *
+     * Android 12 made an exact alarm a permission. Android 12 and 13 gave it
+     * on installation; Android 14 stopped, so from there it must be asked
+     * for. Setting one without it does not fail quietly — it throws a
+     * SecurityException, and a throw in onCreate or in the boot receiver
+     * kills the app.
+     */
+    fun canBeExact(context: Context): Boolean {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) return true
+        val alarms = ContextCompat.getSystemService(context, AlarmManager::class.java)
+            ?: return false
+        return alarms.canScheduleExactAlarms()
+    }
+
+    /**
+     * The call without a permission behind it: still woken from sleep, still
+     * let through Doze once, but the system may hold it a few minutes. For a
+     * ward read of an evening that is no loss; a book that will not open is.
+     */
+    private fun inWindow(alarms: AlarmManager, at: Long, pending: PendingIntent) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
+            alarms.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at, pending)
+        else
+            alarms.set(AlarmManager.RTC_WAKEUP, at, pending)
+    }
+
     /** Arms the next call, or takes it down if the reminder is off. */
     fun schedule(context: Context) {
         val alarms = ContextCompat.getSystemService(context, AlarmManager::class.java)
@@ -84,13 +112,24 @@ object Reminder {
             set(Calendar.MILLISECOND, 0)
             if (timeInMillis <= System.currentTimeMillis()) add(Calendar.DAY_OF_YEAR, 1)
         }
-        // setAlarmClock, rather than a window: the ward has an hour and the
-        // call should come at it. This is the one exact alarm the system grants
-        // without asking the reader for a permission, and Doze does not hold it
-        // back — which is what «a reminder at the level of the system» means.
-        alarms.setAlarmClock(
-            AlarmManager.AlarmClockInfo(at.timeInMillis, showBook(context)), pending
-        )
+        // setAlarmClock where the system allows it: the ward has an hour and
+        // the call should come at it, and Doze does not hold this one back —
+        // which is what «a reminder at the level of the system» means. Where
+        // the leave for it has not been given, a window instead. And the whole
+        // thing inside runCatching, because this is called from onCreate and
+        // from the boot receiver, and nothing about a reminder is worth the
+        // book failing to open.
+        runCatching {
+            if (canBeExact(context)) {
+                alarms.setAlarmClock(
+                    AlarmManager.AlarmClockInfo(at.timeInMillis, showBook(context)), pending
+                )
+            } else {
+                inWindow(alarms, at.timeInMillis, pending)
+            }
+        }.onFailure {
+            runCatching { inWindow(alarms, at.timeInMillis, pending) }
+        }
     }
 
     /** Shows the call, and arms tomorrow's. */

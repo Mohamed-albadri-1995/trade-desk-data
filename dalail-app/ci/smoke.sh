@@ -120,6 +120,28 @@ fi
 shot 4-reopened
 echo "opened again"
 
+echo "═══ is the daily call actually armed? ═══"
+# This is where the book was being killed: setting an exact alarm without the
+# permission Android 14 stopped granting throws, and it is called from
+# onCreate and from the boot receiver. So the alarm is not merely assumed to
+# have been set — the system is asked whether it holds one for the book.
+adb shell dumpsys alarm > "$OUT/alarms.txt" 2>/dev/null || true
+if grep -q "$PKG" "$OUT/alarms.txt"; then
+  grep -A2 "$PKG" "$OUT/alarms.txt" | head -12
+  echo "armed"
+else
+  echo "FAIL: the system holds no alarm for the book"
+  exit 1
+fi
+
+echo "═══ and it survives a restart of the phone ═══"
+# The boot receiver arms the call again after a restart, and that is the other
+# place the SecurityException was killing the app — where no screen would ever
+# show it. The broadcast is sent by hand rather than rebooting the emulator.
+adb shell am broadcast -a android.intent.action.BOOT_COMPLETED \
+  -n "$PKG/.BootReceiver" >/dev/null 2>&1 || true
+sleep 5
+
 echo "═══ did anything crash, hang, or get killed? ═══"
 adb logcat -d > "$OUT/logcat.txt" || true
 if grep -E "FATAL EXCEPTION|ANR in $PKG|Force finishing.*$PKG" "$OUT/logcat.txt"; then

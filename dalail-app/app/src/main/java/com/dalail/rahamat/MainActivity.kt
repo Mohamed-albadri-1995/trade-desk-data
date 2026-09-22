@@ -2,9 +2,12 @@ package com.dalail.rahamat
 
 import android.Manifest
 import android.app.TimePickerDialog
+import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
@@ -187,11 +190,33 @@ class MainActivity : AppCompatActivity() {
             binding.drawerLayout.openDrawer(GravityCompat.START)
     }
 
+    /**
+     * Android 14 no longer gives leave to set an alarm to its minute when the
+     * app is installed, so the reader is shown the system's own screen for it
+     * — at the moment they set the hour, which is when they have said they
+     * want the call at a time. If they decline, the call still comes; the
+     * system may just hold it a few minutes.
+     */
+    private fun askForExactAlarm() {
+        if (Reminder.canBeExact(this)) return
+        runCatching {
+            startActivity(
+                Intent(
+                    Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM,
+                    Uri.fromParts("package", packageName, null)
+                )
+            )
+        }
+    }
+
     /** Sets when the daily call comes, or turns it off. */
     private fun chooseReminder() {
         TimePickerDialog(
             this,
-            { _, hour, minute -> Reminder.set(this, true, hour, minute) },
+            { _, hour, minute ->
+                Reminder.set(this, true, hour, minute)
+                askForExactAlarm()
+            },
             Reminder.hour(this), Reminder.minute(this), true
         ).apply {
             setButton(TimePickerDialog.BUTTON_NEUTRAL, getString(R.string.reminder_off)) { _, _ ->
