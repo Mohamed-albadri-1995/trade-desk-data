@@ -8,11 +8,17 @@ import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import android.view.ViewGroup
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.updatePadding
+import androidx.drawerlayout.widget.DrawerLayout
 import androidx.viewpager2.widget.ViewPager2
 import com.dalail.rahamat.databinding.ActivityMainBinding
 
@@ -40,6 +46,7 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
         Book.load(this)
+        fitSystemBars()
 
         setSupportActionBar(binding.toolbar)
         supportActionBar?.title = getString(R.string.app_name)
@@ -70,22 +77,66 @@ class MainActivity : AppCompatActivity() {
     }
 
     /**
+     * Keeps the bars clear of the system's own.
+     *
+     * From Android 15 every window is drawn behind the status and navigation
+     * bars and the theme's colours for them are ignored, so a toolbar at the
+     * top would sit under the clock and the folio at the foot under the
+     * gesture bar. The leaf is left to have the whole screen — that is what
+     * the book wants — and the insets are added as padding to the two bars
+     * over it, and as a margin to the day's card. Padding rather than margin
+     * for the bars, so each one's veil still reaches under the system bar
+     * instead of leaving a bare strip above it.
+     *
+     * setDecorFitsSystemWindows is called for every version, not only 15 and
+     * later, so the book looks the same on an old phone as on a new one.
+     */
+    private fun fitSystemBars() {
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+        // Both bars stand on a dark veil, so the system draws its icons light.
+        WindowCompat.getInsetsController(window, binding.root)
+            .isAppearanceLightStatusBars = false
+
+        val barTop = binding.toolbar.paddingTop
+        val folioBottom = binding.folioBar.paddingBottom
+        val cardEdge = (binding.today.layoutParams as ViewGroup.MarginLayoutParams).bottomMargin
+
+        ViewCompat.setOnApplyWindowInsetsListener(binding.root) { _, insets ->
+            val bars = insets.getInsets(
+                WindowInsetsCompat.Type.systemBars() or
+                    WindowInsetsCompat.Type.displayCutout()
+            )
+            binding.toolbar.updatePadding(
+                top = barTop + bars.top, left = bars.left, right = bars.right
+            )
+            binding.folioBar.updatePadding(
+                bottom = folioBottom + bars.bottom, left = bars.left, right = bars.right
+            )
+            (binding.today.layoutParams as ViewGroup.MarginLayoutParams).let {
+                it.bottomMargin = cardEdge + bars.bottom
+                binding.today.layoutParams = it
+            }
+            insets
+        }
+    }
+
+    /**
      * The day's حزب, offered on a card over the leaf until it is taken or
      * dismissed — so opening the book puts today's reading one tap away.
      */
     private fun greet() {
         val hizb = Book.hizbOfWard()
         if (hizb == null) {
-            binding.today.visibility = View.GONE
+            hideToday()
             return
         }
         binding.todayDay.text = Book.wardTitle(this)
         binding.todayHizb.text = hizb.label
         binding.todayOpen.setOnClickListener {
             binding.pager.setCurrentItem(hizb.page - 1, false)
-            binding.today.visibility = View.GONE
+            hideToday()
         }
-        binding.todayDismiss.setOnClickListener { binding.today.visibility = View.GONE }
+        binding.todayDismiss.setOnClickListener { hideToday() }
     }
 
     private fun askForNotifications() {
@@ -122,7 +173,7 @@ class MainActivity : AppCompatActivity() {
         binding.navView.setNavigationItemSelectedListener { item ->
             Book.index().getOrNull(item.itemId)?.let {
                 binding.pager.setCurrentItem(it.page - 1, false)
-                binding.today.visibility = View.GONE
+                hideToday()
             }
             binding.drawerLayout.closeDrawer(GravityCompat.START)
             true
@@ -159,32 +210,51 @@ class MainActivity : AppCompatActivity() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean = when (item.itemId) {
         R.id.action_today -> {
             Book.hizbOfWard()?.let { binding.pager.setCurrentItem(it.page - 1, false) }
+            hideToday()
             true
         }
         R.id.action_reminder -> { chooseReminder(); true }
         else -> super.onOptionsItemSelected(item)
     }
 
+    /** Puts the day's card away, and lets back know it no longer holds it. */
+    private fun hideToday() {
+        binding.today.visibility = View.GONE
+        refreshBack()
+    }
+
     /**
      * Back closes the index, then the day's card, before it leaves the book.
-     * Registered on the dispatcher rather than by overriding onBackPressed,
-     * which an app targeting Android 16 is no longer called on.
+     *
+     * The callback is armed only while there is one of those to close, so that
+     * when there is not, the press reaches the system untouched and Android 16
+     * can draw its predictive animation of leaving the book. A callback that
+     * stayed armed and passed the press on by hand would take that away.
      */
     private fun handleBackWithDrawer() {
-        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
-            override fun handleOnBackPressed() {
-                when {
-                    binding.drawerLayout.isDrawerOpen(GravityCompat.START) ->
-                        binding.drawerLayout.closeDrawer(GravityCompat.START)
-                    binding.today.visibility == View.VISIBLE ->
-                        binding.today.visibility = View.GONE
-                    else -> {
-                        isEnabled = false
-                        onBackPressedDispatcher.onBackPressed()
-                    }
-                }
+        onBackPressedDispatcher.addCallback(this, backHandler)
+        binding.drawerLayout.addDrawerListener(
+            object : DrawerLayout.SimpleDrawerListener() {
+                override fun onDrawerOpened(drawerView: View) = refreshBack()
+                override fun onDrawerClosed(drawerView: View) = refreshBack()
             }
-        })
+        )
+        refreshBack()
+    }
+
+    private val backHandler = object : OnBackPressedCallback(false) {
+        override fun handleOnBackPressed() {
+            if (binding.drawerLayout.isDrawerOpen(GravityCompat.START))
+                binding.drawerLayout.closeDrawer(GravityCompat.START)
+            else
+                hideToday()
+        }
+    }
+
+    private fun refreshBack() {
+        backHandler.isEnabled =
+            binding.drawerLayout.isDrawerOpen(GravityCompat.START) ||
+                binding.today.visibility == View.VISIBLE
     }
 
     companion object {

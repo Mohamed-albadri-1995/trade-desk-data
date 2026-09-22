@@ -22,8 +22,25 @@ android {
 
     }
 
+    signingConfigs {
+        // One fixed key for every build. The generated debug key is made anew
+        // on each machine and each CI run, and Android refuses to install a
+        // package over one signed by a different key — so without this, every
+        // new build has to be uninstalled before it can be put on.
+        shared {
+            storeFile file('../dalail-shared.keystore')
+            storePassword 'dalailapp'
+            keyAlias 'dalailkey'
+            keyPassword 'dalailapp'
+        }
+    }
+
     buildTypes {
+        debug {
+            signingConfig signingConfigs.shared
+        }
         release {
+            signingConfig signingConfigs.shared
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }

@@ -22,10 +22,17 @@
             android:layout_height="match_parent"
             android:layoutDirection="rtl" />
 
+        <!--
+            wrap_content with a minimum of the action-bar height, rather than a
+            fixed height: from Android 15 the window is drawn behind the status
+            bar, and the bar's inset is added to this as top padding. A fixed
+            height would take that padding out of the title's own room.
+        -->
         <androidx.appcompat.widget.Toolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
+            android:layout_height="wrap_content"
+            android:minHeight="?attr/actionBarSize"
             android:layout_gravity="top"
             android:background="@color/board_veil"
             android:theme="@style/ThemeOverlay.MaterialComponents.Dark.ActionBar"
@@ -43,7 +50,8 @@
             android:background="@color/board_veil"
             android:gravity="center"
             android:orientation="horizontal"
-            android:paddingVertical="6dp">
+            android:paddingTop="6dp"
+            android:paddingBottom="6dp">
 
             <TextView
                 android:id="@+id/folio"
@@ -67,8 +75,10 @@
             android:layout_margin="16dp"
             android:background="@drawable/card"
             android:orientation="vertical"
-            android:paddingHorizontal="20dp"
-            android:paddingVertical="18dp">
+            android:paddingLeft="20dp"
+            android:paddingTop="18dp"
+            android:paddingRight="20dp"
+            android:paddingBottom="18dp">
 
             <TextView
                 android:id="@+id/todayDay"
