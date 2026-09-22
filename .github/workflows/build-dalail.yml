@@ -159,40 +159,9 @@ jobs:
           profile: pixel_5
           disable-animations: true
           emulator-options: -no-snapshot -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
-          script: |
-            set -eu
-            adb logcat -c
-            adb install -r apk/app-debug.apk
-            adb shell am start -W -n com.dalail.rahamat/.MainActivity
-            sleep 12
-
-            echo "═══ is the book the activity on screen? ═══"
-            adb shell dumpsys activity activities \
-              | grep -E "mResumedActivity|topResumedActivity" | tee /tmp/top.txt
-            grep -q "com.dalail.rahamat" /tmp/top.txt \
-              || { echo "FAIL: the book is not the activity on screen"; exit 1; }
-
-            echo "═══ did anything crash or go wrong? ═══"
-            adb logcat -d > /tmp/logcat.txt || true
-            grep -E "FATAL EXCEPTION|ANR in com.dalail|Force finishing" /tmp/logcat.txt \
-              && { echo "FAIL: see above"; exit 1; } || echo "nothing"
-            grep -iE "com.dalail.rahamat|dalail" /tmp/logcat.txt | tail -40 || true
-
-            echo "═══ turn a leaf, open the index, press back ═══"
-            adb shell input swipe 200 900 800 900 300   # a leaf, right to left
-            sleep 2
-            adb shell input swipe 1000 900 200 900 300  # and back again
-            sleep 2
-            adb shell input keyevent KEYCODE_BACK
-            sleep 2
-            adb shell dumpsys activity activities \
-              | grep -E "mResumedActivity|topResumedActivity" || true
-
-            adb exec-out screencap -p > /tmp/opened.png
-            adb logcat -d > /tmp/logcat-after.txt || true
-            grep -E "FATAL EXCEPTION" /tmp/logcat-after.txt \
-              && { echo "FAIL: crashed while being used"; exit 1; } || echo "no crash"
-            mkdir -p shot && cp /tmp/opened.png /tmp/logcat-after.txt shot/
+          # One line: the action runs each line of an inline script in a
+          # shell of its own, so anything spanning two lines breaks.
+          script: bash dalail-app/ci/smoke.sh apk/app-debug.apk shot
 
       - name: Keep the screenshot and the log
         if: always()
