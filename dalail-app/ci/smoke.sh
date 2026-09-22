@@ -29,6 +29,13 @@ echo "═══ install ═══"
 adb logcat -c || true
 adb install -r "$APK"
 
+# Granted here rather than left to the dialog. The book asks for it on its
+# first launch on Android 13 and later, and the system's own permission
+# screen then stands in front of the leaf — which is the app behaving
+# correctly, but it is not what this is looking at. Harmless where the
+# permission does not exist.
+adb shell pm grant "$PKG" android.permission.POST_NOTIFICATIONS 2>/dev/null || true
+
 echo "═══ open the book ═══"
 adb shell am start -W -n "$PKG/.MainActivity" | tee /tmp/start.txt
 grep -q "Status: ok" /tmp/start.txt || { echo "FAIL: it would not start"; exit 1; }
@@ -58,7 +65,12 @@ echo "═══ back leaves the book ═══"
 adb shell input keyevent KEYCODE_BACK
 sleep 4
 on_screen | tee /tmp/top2.txt
-grep -q "$PKG" /tmp/top2.txt && { echo "FAIL: back did not leave the book"; exit 1; }
+# if/then, not «grep && exit»: when grep finds nothing — which is the pass
+# here — it returns a failure, and set -e would kill the script on it.
+if grep -q "$PKG" /tmp/top2.txt; then
+  echo "FAIL: back did not leave the book"
+  exit 1
+fi
 echo "left it"
 
 echo "═══ open it again — it should come back to the leaf we were on ═══"
