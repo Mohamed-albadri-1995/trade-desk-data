@@ -16,7 +16,7 @@ import re
 import os
 import sys
 
-from PIL import Image
+from PIL import Image, ImageDraw
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import dalail_page as page
@@ -24,7 +24,15 @@ import pdf_out
 
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "dalail")
 COVER = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..",
-                     "dalail-app", "design", "cover.jpg")
+                     "dalail-app", "design", "cover-plate.jpg")
+
+#: The photographs, one to a leaf, at the book's end.
+PLATES = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..",
+                      "dalail-app", "design", "plates")
+
+#: What the plates are gathered under. A plain word: the author has not said
+#: who stands in each photograph, so nothing is claimed here that he has not.
+PLATES_TITLE = "صُوَرٌ"
 
 #: How wide the printed leaf is meant to be, in dots to the inch. The design is
 #: 1000 × 1720 dots, so at this resolution the leaf comes out 127 × 218 mm —
@@ -96,30 +104,77 @@ def sections():
     return out
 
 
-#: The front board's corners in the cover artwork, which shows the whole bound
-#: book — spine and all — and so has to be cut down to its front.
-FRONT_BOARD = (148, 8, 946, 1272)
-
-
 def cover():
     """
-    The front board, filling the page inside the leaves' own gold border.
+    The cover, filling the leaf inside the gold border.
 
-    The artwork is a photograph of the bound book, so the spine is cut away and
-    what is left stands on a ground of the boards' own dark brown, sampled from
-    the artwork rather than guessed at.
+    The artwork is a finished design — title, author and all — rather than a
+    photograph to be cut about, so it is scaled to cover the whole of the
+    inside of the border and what overhangs is trimmed from the sides, where
+    the design carries only its background. Fitting it by width instead would
+    leave bands of bare colour above and below a design that was not made to
+    have any.
     """
-    art = Image.open(COVER).convert("RGB").crop(FRONT_BOARD)
-    inner = page.PAGE_W - 2 * (page.MARGIN + 8)
-    art = art.resize((inner, round(art.height * inner / art.width)),
+    art = Image.open(COVER).convert("RGB")
+    inner_w = page.PAGE_W - 2 * (page.MARGIN + 8)
+    inner_h = page.PAGE_H - 2 * (page.MARGIN + 8)
+    scale = max(inner_w / art.width, inner_h / art.height)
+    art = art.resize((round(art.width * scale), round(art.height * scale)),
                      Image.LANCZOS)
+    left = (art.width - inner_w) // 2
+    top = (art.height - inner_h) // 2
+    art = art.crop((left, top, left + inner_w, top + inner_h))
 
-    ground = art.crop((0, 0, art.width, 4)).resize((1, 1), Image.BOX).getpixel((0, 0))
-    im = Image.new("RGB", (page.PAGE_W, page.PAGE_H), ground)
-    im.paste(art, ((page.PAGE_W - art.width) // 2,
-                   (page.PAGE_H - art.height) // 2))
+    im = Image.new("RGB", (page.PAGE_W, page.PAGE_H), page.PAPER)
+    im.paste(art, (page.MARGIN + 8, page.MARGIN + 8))
     page.Layout().border(im)
     return im
+
+
+#: How much of the leaf a photograph may take, inside the ruled border.
+PLATE_PAD = 26
+
+
+def plates(folio):
+    """
+    The photographs, one to a leaf, each in a ruled frame on the parchment.
+
+    They stand at the end, after the book is closed with تم بحمد الله, so that
+    nothing comes between the reader and the صلوات. Each is fitted whole
+    inside its frame rather than cropped to fill it — a face is not a
+    background — and the parchment shows around whichever side is short.
+    """
+    files = sorted(glob.glob(os.path.join(PLATES, "*.jpg")))
+    if not files:
+        return []
+
+    lay = page.Layout()
+    out = []
+    for i, path in enumerate(files):
+        im = lay.leaf()
+        first = i == 0
+        if first:
+            lay.head(im, PLATES_TITLE)
+        else:
+            lay.slim(im, PLATES_TITLE, i + 1, len(files))
+        top = lay.body_top(first) + PLATE_PAD
+        room_w = lay.column() - 2 * PLATE_PAD
+        room_h = lay.bottom - top - PLATE_PAD
+
+        art = Image.open(path).convert("RGB")
+        scale = min(room_w / art.width, room_h / art.height)
+        art = art.resize((round(art.width * scale), round(art.height * scale)),
+                         Image.LANCZOS)
+        x = (page.PAGE_W - art.width) // 2
+        y = top + (room_h - art.height) // 2
+        im.paste(art, (x, y))
+        ImageDraw.Draw(im).rectangle(
+            [x - 3, y - 3, x + art.width + 2, y + art.height + 2],
+            outline=page.RULE, width=2)
+
+        lay.folio(im, folio + i)
+        out.append(im)
+    return out
 
 
 #: Where the app keeps its copy of the book, and the index into it.
@@ -151,6 +206,8 @@ def index():
                 label = f"{hit.group(1)}  ·  {suras}" if suras else hit.group(1)
                 out.append(f"{page_no + where[n]}|1|{label}")
         page_no += leaves
+    if glob.glob(os.path.join(PLATES, "*.jpg")):
+        out.append(f"{page_no}|0|{bare(PLATES_TITLE)}")
     return out
 
 
@@ -186,6 +243,12 @@ def build(out_path):
     for title, text, closing in sections():
         made = page.compose(text, title, folio=folio, closing=closing)
         print(f"{len(made):3} ورقة   {title}")
+        leaves += made
+        folio += len(made)
+
+    made = plates(folio)
+    if made:
+        print(f"{len(made):3} ورقة   {PLATES_TITLE}")
         leaves += made
         folio += len(made)
 

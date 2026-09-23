@@ -138,14 +138,22 @@ class Layout:
         x0 += MARGIN; x1 += MARGIN; y0 += MARGIN; y1 += MARGIN
         d = ImageDraw.Draw(im)
         d.rectangle([x0, y0, x1, y1], fill=(253, 249, 235))
+        # Sized and placed by what the name actually occupies, measured, not
+        # by the font's nominal height: a name in this book carries harakat,
+        # and they stand above the line the font declares. A long name is held
+        # back by the cartouche's width; a short one like «صُوَرٌ» by its
+        # height, and without the measurement its own damma was cut off by the
+        # top of the panel.
+        room_w, room_h = (x1 - x0) - 18, (y1 - y0) - 12
         size = y1 - y0 - 24
         while size > 8:
             font = ImageFont.truetype(FONT, size)
-            w = d.textlength(title, font=font, direction="rtl")
-            if w <= (x1 - x0) - 18:
+            box = d.textbbox((0, 0), title, font=font, direction="rtl")
+            if box[2] - box[0] <= room_w and box[3] - box[1] <= room_h:
                 break
             size -= 1
-        d.text(((x0 + x1) / 2 - w / 2, y0 + (y1 - y0 - size * 1.45) / 2),
+        d.text(((x0 + x1) / 2 - (box[2] - box[0]) / 2 - box[0],
+                (y0 + y1) / 2 - (box[3] - box[1]) / 2 - box[1]),
                title, font=font, fill=INK, direction="rtl")
 
     def slim(self, im, title, leaf, leaves):
