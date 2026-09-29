@@ -14,6 +14,9 @@ class CoverActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityCoverBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        // The photograph keeps the whole screen; the title and the button
+        // below it are held clear of the gesture bar.
+        SystemBars.fit(this, bottom = binding.coverPanel)
 
         BackgroundLoader.apply(this, binding.coverImage)
 

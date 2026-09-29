@@ -21,12 +21,14 @@
 
     <!-- Title panel, anchored to the bottom so the photo stays clear -->
     <LinearLayout
+        android:id="@+id/coverPanel"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
         android:orientation="vertical"
         android:gravity="center"
-        android:paddingHorizontal="28dp"
+        android:paddingLeft="28dp"
+        android:paddingRight="28dp"
         android:paddingBottom="40dp">
 
         <TextView

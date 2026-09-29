@@ -4,13 +4,22 @@ import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import java.util.Calendar
 
 /**
  * Works out every reminder time for today and tomorrow from the prayer times,
- * then arms the single nearest one as a real alarm-clock alarm (which wakes the
- * device and needs no exact-alarm permission). Each time it fires, the next one
- * is armed again.
+ * then arms the single nearest one as a real alarm-clock alarm, which wakes the
+ * device and which Doze does not hold back. Each time it fires, the next one is
+ * armed again.
+ *
+ * An exact alarm needs the reader's leave from Android 14 onward — Android 12
+ * and 13 gave it when the app was installed, and 14 stopped. Without it
+ * setAlarmClock throws, and what caught the throw here put the call in an
+ * ordinary inexact alarm instead, which the system may hold back a good while:
+ * the adhan would sound late, or in a batch with everything else the phone had
+ * been saving up. So the leave is now asked for rather than waited for, and
+ * whether it has been given is something the settings screen can say.
  */
 object ReminderScheduler {
 
@@ -62,15 +71,7 @@ object ReminderScheduler {
                 PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
             )
             val op = firePendingIntent(context, next.label, next.kind)
-            try {
-                am.setAlarmClock(AlarmManager.AlarmClockInfo(next.timeMillis, show), op)
-            } catch (_: Throwable) {
-                try {
-                    am.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, next.timeMillis, op)
-                } catch (_: Throwable) {
-                    am.set(AlarmManager.RTC_WAKEUP, next.timeMillis, op)
-                }
-            }
+            arm(context, am, next.timeMillis, show, op)
         } catch (t: Throwable) {
             android.util.Log.e("ReminderScheduler", "rescheduleNext failed", t)
         }
@@ -99,13 +100,42 @@ object ReminderScheduler {
             context, 0, Intent(context, MainActivity::class.java),
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )
+        arm(context, am, at, show, op)
+    }
+
+    /** Whether the system will let a call be set to its minute. */
+    fun canBeExact(context: Context): Boolean {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) return true
+        val am = context.getSystemService(AlarmManager::class.java) ?: return false
+        return am.canScheduleExactAlarms()
+    }
+
+    /**
+     * Sets the call at [at] — to its minute where the system allows it, and in
+     * a window where it does not. The throws are still caught: this is reached
+     * from a receiver and from onCreate, and no reminder is worth the app
+     * failing to open.
+     */
+    private fun arm(
+        context: Context, am: AlarmManager, at: Long,
+        show: PendingIntent, op: PendingIntent
+    ) {
         try {
-            am.setAlarmClock(AlarmManager.AlarmClockInfo(at, show), op)
+            if (canBeExact(context)) {
+                am.setAlarmClock(AlarmManager.AlarmClockInfo(at, show), op)
+                return
+            }
+        } catch (_: Throwable) {
+        }
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
+                am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at, op)
+            else
+                am.set(AlarmManager.RTC_WAKEUP, at, op)
         } catch (_: Throwable) {
             try {
-                am.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at, op)
-            } catch (_: Throwable) {
                 am.set(AlarmManager.RTC_WAKEUP, at, op)
+            } catch (_: Throwable) {
             }
         }
     }

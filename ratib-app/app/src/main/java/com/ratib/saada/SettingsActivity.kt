@@ -49,6 +49,11 @@ class SettingsActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_settings)
+        // One scrolling sheet, so it is given room at both ends rather than
+        // having its first switch under the clock and its last under the bar.
+        findViewById<android.view.View>(R.id.settingsScroll).let {
+            SystemBars.fit(this, top = it, bottom = it)
+        }
 
         swMaster = findViewById(R.id.swMaster)
         swPrayer = findViewById(R.id.swPrayer)
@@ -241,8 +246,37 @@ class SettingsActivity : AppCompatActivity() {
             val msg = if (swMaster.isChecked && !ReminderPrefs.hasLocation(this))
                 R.string.need_location else R.string.saved
             Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
+
+            if (swMaster.isChecked && !ReminderScheduler.canBeExact(this)) {
+                askForExactAlarm()
+                return
+            }
         } catch (t: Throwable) {
             android.util.Log.e("SettingsActivity", "save failed", t)
+        }
+        finish()
+    }
+
+    /**
+     * Sends the reader to the system's own screen for the leave to set an
+     * alarm to its minute.
+     *
+     * Android 14 stopped granting it when an app is installed. Without it the
+     * adhan is set in a window instead and the system may hold it back, which
+     * is why a prayer time could sound late. It is asked for here, where the
+     * reader has just said they want the reminders on, and not before.
+     */
+    private fun askForExactAlarm() {
+        Toast.makeText(this, R.string.need_exact_alarm, Toast.LENGTH_LONG).show()
+        try {
+            startActivity(
+                Intent(
+                    Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM,
+                    Uri.fromParts("package", packageName, null)
+                )
+            )
+        } catch (_: Throwable) {
+            openAppSettings()
         }
         finish()
     }

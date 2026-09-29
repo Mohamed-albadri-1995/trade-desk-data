@@ -66,6 +66,9 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        // Android 15 draws the window behind the bars: hold the toolbar clear
+        // of the clock and the page-turning bar clear of the gesture bar.
+        SystemBars.fit(this, top = binding.toolbar, bottom = binding.bottomBar)
 
         setSupportActionBar(binding.toolbar)
         supportActionBar?.title = getString(R.string.app_name)

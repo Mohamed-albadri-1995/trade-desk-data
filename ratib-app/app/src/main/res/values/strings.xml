@@ -58,4 +58,8 @@
         <item>الهيئة المصرية العامة</item>
         <item>جامعة العلوم الإسلامية - كراتشي</item>
     </string-array>
+    <!-- Android 14 no longer grants the leave to set an alarm to its minute
+         when the app is installed, so the reader is sent to the system's own
+         screen for it; without it the adhan may be held back. -->
+    <string name="need_exact_alarm">للأذان في وقته بالضبط: اسمح للتطبيق بضبط المنبّهات الدقيقة في الشاشة التالية</string>
 </resources>

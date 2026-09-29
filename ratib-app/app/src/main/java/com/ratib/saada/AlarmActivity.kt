@@ -35,6 +35,11 @@ class AlarmActivity : AppCompatActivity() {
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
 
         setContentView(R.layout.activity_alarm)
+        // The button that stops the adhan sits at the foot of this screen. It
+        // must not be under the gesture bar.
+        findViewById<android.view.View>(R.id.alarmRoot).let {
+            SystemBars.fit(this, top = it, bottom = it)
+        }
         showLabel(intent)
 
         // The screen takes over the ringing; cancel the notification's own sound.
