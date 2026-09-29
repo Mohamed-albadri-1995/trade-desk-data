@@ -16,7 +16,7 @@ import re
 import os
 import sys
 
-from PIL import Image, ImageDraw
+from PIL import Image, ImageDraw, ImageFont
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import dalail_page as page
@@ -26,13 +26,18 @@ ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "dalail")
 COVER = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..",
                      "dalail-app", "design", "cover-plate.jpg")
 
-#: The photographs, one to a leaf, at the book's end.
-PLATES = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..",
-                      "dalail-app", "design", "plates")
+#: The book's last leaf: whose ratib this is, and where it is kept. The first
+#: line stands in the band's cartouche, as a section's name does, and the rest
+#: are set beneath it.
+COLOPHON = (
+    "الطَّرِيقَةُ القَادِرِيَّةُ العَرَكِيَّةُ",
+    "سَجَّادَةُ أَبُونَا وَشَيْخِنَا",
+    "الشَّيْخُ الفَضْلُ الشَّيْخُ مُحَمَّدُ بْنُ يُونُسَ",
+    "الفَاوُ – القَرْيَةُ (٥)",
+)
 
-#: What the plates are gathered under. A plain word: the author has not said
-#: who stands in each photograph, so nothing is claimed here that he has not.
-PLATES_TITLE = "صُوَرٌ"
+#: The three lines below the band: their size, and the colour they wear.
+COLOPHON_LINES = ((44, "TEAL"), (58, "INK"), (40, "FAINT"))
 
 #: How wide the printed leaf is meant to be, in dots to the inch. The design is
 #: 1000 × 1720 dots, so at this resolution the leaf comes out 127 × 218 mm —
@@ -131,50 +136,40 @@ def cover():
     return im
 
 
-#: How much of the leaf a photograph may take, inside the ruled border.
-PLATE_PAD = 26
-
-
-def plates(folio):
+def colophon(folio):
     """
-    The photographs, one to a leaf, each in a ruled frame on the parchment.
+    The leaf that closes the book, naming the order and the shaykh.
 
-    They stand at the end, after the book is closed with تم بحمد الله, so that
-    nothing comes between the reader and the صلوات. Each is fitted whole
-    inside its frame rather than cropped to fill it — a face is not a
-    background — and the parchment shows around whichever side is short.
+    It stands last, after تم بحمد الله, and wears the book's own furniture: the
+    band with the order's name in its cartouche, and the rest set in the middle
+    of the leaf beneath it, each line brought down until it fits the column.
     """
-    files = sorted(glob.glob(os.path.join(PLATES, "*.jpg")))
-    if not files:
-        return []
-
     lay = page.Layout()
-    out = []
-    for i, path in enumerate(files):
-        im = lay.leaf()
-        first = i == 0
-        if first:
-            lay.head(im, PLATES_TITLE)
-        else:
-            lay.slim(im, PLATES_TITLE, i + 1, len(files))
-        top = lay.body_top(first) + PLATE_PAD
-        room_w = lay.column() - 2 * PLATE_PAD
-        room_h = lay.bottom - top - PLATE_PAD
+    im = lay.leaf()
+    lay.head(im, COLOPHON[0])
+    d = ImageDraw.Draw(im)
 
-        art = Image.open(path).convert("RGB")
-        scale = min(room_w / art.width, room_h / art.height)
-        art = art.resize((round(art.width * scale), round(art.height * scale)),
-                         Image.LANCZOS)
-        x = (page.PAGE_W - art.width) // 2
-        y = top + (room_h - art.height) // 2
-        im.paste(art, (x, y))
-        ImageDraw.Draw(im).rectangle(
-            [x - 3, y - 3, x + art.width + 2, y + art.height + 2],
-            outline=page.RULE, width=2)
+    drawn = []
+    for text, (size, tone) in zip(COLOPHON[1:], COLOPHON_LINES):
+        while size > 10:
+            font = ImageFont.truetype(page.FONT, size)
+            box = d.textbbox((0, 0), text, font=font, direction="rtl")
+            if box[2] - box[0] <= lay.column():
+                break
+            size -= 1
+        drawn.append((text, font, box, getattr(page, tone)))
 
-        lay.folio(im, folio + i)
-        out.append(im)
-    return out
+    gap = 46
+    tall = sum(b[3] - b[1] for _, _, b, _ in drawn) + gap * (len(drawn) - 1)
+    top = lay.body_top(True)
+    y = top + (lay.bottom - top - tall) / 2
+    for text, font, box, tone in drawn:
+        d.text((page.PAGE_W / 2 - (box[2] - box[0]) / 2 - box[0], y - box[1]),
+               text, font=font, fill=tone, direction="rtl")
+        y += (box[3] - box[1]) + gap
+
+    lay.folio(im, folio)
+    return [im]
 
 
 #: Where the app keeps its copy of the book, and the index into it.
@@ -206,8 +201,7 @@ def index():
                 label = f"{hit.group(1)}  ·  {suras}" if suras else hit.group(1)
                 out.append(f"{page_no + where[n]}|1|{label}")
         page_no += leaves
-    if glob.glob(os.path.join(PLATES, "*.jpg")):
-        out.append(f"{page_no}|0|{bare(PLATES_TITLE)}")
+    out.append(f"{page_no}|0|{bare(COLOPHON[0])}")
     return out
 
 
@@ -246,11 +240,10 @@ def build(out_path):
         leaves += made
         folio += len(made)
 
-    made = plates(folio)
-    if made:
-        print(f"{len(made):3} ورقة   {PLATES_TITLE}")
-        leaves += made
-        folio += len(made)
+    made = colophon(folio)
+    print(f"{len(made):3} ورقة   {COLOPHON[0]}")
+    leaves += made
+    folio += len(made)
 
     pdf_out.save(leaves, out_path, dpi=DPI)
     mb = os.path.getsize(out_path) / 1e6
