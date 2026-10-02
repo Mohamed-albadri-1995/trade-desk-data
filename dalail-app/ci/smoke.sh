@@ -20,7 +20,8 @@ mkdir -p "$OUT"
 # check that fails without saying what the phone was doing is no check at all.
 keep_evidence() {
   adb logcat -d > "$OUT/logcat.txt" 2>/dev/null || true
-  adb exec-out screencap -p > "$OUT/zz-at-the-end.png" 2>/dev/null || true
+  adb shell screencap -p /sdcard/_end.png >/dev/null 2>&1 || true
+  adb pull /sdcard/_end.png "$OUT/zz-at-the-end.png" >/dev/null 2>&1 || true
   adb shell dumpsys activity activities > "$OUT/activities.txt" 2>/dev/null || true
   echo "─── the last lines the system had about the book ───"
   grep -iE "$PKG|AndroidRuntime|FATAL|ActivityManager.*dalail" "$OUT/logcat.txt" \
@@ -37,7 +38,23 @@ on_screen() {
 
 in_the_book() { on_screen | grep -q "$PKG"; }
 
-shot() { adb exec-out screencap -p > "$OUT/$1.png"; }
+# Captured to the phone and pulled off it, rather than piped through
+# exec-out, which mangles a stream now and then; and tried again until the
+# file opens, so a bad capture is not read as a blank screen.
+shot() {
+  for _ in 1 2 3; do
+    adb shell screencap -p /sdcard/_shot.png >/dev/null 2>&1 || true
+    adb pull /sdcard/_shot.png "$OUT/$1.png" >/dev/null 2>&1 || true
+    adb shell rm -f /sdcard/_shot.png >/dev/null 2>&1 || true
+    if python3 dalail-app/ci/not_blank.py "$OUT/$1.png" >/dev/null 2>&1 || \
+       [ $? -ne 2 ]; then
+      return 0
+    fi
+    sleep 2
+  done
+  echo "WARN: no readable screenshot of $1"
+  return 0
+}
 
 # A leaf of the book has thousands of tones; a blank screen has one or
 # two. This is the check «it opens on a blank screen» needed — every

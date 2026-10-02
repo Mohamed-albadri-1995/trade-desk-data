@@ -29,7 +29,15 @@ def tones(path):
 def main():
     path = sys.argv[1]
     least = int(sys.argv[2]) if len(sys.argv) > 2 else LEAST
-    found = tones(path)
+    try:
+        found = tones(path)
+    except Exception as trouble:
+        # Exit 2, not 1: the screenshot could not be read, which says nothing
+        # about what was on the screen. adb's exec-out mangles a stream now and
+        # then, and a mangled capture once had this report a blank screen on a
+        # build whose own screenshots were fine.
+        print(f"   the screenshot could not be read: {trouble}")
+        sys.exit(2)
     print(f"   tones on screen: {found} (needs {least})")
     sys.exit(0 if found >= least else 1)
 
