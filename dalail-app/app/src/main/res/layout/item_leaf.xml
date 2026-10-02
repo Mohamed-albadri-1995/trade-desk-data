@@ -10,4 +10,22 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:contentDescription="@string/a_leaf" />
+
+    <!--
+        Shown only when the leaf could not be drawn. A leaf that fails silently
+        leaves the reader looking at an empty board with nothing to report but
+        «it is blank», which is what happened.
+    -->
+    <TextView
+        android:id="@+id/trouble"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_margin="28dp"
+        android:fontFamily="@font/amiri"
+        android:gravity="center"
+        android:textColor="@color/rule"
+        android:textIsSelectable="true"
+        android:textSize="17sp"
+        android:visibility="gone" />
 </FrameLayout>

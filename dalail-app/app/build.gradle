@@ -48,6 +48,9 @@ android {
 
     buildFeatures {
         viewBinding true
+        // So the app can show which build it is; a fault reported against a
+        // version nobody can name costs a round of guessing.
+        buildConfig true
     }
 
     androidResources {

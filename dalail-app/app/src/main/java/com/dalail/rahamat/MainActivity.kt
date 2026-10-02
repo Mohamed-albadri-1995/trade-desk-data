@@ -67,6 +67,7 @@ class MainActivity : AppCompatActivity() {
         })
 
         buildIndex()
+        showBuild()
         // A book with no leaves is the one failure the reader cannot see: the
         // pager simply shows nothing, and «it opens on a blank screen» is all
         // anyone can report. Say it plainly instead.
@@ -172,6 +173,13 @@ class MainActivity : AppCompatActivity() {
         val to = if (chromeShown) View.VISIBLE else View.GONE
         binding.toolbar.visibility = to
         binding.folioBar.visibility = to
+    }
+
+    /** Writes the build into the index's header, where it can be read off. */
+    private fun showBuild() {
+        val header = binding.navView.getHeaderView(0) ?: return
+        header.findViewById<android.widget.TextView>(R.id.buildLine)?.text =
+            getString(R.string.build_line, BuildConfig.VERSION_NAME)
     }
 
     private fun buildIndex() {

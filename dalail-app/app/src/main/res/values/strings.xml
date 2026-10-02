@@ -33,4 +33,13 @@
     </string-array>
     <!-- Only ever seen if the leaves could not be read from the package. -->
     <string name="no_leaves">تعذّر فتح أوراق الكتاب على هذا الجهاز.\nأعد تثبيت التطبيق، فإن بقي الحال فأبلغنا.</string>
+    <!--
+        Written on the leaf itself when it cannot be drawn. Plain enough for a
+        reader to photograph and send, and precise enough to act on.
+    -->
+    <string name="leaf_missing">لم أجد هذه الورقة في التطبيق\n%1$s\n(%2$s)</string>
+    <string name="leaf_undrawable">تعذّر رسم هذه الورقة\n%1$s\n(%2$s — %3$d)</string>
+
+    <!-- The build, so a photograph of the app can be tied to a version. -->
+    <string name="build_line">بناء %1$s</string>
 </resources>

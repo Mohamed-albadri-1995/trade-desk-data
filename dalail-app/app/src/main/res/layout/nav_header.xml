@@ -27,4 +27,19 @@
         android:text="@string/subtitle"
         android:textColor="@color/white"
         android:textSize="13sp" />
+
+    <!--
+        Which build this is. Without it a photograph of the app cannot be tied
+        to a version, and a fault reported against one build may already have
+        been mended in another.
+    -->
+    <TextView
+        android:id="@+id/buildLine"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:fontFamily="@font/amiri"
+        android:gravity="center"
+        android:textColor="@color/rule_faint"
+        android:textSize="12sp" />
 </LinearLayout>
