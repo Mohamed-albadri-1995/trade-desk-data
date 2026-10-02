@@ -71,6 +71,14 @@ adb install -r "$APK"
 # it is not what this is looking at. Harmless where it does not exist.
 adb shell pm grant "$PKG" android.permission.POST_NOTIFICATIONS 2>/dev/null || true
 
+# Opened in Arabic, which is what the reader's phone is set to. The fault that
+# produced «it opens on a blank screen» appeared only there: String.format
+# without a locale wrote the leaf's number in Arabic-Indic digits — p٠٠١.webp —
+# and no such file is in the package. An emulator speaks English, so no check
+# of mine could ever have seen it. Android 13 and later only; older images
+# ignore this and run as before.
+adb shell cmd locale set-app-locales "$PKG" --locales ar-SD >/dev/null 2>&1 || true
+
 echo "═══ open the book ═══"
 adb shell am start -W -n "$PKG/.MainActivity" | tee /tmp/start.txt
 grep -q "Status: ok" /tmp/start.txt || { echo "FAIL: it would not start"; exit 1; }

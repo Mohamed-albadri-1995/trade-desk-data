@@ -2,6 +2,7 @@ package com.dalail.rahamat
 
 import android.content.Context
 import java.util.Calendar
+import java.util.Locale
 
 /**
  * What the app knows about the book: how many leaves it has, what is on them,
@@ -71,7 +72,18 @@ object Book {
 
     fun index(): List<Entry> = entries
 
-    fun asset(leaf: Int) = "$PAGES/p%03d.webp".format(leaf + 1)
+    /**
+     * The name of a leaf's file in the package.
+     *
+     * Locale.ROOT, and not the phone's own: String.format without one uses
+     * the default locale, and on a phone set to Arabic %03d is written in
+     * Arabic-Indic digits — p٠٠١.webp — which is not the name of anything in
+     * the package. That is why the book opened on a blank screen for some
+     * readers and not others, and why no emulator ever showed it: an
+     * emulator speaks English.
+     */
+    fun asset(leaf: Int): String =
+        String.format(Locale.ROOT, "%s/p%03d.webp", PAGES, leaf + 1)
 
     /** The sections, in order — the أحزاب among them. */
     private fun sections() = entries.filter { it.depth == 0 }
