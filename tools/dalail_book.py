@@ -269,6 +269,13 @@ def build(out_path):
         f.write("\n".join(entries) + "\n")
     print(f"{len(entries)} مدخلًا في الفهرس — {os.path.relpath(APP)}")
 
+    # How many leaves there are, written down rather than counted at runtime.
+    # The app used to learn it by asking the system to list the assets folder,
+    # and when that came back empty — which it may, on some phones — the book
+    # had no leaves and opened on a blank screen.
+    with open(os.path.join(APP, "pages.txt"), "w", encoding="utf-8") as f:
+        f.write(f"{len(leaves)}\n")
+
 
 if __name__ == "__main__":
     build(sys.argv[1] if len(sys.argv) > 1 else "dalail-al-rahamat.pdf")

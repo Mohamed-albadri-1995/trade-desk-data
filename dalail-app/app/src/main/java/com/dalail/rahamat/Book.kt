@@ -22,7 +22,10 @@ object Book {
     private var leaves = 0
 
     fun load(context: Context) {
-        if (entries.isNotEmpty()) return
+        // Not «if the index is read» but «if the book has leaves»: a load that
+        // found none must be allowed to try again rather than latch a book
+        // with nothing in it.
+        if (entries.isNotEmpty() && leaves > 0) return
         val read = ArrayList<Entry>()
         runCatching {
             context.assets.open(INDEX).bufferedReader().forEachLine { raw ->
@@ -32,8 +35,36 @@ object Book {
                 read.add(Entry(page, parts[1].toIntOrNull() ?: 0, parts[2]))
             }
         }
-        entries = read
-        leaves = runCatching { context.assets.list(PAGES)?.size ?: 0 }.getOrDefault(0)
+        if (read.isNotEmpty()) entries = read
+        leaves = count(context)
+    }
+
+    /**
+     * How many leaves the book has, asked three ways.
+     *
+     * It used to be asked one way — list the assets folder and count what
+     * comes back — and everything the reader sees hung on it. On a phone where
+     * that listing came back empty, and it can, the pager was handed a book of
+     * no leaves and showed a blank screen, and nothing ever tried again.
+     *
+     * So: what the build wrote down, which cannot be wrong; then the listing;
+     * then opening the leaves one after another until one is not there. Any of
+     * the three is enough, and they fail in different ways.
+     */
+    private fun count(context: Context): Int {
+        runCatching {
+            context.assets.open(COUNT).bufferedReader().use { it.readLine() }
+                ?.trim()?.toIntOrNull()
+        }.getOrNull()?.let { if (it > 0) return it }
+
+        runCatching { context.assets.list(PAGES)?.size ?: 0 }
+            .getOrDefault(0).let { if (it > 0) return it }
+
+        var n = 0
+        while (n < MOST_LEAVES &&
+            runCatching { context.assets.open(asset(n)).close() }.isSuccess
+        ) n++
+        return n
     }
 
     fun pageCount() = leaves
@@ -120,4 +151,10 @@ object Book {
 
     private const val INDEX = "index.txt"
     private const val PAGES = "pages"
+
+    /** What the build wrote: how many leaves this book has. */
+    private const val COUNT = "pages.txt"
+
+    /** A stop for the probe, so a broken book cannot loop for ever. */
+    private const val MOST_LEAVES = 2000
 }

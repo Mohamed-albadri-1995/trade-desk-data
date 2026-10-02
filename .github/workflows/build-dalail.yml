@@ -150,6 +150,10 @@ jobs:
           distribution: temurin
           java-version: "17"
 
+      # The blank-screen check reads the screenshots back.
+      - name: Install Pillow, for looking at the screenshots
+        run: python3 -m pip install --quiet --break-system-packages pillow
+
       - name: Install, open the book, and look at it
         uses: reactivecircus/android-emulator-runner@v2
         with:

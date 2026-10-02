@@ -31,4 +31,6 @@
         <item>الجمعة</item>
         <item>السبت</item>
     </string-array>
+    <!-- Only ever seen if the leaves could not be read from the package. -->
+    <string name="no_leaves">تعذّر فتح أوراق الكتاب على هذا الجهاز.\nأعد تثبيت التطبيق، فإن بقي الحال فأبلغنا.</string>
 </resources>

@@ -67,6 +67,13 @@ class MainActivity : AppCompatActivity() {
         })
 
         buildIndex()
+        // A book with no leaves is the one failure the reader cannot see: the
+        // pager simply shows nothing, and «it opens on a blank screen» is all
+        // anyone can report. Say it plainly instead.
+        if (Book.pageCount() == 0) {
+            binding.noLeaves.visibility = View.VISIBLE
+            binding.folioBar.visibility = View.GONE
+        }
         greet()
         askForNotifications()
         Reminder.schedule(this)

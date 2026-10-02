@@ -39,6 +39,11 @@ in_the_book() { on_screen | grep -q "$PKG"; }
 
 shot() { adb exec-out screencap -p > "$OUT/$1.png"; }
 
+# A leaf of the book has thousands of tones; a blank screen has one or
+# two. This is the check «it opens on a blank screen» needed — every
+# other one passed while that was happening.
+not_blank() { python3 dalail-app/ci/not_blank.py "$OUT/$1.png"; }
+
 echo "═══ install ═══"
 adb logcat -c || true
 adb install -r "$APK"
@@ -67,7 +72,8 @@ if [ "$settled" != yes ]; then
   exit 1
 fi
 shot 1-opened
-echo "on screen"
+not_blank 1-opened || { echo "FAIL: the book is on screen but nothing is drawn"; exit 1; }
+echo "on screen, and a leaf is drawn on it"
 
 echo "═══ turn a leaf and turn it back ═══"
 # The book is turned right to left, so a swipe left to right brings the next
@@ -75,6 +81,7 @@ echo "═══ turn a leaf and turn it back ═══"
 adb shell input swipe 200 1200 900 1200 300
 sleep 3
 shot 2-turned
+not_blank 2-turned || { echo "FAIL: the leaf turned onto nothing"; exit 1; }
 adb shell input swipe 900 1200 200 1200 300
 sleep 3
 

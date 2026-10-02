@@ -64,6 +64,24 @@
         </LinearLayout>
 
         <!--
+            Shown only if the book could not be read at all. A reader who sees
+            nothing cannot tell a broken app from an empty one, and cannot say
+            anything useful about it either.
+        -->
+        <TextView
+            android:id="@+id/noLeaves"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_margin="32dp"
+            android:fontFamily="@font/amiri"
+            android:gravity="center"
+            android:text="@string/no_leaves"
+            android:textColor="@color/rule"
+            android:textSize="20sp"
+            android:visibility="gone" />
+
+        <!--
             The day's حزب, offered on opening. The book is read a حزب a day, so
             this is the one thing the reader almost always wants.
         -->
