@@ -26,9 +26,10 @@ ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "dalail")
 COVER = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..",
                      "dalail-app", "design", "cover-plate.jpg")
 
-#: The book's last leaf: whose ratib this is, and where it is kept. The first
-#: line stands in the band's cartouche, as a section's name does, and the rest
-#: are set beneath it.
+#: The leaf that names the order: whose ratib this is, and where it is kept.
+#: The first line stands in the band's cartouche, as a section's name does, and
+#: the rest are set beneath it. That first line is also the leaf's name where
+#: sections() puts it in order, the way QASIDA_TITLE names the verse.
 COLOPHON = (
     "الطَّرِيقَةُ القَادِرِيَّةُ العَرَكِيَّةُ",
     "سَجَّادَةُ أَبُونَا وَشَيْخِنَا",
@@ -111,8 +112,9 @@ def sections():
     closing = page.strip_marker(lines[-1])
     out.append((title, "\n".join(lines[1:-1]), closing))
 
-    # The shaykh's lineage, standing after the book is closed and before the
-    # leaf that names the order — where the photographs used to be.
+    # The book closed, the leaf that names the order and the shaykh whose
+    # ratib it is — and the shaykh's lineage after it, by the author's order.
+    out.append((COLOPHON[0], None, None))
     out.append(("نَسَبُهُ الشَّرِيفُ", read("nasab.txt"), None))
     return out
 
@@ -256,7 +258,9 @@ def index():
     page_no = 2          # the cover is page 1
     for title, text, closing in sections():
         out.append(f"{page_no}|0|{bare(title)}")
-        if title == QASIDA_TITLE:
+        if title in (QASIDA_TITLE, COLOPHON[0]):
+            # A leaf drawn whole by a renderer of its own, holding no صلاة to
+            # index under it, and one leaf long.
             page_no += 1
             continue
         where, leaves = page.locate(text, closing)
@@ -268,7 +272,6 @@ def index():
                 label = f"{hit.group(1)}  ·  {suras}" if suras else hit.group(1)
                 out.append(f"{page_no + where[n]}|1|{label}")
         page_no += leaves
-    out.append(f"{page_no}|0|{bare(COLOPHON[0])}")
     return out
 
 
@@ -302,16 +305,15 @@ def build(out_path):
     leaves = [cover()]
     folio = 1
     for title, text, closing in sections():
-        made = (qasida(folio) if title == QASIDA_TITLE
-                else page.compose(text, title, folio=folio, closing=closing))
+        if title == QASIDA_TITLE:
+            made = qasida(folio)
+        elif title == COLOPHON[0]:
+            made = colophon(folio)
+        else:
+            made = page.compose(text, title, folio=folio, closing=closing)
         print(f"{len(made):3} ورقة   {title}")
         leaves += made
         folio += len(made)
-
-    made = colophon(folio)
-    print(f"{len(made):3} ورقة   {COLOPHON[0]}")
-    leaves += made
-    folio += len(made)
 
     pdf_out.save(leaves, out_path, dpi=DPI)
     mb = os.path.getsize(out_path) / 1e6
