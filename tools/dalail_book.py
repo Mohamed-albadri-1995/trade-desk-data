@@ -88,6 +88,10 @@ def sections():
     """The book in order: each section's name, its text, and its last line."""
     out = [
         ("((مُقَدِّمَة))", read("p03.txt", "p04.txt"), None),
+        # Verse in praise of the book and its reading. Each hemistich is a
+        # passage of its own, which is what sets it centred rather than
+        # stretched across the column as prose is.
+        (QASIDA_TITLE, read("qasida.txt"), None),
         ("أَسْمَاءُ اللهِ الحُسْنَى", read("p05.txt"), None),
         # The two short صلوات that follow the دعوة carry no name of their own in
         # the printed book — a rule parts them, and a rosette does so here.
@@ -106,6 +110,10 @@ def sections():
     title = page.strip_marker(lines[0])
     closing = page.strip_marker(lines[-1])
     out.append((title, "\n".join(lines[1:-1]), closing))
+
+    # The shaykh's lineage, standing after the book is closed and before the
+    # leaf that names the order — where the photographs used to be.
+    out.append(("نَسَبُهُ الشَّرِيفُ", read("nasab.txt"), None))
     return out
 
 
@@ -134,6 +142,62 @@ def cover():
     im.paste(art, (page.MARGIN + 8, page.MARGIN + 8))
     page.Layout().border(im)
     return im
+
+
+#: The verse in praise of the book, set whole on one leaf: fourteen hemistichs
+#: in seven couplets, a hair's rule between each pair as the copy he sent has.
+QASIDA_TITLE = "قَصِيدَةٌ"
+
+
+def qasida(folio):
+    """
+    The verse, whole on one leaf.
+
+    Set here rather than through compose, because fourteen hemistichs at the
+    book's own pitch run two lines past a leaf that carries the band, and two
+    lines alone on a leaf of their own is the thing he objected to in the first
+    place. The type comes down until the whole of it stands on one leaf.
+    """
+    lines = [ln.strip() for ln in
+             open(os.path.join(ROOT, "qasida.txt"), encoding="utf-8")
+             if ln.strip()]
+    couplets = [lines[i:i + 2] for i in range(0, len(lines), 2)]
+
+    lay = page.Layout()
+    im = lay.leaf()
+    lay.head(im, QASIDA_TITLE)
+    d = ImageDraw.Draw(im)
+
+    top = lay.body_top(True)
+    room = lay.bottom - top
+    size = 56
+    while size > 12:
+        font = ImageFont.truetype(page.FONT, size)
+        widest = max(
+            d.textbbox((0, 0), s, font=font, direction="rtl")[2]
+            for pair in couplets for s in pair
+        )
+        step, between = size * 1.62, size * 0.85
+        tall = len(lines) * step + (len(couplets) - 1) * between
+        if widest <= lay.column() and tall <= room:
+            break
+        size -= 1
+
+    y = top + (room - tall) / 2
+    for n, pair in enumerate(couplets):
+        for hemistich in pair:
+            box = d.textbbox((0, 0), hemistich, font=font, direction="rtl")
+            d.text((page.PAGE_W / 2 - (box[2] - box[0]) / 2 - box[0], y),
+                   hemistich, font=font, fill=page.INK, direction="rtl")
+            y += step
+        if n < len(couplets) - 1:
+            mid = y + between / 2
+            d.line([page.PAGE_W / 2 - 110, mid, page.PAGE_W / 2 + 110, mid],
+                   fill=page.RULE, width=1)
+            y += between
+
+    lay.folio(im, folio)
+    return [im]
 
 
 def colophon(folio):
@@ -192,6 +256,9 @@ def index():
     page_no = 2          # the cover is page 1
     for title, text, closing in sections():
         out.append(f"{page_no}|0|{bare(title)}")
+        if title == QASIDA_TITLE:
+            page_no += 1
+            continue
         where, leaves = page.locate(text, closing)
         passages = [ln for ln in text.splitlines() if page.strip_marker(ln).strip()]
         for n, passage in enumerate(passages):
@@ -235,7 +302,8 @@ def build(out_path):
     leaves = [cover()]
     folio = 1
     for title, text, closing in sections():
-        made = page.compose(text, title, folio=folio, closing=closing)
+        made = (qasida(folio) if title == QASIDA_TITLE
+                else page.compose(text, title, folio=folio, closing=closing))
         print(f"{len(made):3} ورقة   {title}")
         leaves += made
         folio += len(made)
