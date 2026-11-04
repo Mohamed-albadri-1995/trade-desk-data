@@ -148,7 +148,7 @@ def cover():
 
 #: The verse in praise of the book, set whole on one leaf: fourteen hemistichs
 #: in seven couplets, a hair's rule between each pair as the copy he sent has.
-QASIDA_TITLE = "قَصَائِدُ"
+QASIDA_TITLE = "أَبْيَاتٌ فِي فَضْلِ دَلَائِلِ الرَّحَمَاتِ"
 
 #: From the gilt frame's rule in to the type. The verse is set wider than the
 #: book's prose column because the frame does the work the margin does.
