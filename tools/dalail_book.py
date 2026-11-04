@@ -26,6 +26,17 @@ ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "dalail")
 COVER = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..",
                      "dalail-app", "design", "cover-plate.jpg")
 
+#: The photographs, one to a leaf, at the very end of the book.
+PLATES = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..",
+                      "dalail-app", "design", "plates")
+
+#: What the plates are gathered under. A plain word: the author has not said
+#: who stands in each photograph, so nothing is claimed here that he has not.
+PLATES_TITLE = "صُوَرٌ"
+
+#: Parchment left between a photograph's frame and the leaf's own.
+PLATE_PAD = 26
+
 #: The leaf that names the order: whose ratib this is, and where it is kept.
 #: The first line stands in the band's cartouche, as a section's name does, and
 #: the rest are set beneath it. That first line is also the leaf's name where
@@ -116,6 +127,10 @@ def sections():
     # ratib it is — and the shaykh's lineage after it, by the author's order.
     out.append((COLOPHON[0], None, None))
     out.append(("نَسَبُهُ الشَّرِيفُ", read("nasab.txt"), None))
+    # And the photographs last of all, by his order: «أضف هذا الصور في اخر
+    # الكتاب».
+    if plate_files():
+        out.append((PLATES_TITLE, None, None))
     return out
 
 
@@ -167,6 +182,53 @@ def lozenge(d, cx, cy, half):
                (cx - half, cy)], fill=LOZENGE, outline=page.RULE)
     d.polygon([(cx, cy - half // 2), (cx + half // 2, cy),
                (cx, cy + half // 2), (cx - half // 2, cy)], outline=page.RULE)
+
+
+def plate_files():
+    return sorted(glob.glob(os.path.join(PLATES, "*.jpg")))
+
+
+def plates(folio):
+    """
+    The photographs, one to a leaf, each in a ruled frame on the parchment.
+
+    They stand at the very end, after the book is closed with تم بحمد الله,
+    after the leaf that names the order and after the shaykh's lineage, so that
+    nothing comes between the reader and the صلوات. Each is fitted whole inside
+    its frame rather than cropped to fill it — a face is not a background — and
+    the parchment shows around whichever side is short.
+    """
+    files = plate_files()
+    if not files:
+        return []
+
+    lay = page.Layout()
+    out = []
+    for i, path in enumerate(files):
+        im = lay.leaf()
+        first = i == 0
+        if first:
+            lay.head(im, PLATES_TITLE)
+        else:
+            lay.slim(im, PLATES_TITLE, i + 1, len(files))
+        top = lay.body_top(first) + PLATE_PAD
+        room_w = lay.column() - 2 * PLATE_PAD
+        room_h = lay.bottom - top - PLATE_PAD
+
+        art = Image.open(path).convert("RGB")
+        scale = min(room_w / art.width, room_h / art.height)
+        art = art.resize((round(art.width * scale), round(art.height * scale)),
+                         Image.LANCZOS)
+        x = (page.PAGE_W - art.width) // 2
+        y = top + (room_h - art.height) // 2
+        im.paste(art, (x, y))
+        ImageDraw.Draw(im).rectangle(
+            [x - 3, y - 3, x + art.width + 2, y + art.height + 2],
+            outline=page.RULE, width=2)
+
+        lay.folio(im, folio + i)
+        out.append(im)
+    return out
 
 
 def poems():
@@ -332,10 +394,12 @@ def index():
     page_no = 2          # the cover is page 1
     for title, text, closing in sections():
         out.append(f"{page_no}|0|{bare(title)}")
-        if title in (QASIDA_TITLE, COLOPHON[0]):
+        if title in (QASIDA_TITLE, COLOPHON[0], PLATES_TITLE):
             # Drawn whole by a renderer of its own and holding no صلاة to index
-            # under it: the colophon is one leaf, the verse a leaf to a poem.
-            page_no += len(poems()) if title == QASIDA_TITLE else 1
+            # under it: the colophon is one leaf, the verse a leaf to a poem,
+            # and the plates a leaf to a photograph.
+            page_no += {QASIDA_TITLE: len(poems()),
+                        PLATES_TITLE: len(plate_files())}.get(title, 1)
             continue
         where, leaves = page.locate(text, closing)
         passages = [ln for ln in text.splitlines() if page.strip_marker(ln).strip()]
@@ -381,6 +445,8 @@ def build(out_path):
     for title, text, closing in sections():
         if title == QASIDA_TITLE:
             made = qasida(folio)
+        elif title == PLATES_TITLE:
+            made = plates(folio)
         elif title == COLOPHON[0]:
             made = colophon(folio)
         else:
