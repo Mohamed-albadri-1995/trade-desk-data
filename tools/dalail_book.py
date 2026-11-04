@@ -422,4 +422,20 @@ def build(out_path):
 
 
 if __name__ == "__main__":
-    build(sys.argv[1] if len(sys.argv) > 1 else "dalail-al-rahamat.pdf")
+    # Nothing is drawn from a text that has not been held to his corrections
+    # and to the Qur'an's own spelling. The checks were being run by hand and
+    # by memory, which is how an order of his was once overturned and how a
+    # verse was once regularised; they are the first thing now, and a leaf
+    # cannot be made without them. Pass --anyway to look at a draft in spite
+    # of them.
+    import subprocess
+    if "--anyway" not in sys.argv:
+        check = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                             "dalail_check.py")
+        if subprocess.run([sys.executable, check]).returncode:
+            print("\n✗ لم يُبنَ الكتاب: أصلِحْ ما سبق، أو مرِّرْ --anyway لمسوّدة.",
+                  file=sys.stderr)
+            sys.exit(1)
+        print()
+    build(next((a for a in sys.argv[1:] if not a.startswith("-")),
+               "dalail-al-rahamat.pdf"))

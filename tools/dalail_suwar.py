@@ -43,6 +43,8 @@ NUM[key("ن")] = 68          # القلم
 
 seq, unknown = [], []
 for title, text, closing in bk.sections():
+    if text is None:
+        continue        # a leaf a renderer of its own draws, holding no صلاة
     passages = [ln for ln in text.splitlines() if bk.page.strip_marker(ln).strip()]
     for i, p in enumerate(passages):
         m = bk.SALAT.match(p.strip())

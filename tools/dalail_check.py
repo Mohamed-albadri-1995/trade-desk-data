@@ -96,12 +96,21 @@ def rows():
     return out
 
 
+#: Files that sit beside the book without being the book: the author's own
+#: messages, and the Qur'anic verses held apart as a guard. Read as text they
+#: would double every verse and report the book against itself.
+NOT_THE_BOOK = ("MESSAGES.txt", "AYAT.txt")
+
+
 def texts():
     """The book's text: the whole of it, and each file on its own."""
     files = {}
     for path in sorted(glob.glob(os.path.join(ROOT, "**", "*.txt"),
                                  recursive=True)):
-        files[os.path.relpath(path, ROOT)] = open(path, encoding="utf-8").read()
+        name = os.path.relpath(path, ROOT)
+        if name in NOT_THE_BOOK:
+            continue
+        files[name] = open(path, encoding="utf-8").read()
     return files
 
 
@@ -125,10 +134,60 @@ def scope(place, files):
     return files
 
 
+#: The verses of the Qur'an in the book, kept apart from it.
+AYAT = os.path.join(ROOT, "AYAT.txt")
+VERSE = re.compile(r"﴿[^﴾]*﴾")
+
+
+def ayat(files):
+    """
+    Whether the Qur'anic verses still read as they are printed.
+
+    They are set in the Qur'an's own orthography, which is not the book's: the
+    verse of al-Qaṣaṣ has «أَنزَلْتَ» with no sukūn on the nūn where the book
+    writes «أَنْزَلْتَ», and the last verse keeps its superscript alifs and its
+    ٱ. A sweep over the book's spelling will walk into them and quietly
+    regularise the Qur'an, which is what happened when the sukūn was unified —
+    that verse came out of it changed, and nothing but an afterthought caught
+    it. So the verses are held in dalail/AYAT.txt and compared byte for byte.
+
+    A sura's name is the book's own writing and is not held here.
+    """
+    if not os.path.exists(AYAT):
+        return ["dalail/AYAT.txt غير موجود — لا حارسَ على الآيات"]
+    want = []
+    for line in open(AYAT, encoding="utf-8"):
+        if line.startswith("#") or "\t" not in line:
+            continue
+        where, verse = line.rstrip("\n").split("\t", 1)
+        want.append((where, verse))
+    have = []
+    for name in sorted(files):
+        for v in VERSE.findall(files[name]):
+            if "سُورَة" not in v:
+                have.append((name, v))
+    trouble = []
+    if len(have) != len(want):
+        trouble.append(f"عددُ الآيات {len(have)} والمحفوظُ {len(want)}")
+    for (wn, wv), (hn, hv) in zip(sorted(want), sorted(have)):
+        if wv != hv:
+            trouble.append(f"آيةٌ تغيّرت في {hn}:\n      المحفوظ: {wv}"
+                           f"\n      في الكتاب: {hv}")
+    return trouble
+
+
 def main():
     files = texts()
     whole = "\n".join(files.values())
     found = rows()
+
+    verses = ayat(files)
+    if verses:
+        print("✗ الآيات:")
+        for t in verses:
+            print(f"    {t}")
+    else:
+        print("✓ آياتُ التنزيل على رسمها")
 
     # A row whose reading a later row replaces is no longer the standing order.
     # Matched on containment, not equality: a later batch names its place with
@@ -150,6 +209,8 @@ def main():
             adrift.append(row)
 
     tested = sum(1 for r in found if not r["superseded"])
+    if verses:
+        adrift.append(None)      # the verses alone are enough to stop a build
     print(f"السجلّ: {len(found)} تصحيحًا، منها {tested} تُختبر "
           f"و{len(found) - tested} نسختها دفعةٌ بعدها")
     print(f"سلِمت: {tested - len(adrift)}")
@@ -159,6 +220,8 @@ def main():
 
     print(f"\n✗ أدرجت عن أمره: {len(adrift)}\n")
     for row in adrift:
+        if row is None:
+            continue
         why = []
         if not row["here"]:
             why.append("القراءةُ التي أمر بها غائبة")
