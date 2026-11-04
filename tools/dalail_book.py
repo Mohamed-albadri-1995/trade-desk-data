@@ -150,15 +150,39 @@ def cover():
 #: in seven couplets, a hair's rule between each pair as the copy he sent has.
 QASIDA_TITLE = "قَصِيدَةٌ"
 
+#: From the gilt frame's rule in to the type. The verse is set wider than the
+#: book's prose column because the frame does the work the margin does.
+QASIDA_PAD = 24
+#: Clear air between a couplet's ink and the rule that closes its panel, so
+#: neither the harakat above a line nor the kasra below one meets the rule.
+QASIDA_CLEAR = 15
+#: The red of the medallions on the border, for the lozenge that sits on each
+#: rule between one couplet and the next.
+LOZENGE = (152, 38, 32)
+
+
+def lozenge(d, cx, cy, half):
+    """A small diamond, gold-edged over red, as an illuminated rule carries."""
+    d.polygon([(cx, cy - half), (cx + half, cy), (cx, cy + half),
+               (cx - half, cy)], fill=LOZENGE, outline=page.RULE)
+    d.polygon([(cx, cy - half // 2), (cx + half // 2, cy),
+               (cx, cy + half // 2), (cx - half // 2, cy)], outline=page.RULE)
+
 
 def qasida(folio):
     """
-    The verse, whole on one leaf.
+    The verse, whole on one leaf, each couplet in a panel of its own.
 
-    Set here rather than through compose, because fourteen hemistichs at the
-    book's own pitch run two lines past a leaf that carries the band, and two
-    lines alone on a leaf of their own is the thing he objected to in the first
-    place. The type comes down until the whole of it stands on one leaf.
+    Set here rather than through compose for two reasons. Fourteen hemistichs
+    at the book's own pitch run two lines past a leaf that carries the band,
+    and two lines alone on a leaf of their own is the thing he objected to in
+    the first place; and verse in this book is to be ruled the way the copy he
+    sent is ruled — a gilt frame about the whole, every couplet in a panel
+    under it, and a rule between panels with a lozenge set in the middle of it.
+
+    The panels divide the frame evenly, so the last one closes on the frame's
+    own foot rather than leaving it short, and the type comes down until both
+    the widest hemistich fits a panel's width and a couplet fits its height.
     """
     lines = [ln.strip() for ln in
              open(os.path.join(ROOT, "qasida.txt"), encoding="utf-8")
@@ -170,33 +194,50 @@ def qasida(folio):
     lay.head(im, QASIDA_TITLE)
     d = ImageDraw.Draw(im)
 
-    top = lay.body_top(True)
-    room = lay.bottom - top
+    x0, x1 = lay.x0 - 12, lay.x1 + 12
+    y0, y1 = lay.body_top(True), lay.bottom
+    cell = (y1 - y0) / len(couplets)
+    room = (x1 - x0) - 2 * QASIDA_PAD
+
+    # Fitted on the ink itself, not on the font's nominal height. A hemistich
+    # here carries harakat above and a kasra below, so what a line occupies is
+    # half again what the type size says; measured by the size alone, the marks
+    # of the lower line came up against the rule over it and against the
+    # lozenge set on it.
     size = 56
     while size > 12:
         font = ImageFont.truetype(page.FONT, size)
-        widest = max(
-            d.textbbox((0, 0), s, font=font, direction="rtl")[2]
-            for pair in couplets for s in pair
-        )
-        step, between = size * 1.62, size * 0.85
-        tall = len(lines) * step + (len(couplets) - 1) * between
-        if widest <= lay.column() and tall <= room:
+        boxes = [[d.textbbox((0, 0), s, font=font, direction="rtl")
+                  for s in pair] for pair in couplets]
+        widest = max(b[2] - b[0] for pair in boxes for b in pair)
+        step = size * 1.74
+        # From the top of a couplet's first line to the foot of its second,
+        # each line being centred on its own place.
+        tall = max(step + (p[0][3] - p[0][1]) / 2 + (p[-1][3] - p[-1][1]) / 2
+                   for p in boxes)
+        if widest <= room and tall + 2 * QASIDA_CLEAR <= cell:
             break
         size -= 1
 
-    y = top + (room - tall) / 2
+    # The frame: a stout rule with a fine one inside it, as the leaf's border
+    # is drawn, so the verse's panel belongs to the same hand as the page.
+    d.rectangle([x0, y0, x1, y1], outline=page.RULE, width=3)
+    d.rectangle([x0 + 6, y0 + 6, x1 - 6, y1 - 6], outline=page.RULE, width=1)
+
     for n, pair in enumerate(couplets):
-        for hemistich in pair:
+        middle = y0 + cell * (n + 0.5)
+        for half, hemistich in ((-0.5, pair[0]), (0.5, pair[1] if len(pair) > 1
+                                                  else "")):
+            if not hemistich:
+                continue
             box = d.textbbox((0, 0), hemistich, font=font, direction="rtl")
-            d.text((page.PAGE_W / 2 - (box[2] - box[0]) / 2 - box[0], y),
+            d.text((page.PAGE_W / 2 - (box[2] - box[0]) / 2 - box[0],
+                    middle + half * step - (box[3] - box[1]) / 2 - box[1]),
                    hemistich, font=font, fill=page.INK, direction="rtl")
-            y += step
-        if n < len(couplets) - 1:
-            mid = y + between / 2
-            d.line([page.PAGE_W / 2 - 110, mid, page.PAGE_W / 2 + 110, mid],
-                   fill=page.RULE, width=1)
-            y += between
+        if n:
+            rule = y0 + cell * n
+            d.line([x0 + 7, rule, x1 - 7, rule], fill=page.RULE, width=1)
+            lozenge(d, page.PAGE_W / 2, rule, 11)
 
     lay.folio(im, folio)
     return [im]
