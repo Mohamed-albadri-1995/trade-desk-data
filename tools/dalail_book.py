@@ -148,7 +148,7 @@ def cover():
 
 #: The verse in praise of the book, set whole on one leaf: fourteen hemistichs
 #: in seven couplets, a hair's rule between each pair as the copy he sent has.
-QASIDA_TITLE = "قَصِيدَةٌ"
+QASIDA_TITLE = "قَصَائِدُ"
 
 #: From the gilt frame's rule in to the type. The verse is set wider than the
 #: book's prose column because the frame does the work the margin does.
@@ -169,9 +169,34 @@ def lozenge(d, cx, cy, half):
                (cx, cy + half // 2), (cx - half // 2, cy)], outline=page.RULE)
 
 
+def poems():
+    """
+    The verse, poem by poem.
+
+    A blank line parts one poem from the next, and a line opening with «# » is
+    that poem's own name, set in the first panel of its leaf as the copies the
+    author sent have it. The first poem carries no name of its own: the band
+    over it names the section.
+    """
+    out, cur = [], {"title": None, "lines": []}
+    for raw in open(os.path.join(ROOT, "qasida.txt"), encoding="utf-8"):
+        line = raw.strip()
+        if not line:
+            if cur["lines"]:
+                out.append(cur)
+            cur = {"title": None, "lines": []}
+        elif line.startswith("# "):
+            cur["title"] = line[2:].strip()
+        else:
+            cur["lines"].append(line)
+    if cur["lines"]:
+        out.append(cur)
+    return out
+
+
 def qasida(folio):
     """
-    The verse, whole on one leaf, each couplet in a panel of its own.
+    The verse: a leaf to each poem, every couplet in a panel of its own.
 
     Set here rather than through compose for two reasons. Fourteen hemistichs
     at the book's own pitch run two lines past a leaf that carries the band,
@@ -183,64 +208,72 @@ def qasida(folio):
     The panels divide the frame evenly, so the last one closes on the frame's
     own foot rather than leaving it short, and the type comes down until both
     the widest hemistich fits a panel's width and a couplet fits its height.
+
+    A poem's own name, where it has one, takes the first panel by itself, as
+    the copies the author sent have it.
     """
-    lines = [ln.strip() for ln in
-             open(os.path.join(ROOT, "qasida.txt"), encoding="utf-8")
-             if ln.strip()]
-    couplets = [lines[i:i + 2] for i in range(0, len(lines), 2)]
+    all_poems = poems()
+    made = []
+    for n, poem in enumerate(all_poems):
+        lines = poem["lines"]
+        # A panel holds one line where it holds a name, two where a couplet.
+        panels = ([[poem["title"]]] if poem["title"] else []) \
+            + [lines[i:i + 2] for i in range(0, len(lines), 2)]
 
-    lay = page.Layout()
-    im = lay.leaf()
-    lay.head(im, QASIDA_TITLE)
-    d = ImageDraw.Draw(im)
-
-    x0, x1 = lay.x0 - 12, lay.x1 + 12
-    y0, y1 = lay.body_top(True), lay.bottom
-    cell = (y1 - y0) / len(couplets)
-    room = (x1 - x0) - 2 * QASIDA_PAD
-
-    # Fitted on the ink itself, not on the font's nominal height. A hemistich
-    # here carries harakat above and a kasra below, so what a line occupies is
-    # half again what the type size says; measured by the size alone, the marks
-    # of the lower line came up against the rule over it and against the
-    # lozenge set on it.
-    size = 56
-    while size > 12:
-        font = ImageFont.truetype(page.FONT, size)
-        boxes = [[d.textbbox((0, 0), s, font=font, direction="rtl")
-                  for s in pair] for pair in couplets]
-        widest = max(b[2] - b[0] for pair in boxes for b in pair)
-        step = size * 1.74
-        # From the top of a couplet's first line to the foot of its second,
-        # each line being centred on its own place.
-        tall = max(step + (p[0][3] - p[0][1]) / 2 + (p[-1][3] - p[-1][1]) / 2
-                   for p in boxes)
-        if widest <= room and tall + 2 * QASIDA_CLEAR <= cell:
-            break
-        size -= 1
-
-    # The frame: a stout rule with a fine one inside it, as the leaf's border
-    # is drawn, so the verse's panel belongs to the same hand as the page.
-    d.rectangle([x0, y0, x1, y1], outline=page.RULE, width=3)
-    d.rectangle([x0 + 6, y0 + 6, x1 - 6, y1 - 6], outline=page.RULE, width=1)
-
-    for n, pair in enumerate(couplets):
-        middle = y0 + cell * (n + 0.5)
-        for half, hemistich in ((-0.5, pair[0]), (0.5, pair[1] if len(pair) > 1
-                                                  else "")):
-            if not hemistich:
-                continue
-            box = d.textbbox((0, 0), hemistich, font=font, direction="rtl")
-            d.text((page.PAGE_W / 2 - (box[2] - box[0]) / 2 - box[0],
-                    middle + half * step - (box[3] - box[1]) / 2 - box[1]),
-                   hemistich, font=font, fill=page.INK, direction="rtl")
+        lay = page.Layout()
+        im = lay.leaf()
         if n:
-            rule = y0 + cell * n
-            d.line([x0 + 7, rule, x1 - 7, rule], fill=page.RULE, width=1)
-            lozenge(d, page.PAGE_W / 2, rule, 11)
+            lay.slim(im, QASIDA_TITLE, n + 1, len(all_poems))
+        else:
+            lay.head(im, QASIDA_TITLE)
+        d = ImageDraw.Draw(im)
 
-    lay.folio(im, folio)
-    return [im]
+        x0, x1 = lay.x0 - 12, lay.x1 + 12
+        y0, y1 = lay.body_top(not n), lay.bottom
+        cell = (y1 - y0) / len(panels)
+        room = (x1 - x0) - 2 * QASIDA_PAD
+
+        # Fitted on the ink itself, not on the font's nominal height. A
+        # hemistich here carries harakat above and a kasra below, so what a
+        # line occupies is half again what the type size says; measured by the
+        # size alone, the marks of the lower line came up against the rule over
+        # it and against the lozenge set on it.
+        size = 56
+        while size > 12:
+            font = ImageFont.truetype(page.FONT, size)
+            boxes = [[d.textbbox((0, 0), s, font=font, direction="rtl")
+                      for s in panel] for panel in panels]
+            widest = max(b[2] - b[0] for panel in boxes for b in panel)
+            step = size * 1.74
+            # From the top of a panel's first line to the foot of its last,
+            # each line being centred on its own place.
+            tall = max(step * (len(p) - 1) + (p[0][3] - p[0][1]) / 2
+                       + (p[-1][3] - p[-1][1]) / 2 for p in boxes)
+            if widest <= room and tall + 2 * QASIDA_CLEAR <= cell:
+                break
+            size -= 1
+
+        # The frame: a stout rule with a fine one inside it, as the leaf's
+        # border is drawn, so the verse belongs to the same hand as the page.
+        d.rectangle([x0, y0, x1, y1], outline=page.RULE, width=3)
+        d.rectangle([x0 + 6, y0 + 6, x1 - 6, y1 - 6], outline=page.RULE, width=1)
+
+        for k, panel in enumerate(panels):
+            middle = y0 + cell * (k + 0.5)
+            for j, hemistich in enumerate(panel):
+                box = d.textbbox((0, 0), hemistich, font=font, direction="rtl")
+                y = middle + (j - (len(panel) - 1) / 2) * step
+                d.text((page.PAGE_W / 2 - (box[2] - box[0]) / 2 - box[0],
+                        y - (box[3] - box[1]) / 2 - box[1]),
+                       hemistich, font=font, fill=page.INK, direction="rtl")
+            if k:
+                rule = y0 + cell * k
+                d.line([x0 + 7, rule, x1 - 7, rule], fill=page.RULE, width=1)
+                lozenge(d, page.PAGE_W / 2, rule, 11)
+
+        lay.folio(im, folio + n)
+        made.append(im)
+    return made
 
 
 def colophon(folio):
@@ -300,9 +333,9 @@ def index():
     for title, text, closing in sections():
         out.append(f"{page_no}|0|{bare(title)}")
         if title in (QASIDA_TITLE, COLOPHON[0]):
-            # A leaf drawn whole by a renderer of its own, holding no صلاة to
-            # index under it, and one leaf long.
-            page_no += 1
+            # Drawn whole by a renderer of its own and holding no صلاة to index
+            # under it: the colophon is one leaf, the verse a leaf to a poem.
+            page_no += len(poems()) if title == QASIDA_TITLE else 1
             continue
         where, leaves = page.locate(text, closing)
         passages = [ln for ln in text.splitlines() if page.strip_marker(ln).strip()]
