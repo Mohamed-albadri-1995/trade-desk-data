@@ -126,6 +126,10 @@ def sections():
     # The book closed, the leaf that names the order and the shaykh whose
     # ratib it is — and the shaykh's lineage after it, by the author's order.
     out.append((COLOPHON[0], None, None))
+    # The author's own account of the order and of the sajjāda, which he wrote
+    # and signed, standing before the lineage by his order.
+    out.append(("نَبْذَةٌ تَعْرِيفِيَّةٌ عَنِ الطَّرِيقَةِ القَادِرِيَّةِ العَرَكِيَّةِ",
+                read("nabdha.txt"), None))
     out.append(("نَسَبُهُ الشَّرِيفُ", read("nasab.txt"), None))
     # And the photographs last of all, by his order: «أضف هذا الصور في اخر
     # الكتاب».
